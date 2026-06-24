@@ -1,12 +1,9 @@
 {
-  "productName": "PROYECTA Mining",
-  "version": "1.0.0",
-  "identifier": "com.proyecta.mining",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:5173",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "distDir": "../dist"
   },
   "tauri": {
     "allowlist": {},
