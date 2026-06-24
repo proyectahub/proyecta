@@ -24,8 +24,8 @@ winget install Microsoft.VisualStudio.2022.BuildTools
 ### 3. Descarga este repo
 
 ```powershell
-git clone https://github.com/TU_REPO/PROYECTA.git
-cd proyecta-desktop
+git clone https://github.com/proyectahub/proyecta.git
+cd proyecta/proyecta-desktop
 ```
 
 ### 4. Instala dependencias npm
