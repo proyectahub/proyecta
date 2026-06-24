@@ -1,0 +1,35 @@
+# Servicio systemd para el proxy de minería (alternativa sin Docker)
+#
+# Instalación en el VPS:
+#   1. Copia server.js y deploy/package.json a /opt/proyecta-proxy/
+#        sudo mkdir -p /opt/proyecta-proxy
+#        sudo cp server.js /opt/proyecta-proxy/
+#        sudo cp deploy/package.json /opt/proyecta-proxy/package.json
+#   2. Instala dependencias:
+#        cd /opt/proyecta-proxy && sudo npm install --omit=dev
+#   3. Instala el servicio:
+#        sudo cp deploy/proyecta-proxy.service /etc/systemd/system/
+#        sudo systemctl daemon-reload
+#        sudo systemctl enable --now proyecta-proxy
+#   4. Verifica:
+#        systemctl status proyecta-proxy
+#        curl http://localhost:3001/api/mining/health
+#
+# Para HTTPS/WSS pon Caddy o Nginx delante (ver README.md).
+
+[Unit]
+Description=PROYECTA Mining Stratum Proxy
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/proyecta-proxy
+ExecStart=/usr/bin/node server.js
+Environment=PORT=3001
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

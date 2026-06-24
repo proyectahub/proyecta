@@ -1,0 +1,31 @@
+## Results
+
+### Structure-guided target architecture narrowed the therapeutic space to prefusion F and the polymerase machinery
+
+Integration of viral biology with public structural evidence resolved the measles virus target space into an entry module and a replication module. Among the entry proteins, only F currently provides a structurally explicit small-molecule-accessible pocket in a target-engaged prefusion state. Within the replication module, the strongest target-engaged structural evidence is concentrated in ligand-bound polymerase assemblies that connect pocket architecture to antiviral mechanism. These observations narrowed the docking-oriented therapeutic space to the prefusion F pocket and the L polymerase machinery.
+
+### Alignment-level evidence showed that the selected F and L pockets remain highly conserved across curated sequence space
+
+The multiple-sequence-alignment layer directly supported the conservation of both candidate therapeutic sites. In the curated F amino-acid panel, the pocket alignment remained nearly invariant across 232 regional-global sequences, and the only visible deviations were restricted to residues 453 and 458. In the curated L amino-acid panel, the 31 ERDRP-0519-contact residues remained likewise stable across 469 sequences, with minor deviations concentrated at residues 535, 544, and 739. Thus, the main conservation signal was directly visible in the underlying alignments rather than emerging only from summary statistics.
+
+### Pocket-level conservation profiles confirmed that both druggable sites were globally stable
+
+Pocket-directed conservation analysis further showed that all 13 F-contact residues mapped from the 5YZC inhibitor-bound prefusion structure remained at or above 98.57% consensus frequency, whereas all 31 L-contact residues mapped from the ERDRP-0519-bound 9OCF polymerase structure remained at or above 98.92% consensus frequency. Structural superposition additionally supported the use of ligand-engaged templates, because 5YZC and 5YZD aligned closely within the F target class and 9OCF and 9OCE aligned closely within the polymerase target class, while the ATP-bound 9OCH conformation was structurally distinct from the ERDRP-0519-bound state. Together, these data establish that both therapeutic pockets are structurally defined and highly conserved.
+
+### Conservation and structural evidence defined a target order for docking
+
+A transparent prioritization rubric integrating essential viral role, structural tractability, target-engaged complexes, and published antiviral mechanism placed the L-P polymerase module at the front of the computational workflow and the prefusion F pocket in the orthogonal secondary position. L ranked first because it combined catalytic centrality with a drug-engaged structural template and an established nonnucleoside inhibitor reference. F ranked second because it provided a highly conserved and structurally validated entry pocket, although without the same catalytic leverage as the replication machinery.
+
+### Target order translated directly into a rational repurposing design
+
+This prioritization defined the repurposing workflow. The L arm was organized around a translational screening set of clinically interpretable small molecules, while ERDRP-0519 was retained as a direct polymerase benchmark rather than a repurposing lead. The F arm was handled more conservatively and used AS-48 and FIP as structural comparators to define and validate the prefusion inhibitor cavity before broader exploratory screening. Under this structure-first framework, the central conclusion is that measles virus contains highly conserved, structurally actionable pockets that can rationally guide docking before any region-specific outbreak interpretation is invoked.
+
+### Conservation-guided pocket refinement focused the L campaign on the invariant ERDRP-0519 interaction core
+
+The structure-guided `L` campaign was not limited to a generic holo-structure box. Instead, the ERDRP-0519 contact shell defined in `9OCF` was intersected with the sequence-conservation analysis to identify a refinement region that remained fully consistent with the alignment data. Among the 31 residues within `6 A` of the bound ligand, 15 residues formed a direct-contact conserved core by satisfying both a `<=4 A` ligand-contact criterion and a consensus frequency of `1.0` across the curated non-gap `L` alignment. The only contact-shell residues below complete invariance were `K535`, `R544`, and `I739`, indicating that the small amount of observed sequence variability was peripheral to the densest ligand-engaged interaction cluster.
+
+This conservation-guided contraction defined a second search box for downstream redocking or rescoring. Relative to the broader first-pass box derived from the full ERDRP-0519 pose, the conserved-core refinement box shifted slightly toward the invariant interaction nucleus and reduced the search volume while preserving pocket identity. Accordingly, the `L` workflow now rests on two linked structural levels: a broader experimentally anchored discovery box for primary virtual screening and a narrower alignment-supported refinement box centered on the invariant pharmacophore core.
+
+### The prefusion F pocket showed an analogous invariant core suitable for secondary refinement
+
+An equivalent conservation-guided contraction was also justified for the prefusion `F` pocket. Of the 13 residues within `6 A` of AS-48 in the `5YZC` structure, seven residues met both direct-contact and complete-conservation criteria: `TRP311`, `THR369`, `LEU370`, `PRO451`, `ILE452`, `VAL459`, and `ASN462`. In contrast, the two pocket positions below complete invariance, `S453` and `D458`, remained peripheral to this invariant core. Because the experimentally observed AS-48 pose remained fully enclosed by the conserved contact core, the broader first-pass `F` box and the narrower conserved-core refinement box shared the same geometric center, differing mainly in search volume. This established a symmetric two-level strategy across both targets: discovery screening in the full ligand-defined cavity followed by refinement docking in the alignment-supported invariant core.

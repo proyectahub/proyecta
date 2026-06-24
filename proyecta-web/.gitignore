@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.wrangler/
+.vercel/
+.DS_Store
+*.log
+.env.production
+backend/.env.production

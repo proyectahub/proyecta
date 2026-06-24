@@ -1,0 +1,3 @@
+Figure 6. Public sequence evidence and analytic framework for measles phylogeny and docking-oriented conservation.
+
+Panel A summarizes the unique public sequence counts available after exact geographic curation from GenBank source metadata. Panel B shows the chronology of Mexican public N-gene records, highlighting the absence of publicly deposited Mexican outbreak sequences dated 2025-2026 in the dataset fetched on June 6, 2026. Panel C defines the study design adopted for the manuscript: N was used for phylogenetic reconstruction, whereas F and L were advanced to structure-guided conservation analysis because Mexican genome-scale public data were insufficient for pocket-level inference.

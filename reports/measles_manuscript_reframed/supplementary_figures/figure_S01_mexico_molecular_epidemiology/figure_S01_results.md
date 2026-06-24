@@ -1,0 +1,1 @@
+Historical public Mexican records support repeated lineage introduction and heterogeneous genotype detection, but they do not provide sufficient recent genome-scale density to define the therapeutic target space. Accordingly, this analysis is retained as supplementary context rather than as a main-text anchor.

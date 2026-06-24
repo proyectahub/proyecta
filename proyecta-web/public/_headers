@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Nova Scientia — Cloudflare Pages _headers
+#
+# NOTA: los headers no-cache y Clear-Site-Data para rutas SPA se manejan
+# en functions/_middleware.ts para evitar conflictos en /assets/*.
+# Este archivo sólo maneja seguridad y caché de assets.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Seguridad universal (sin Cache-Control aquí para evitar conflictos con assets)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Assets con hash en nombre — caché inmutable 1 año (nunca conflicto con no-cache)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Recursos de marca — 24 horas
+/brand/*
+  Cache-Control: public, max-age=86400

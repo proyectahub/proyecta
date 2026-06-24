@@ -1,0 +1,14 @@
+# Caddy termina TLS (HTTPS/WSS) automáticamente con Let's Encrypt
+# y reenvía todo al proxy de minería. El upgrade a WebSocket lo maneja solo.
+
+{$PROXY_DOMAIN} {
+	encode gzip
+
+	# API HTTP y WebSocket (/ws/mining) van al proxy
+	reverse_proxy proxy:3001
+
+	log {
+		output stdout
+		format console
+	}
+}

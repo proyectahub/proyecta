@@ -1,0 +1,3 @@
+Figure 7. Conservation of docking-relevant measles virus F and L pocket residues.
+
+Panel A shows the consensus frequency at each F residue contacting the AS-48 binding pocket in the 5YZC prefusion complex. Panel B shows the same analysis for the ERDRP-0519 pocket residues derived from the 9OCF L polymerase structure. Panel C summarizes pairwise Cα superposition across target-engaged reference structures used to validate that ligand-bound templates were structurally coherent before downstream docking.

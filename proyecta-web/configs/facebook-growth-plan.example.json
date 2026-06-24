@@ -1,0 +1,85 @@
+{
+  "profileName": "Divulgaría Growth",
+  "profileDescription": "Visibilidad y divulgación cientifica en Facebook",
+  "pageUrl": "https://www.facebook.com/profile.phpid=61590734152628",
+  "pageId": "1196935513495008",
+  "profileId": "6a1d2c0f88317ade829b9216",
+  "accountId": "6a1d2c5c2b2567671a848df1",
+  "adAccountId": "",
+  "timezone": "America/Chihuahua",
+  "metrics": {
+    "fromDate": "2026-06-01",
+    "toDate": "2026-06-30",
+    "sortBy": "engagement",
+    "limit": 25
+  },
+  "posts": [
+    {
+      "slug": "nova-computo-blockchain-estrategia",
+      "content": "⚡ DIVULGARÍA: ciencia abierta sostenida por su propia comunidad\n\nNo pedimos dinero. No ponemos publicidad. Apostamos por algo diferente.\n\nCuando lees en Divulgaría, puedes elegir donar una fracción del poder de cómputo de tu equipo — ese procesador que de todas formas no estás usando — para que esta plataforma siga viva, abierta y sin anuncios.\n\n¿Cómo funciona\n🔹 Aceptas voluntariamente desde un popup claro\n🔹 Tu CPU genera MintMe (criptomoneda) en segundo plano\n🔹 Eso se convierte en recursos para pagar servidores y dominio\n🔹 Puedes pausar o detener en cualquier momento desde un widget visible\n\n¿Por qué esto importa en América Latina\nLa divulgación científica en la región muere por falta de financiamiento, no por falta de talento. Un modelo donde la propia comunidad lectora sostiene el portal — sin intermediarios, sin publicidad, sin barreras de pago — cambia esa ecuación.\n\nBlockchain como infraestructura, no como especulación. Cómputo colectivo como forma de apoyo cultural. Ciencia abierta sostenida por quienes la leen.\n\n👉 Descubre cómo funciona: https://divulgaria.pages.dev/computacion-donada\n👉 Lee y participa: https://divulgaria.pages.dev\n\n#CienciaAbierta #DivulgaciónCientifica #Blockchain #MintMe #LatinoAmerica #DivulgaraScientia #CienciaParaTodos #Tecnologia",
+      "publishNow": true,
+      "mediaItems": [
+        {
+          "type": "image",
+          "url": "https://divulgaria.pages.dev/nova-hero-poster.jpg"
+        }
+      ]
+    },
+    {
+      "slug": "nova-valor-mision",
+      "content": "🔬 DIVULGARÍA — Ciencia confiable, clara y abierta para toda la comunidad latinoamericana.\n\nLee artículos de divulgación revisados por la comunidad, publica tu investigación y participa en la conversación científica.\n\n👉 https://divulgaria.pages.dev\n\n#CienciaAbierta #DivulgaciónCientifica #LatinoAmerica #DivulgaraScientia",
+      "publishNow": false,
+      "scheduledFor": "2026-06-03T10:30:00",
+      "mediaItems": [
+        {
+          "type": "image",
+          "url": "https://divulgaria.pages.dev/nova-hero-poster.jpg"
+        }
+      ]
+    },
+    {
+      "slug": "nova-blog-destacado-semana-1",
+      "content": "📖 Publicación destacada de la semana en Divulgaría: evidencia, contexto y utilidad práctica para la comunidad científica latinoamericana.\n\nLee, revisa y comenta: https://divulgaria.pages.dev",
+      "scheduledFor": "2026-06-05T10:30:00",
+      "mediaItems": [
+        {
+          "type": "image",
+          "url": "https://divulgaria.pages.dev/nova-hero-poster.jpg"
+        }
+      ],
+      "facebookSettings": {
+        "draft": false
+      }
+    },
+    {
+      "slug": "nova-cta-registro-autores",
+      "content": "✍️ ¿Eres investigador/a o divulgador/a científico\n\nRegistra tu cuenta en Divulgaría y publica para una audiencia comprometida con la ciencia abierta en América Latina.\n\nTu voz importa. Tu ciencia importa.\n\n👉 https://divulgaria.pages.dev/login\n\n#CienciaAbierta #Investigacion #Divulgación #LatinoAmerica",
+      "scheduledFor": "2026-06-07T19:00:00"
+    },
+    {
+      "slug": "nova-social-proof-revisiones",
+      "content": "🌎 La comunidad ya está revisando y comentando artículos en Divulgaría.\n\nSúmate y fortalece el debate científico latinoamericano. Sin barreras, sin publicidad, sostenido por su propia comunidad.\n\n👉 https://divulgaria.pages.dev\n\n#CienciaAbierta #Comunidad #Ciencia #LatinoAmerica #DivulgaraScientia",
+      "scheduledFor": "2026-06-10T11:30:00"
+    }
+  ],
+  "adsBoost": [
+    {
+      "name": "NS Awareness - Mision",
+      "postSlug": "nova-valor-mision",
+      "goal": "awareness",
+      "budget": {
+        "amount": 8,
+        "type": "daily"
+      }
+    },
+    {
+      "name": "NS Registro Autores - Trafico",
+      "postSlug": "nova-cta-registro-autores",
+      "goal": "traffic",
+      "budget": {
+        "amount": 12,
+        "type": "daily"
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+Figure 8. Conservation-validated refinement of the AS-48 binding pocket in the measles virus prefusion F protein.
+
+Panel A shows a principal-component projection of the full 5YZC chain-B C-alpha trace with the AS-48 contact shell overlaid. Grey circles mark all 13 residues within 6 A of the co-bound ligand, green circles mark the 7-residue conserved core retained for refinement (contact distance <=4 A and consensus frequency = 1.0), and orange diamonds denote AS-48 atoms retained in the refinement box. Panel B shows the contact-shell conservation profile, illustrating that only S453 and D458 fall below complete invariance. Panel C compares the broader first-pass box derived from the full AS-48 pose with the stricter conserved-core refinement box.

@@ -1,0 +1,5 @@
+## Sequence-to-Structure Findings
+
+The curated public sequence landscape was asymmetrical across analytic layers. Historical Mexican measles records remained available mainly as N-gene submissions, whereas F and L required Latin American and global complete-genome support for robust conservation analysis. This justified treating phylogenetic reconstruction and docking-oriented conservation as related but separate stages of the study.
+
+The N panel supported a regional phylogenetic framework built from 540 aligned nucleotide sequences. In parallel, the F and L conservation panels retained 232 and 469 unique amino-acid sequences, respectively, after geographic curation and sequence deduplication. Both structural pockets selected for docking were markedly conserved, with only minimal variability at a small subset of contact residues. Accordingly, the sequence layer supported advancing the L polymerase pocket as the primary docking target and the prefusion F pocket as the secondary docking target.

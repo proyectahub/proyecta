@@ -1,0 +1,15 @@
+[package]
+name = "proyecta-mining"
+version = "1.0.0"
+description = "Minería RandomX nativa para PROYECTA"
+authors = ["PROYECTA Team"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5" }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5", features = ["api-all"] }
+tokio = { version = "1", features = ["full"] }
