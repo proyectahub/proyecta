@@ -1,21 +1,31 @@
 {
+  "productName": "PROYECTA Mining",
+  "version": "1.0.0",
+  "identifier": "com.proyecta.mining",
   "build": {
-    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
-  "ctx": {},
-  "package": null,
   "tauri": {
     "allowlist": {},
-    "bundle": {
-      "active": true,
-      "icon": []
-    },
+    "windows": [
+      {
+        "title": "PROYECTA Mining",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 600,
+        "minHeight": 400
+      }
+    ],
     "security": {
       "csp": null
     },
-    "windows": []
+    "bundle": {
+      "active": true,
+      "icon": [],
+      "identifier": "com.proyecta.mining"
+    }
   }
 }
