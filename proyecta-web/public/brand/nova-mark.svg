@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="18" fill="url(#nova-gradient)"/>
+  <rect x="1" y="1" width="62" height="62" rx="17" fill="url(#nova-highlight)"/>
+  <path d="M32 20.5C29 17.6 24.8 16 20 16C15.2 16 11.5 19.7 11.5 24.4V43.2C11.5 44.4 12.5 45.4 13.7 45.4H27.5C29.3 45.4 30.8 46.1 32 47.5" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 20.5C35 17.6 39.2 16 44 16C48.8 16 52.5 19.7 52.5 24.4V43.2C52.5 44.4 51.5 45.4 50.3 45.4H36.5C34.7 45.4 33.2 46.1 32 47.5" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 21V47.2" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="nova-gradient" x1="8" y1="6" x2="55" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F68FF"/>
+      <stop offset="0.56" stop-color="#255CFF"/>
+      <stop offset="1" stop-color="#173CBD"/>
+    </linearGradient>
+    <radialGradient id="nova-highlight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18 14) rotate(45) scale(34.5)">
+      <stop stop-color="white" stop-opacity="0.26"/>
+      <stop offset="0.4" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="0.68" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

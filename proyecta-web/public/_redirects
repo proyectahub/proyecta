@@ -1,0 +1,6 @@
+# Redirigir todas las rutas a index.html para que React Router maneje la navegación
+/*    /index.html   200
+
+# Excepciones para archivos estáticos
+/assets/* /assets/:splat 200
+/brand/* /brand/:splat 200

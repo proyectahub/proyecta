@@ -1,0 +1,8 @@
+name = "nova-scientia-api"
+main = "src/index.js"
+compatibility_date = "2026-04-21"
+account_id = "f9f624c23abcbd1b99724a7bd9973375"
+
+[[kv_namespaces]]
+binding = "FIS_STATUS"
+id = "999d30c9e7d44de2b9258960643c1a48"

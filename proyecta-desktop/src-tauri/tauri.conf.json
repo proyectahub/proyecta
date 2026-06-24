@@ -1,0 +1,21 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "ctx": {},
+  "package": null,
+  "tauri": {
+    "allowlist": {},
+    "bundle": {
+      "active": true,
+      "icon": []
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": []
+  }
+}
