@@ -1,117 +1,62 @@
-# Compilar PROYECTA Mining Desktop Localmente
+# Compilar PROYECTA Mining Desktop — Un Comando
 
-Debido a variaciones en entornos de compilación, te recomendamos compilar la app en tu máquina.
+## ⚡ Instalación rápida (Todos los SO)
 
-## Pasos rápidos (Windows)
+### Requisitos previos (primera vez)
 
-### 1. Instala Rust
-
+**Windows:**
 ```powershell
-# Descarga e instala desde https://www.rust-lang.org/
-# O usando winget:
 winget install Rustlang.Rust.MSVC
-rustup update
-```
-
-### 2. Instala dependencias de Tauri
-
-```powershell
-# En PowerShell como admin:
-# Instala Visual Studio Build Tools o:
 winget install Microsoft.VisualStudio.2022.BuildTools
 ```
 
-### 3. Descarga este repo
+**macOS:**
+```bash
+xcode-select --install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-```powershell
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt install libssl-dev libgtk-3-dev libayatana-appindicator3-dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### Compilar (Windows/macOS/Linux)
+
+```bash
 git clone https://github.com/proyectahub/proyecta.git
 cd proyecta/proyecta-desktop
+npm install && npm run tauri:build
 ```
 
-### 4. Instala dependencias npm
+**Eso es todo.** La app se compilará completamente en ~15 minutos.
 
-```powershell
-npm install
-```
+## 📦 Dónde está el instalador
 
-### 5. Compila para desarrollo (prueba rápida)
+- **Windows**: `src-tauri/target/release/bundle/msi/PROYECTA-Mining_1.0.0_x64-setup.exe`
+- **macOS**: `src-tauri/target/release/bundle/dmg/PROYECTA Mining_1.0.0_x64.dmg`
+- **Linux**: `src-tauri/target/release/bundle/appimage/proyecta-mining_1.0.0_amd64.AppImage`
 
-```powershell
-npm run tauri:dev
-```
-
-Esto abrirá la app en una ventana nativa. Prueba los controles.
-
-### 6. Compila para producción (genera instalador)
-
-```powershell
-npm run tauri:build
-```
-
-Espera ~10-15 minutos. Los binarios estarán en:
-```
-src-tauri/target/release/bundle/msi/PROYECTA-Mining_1.0.0_x64-setup.exe
-src-tauri/target/release/bundle/nsis/PROYECTA-Mining_1.0.0_x64-setup.exe
-```
-
-## Pasos rápidos (macOS)
+## 🧪 Probar primero (sin compilar)
 
 ```bash
-# Instala Xcode Command Line Tools
-xcode-select --install
-
-# Instala Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Compila
-npm install
-npm run tauri:build
+npm install && npm run tauri:dev
 ```
 
-Binario en: `src-tauri/target/release/bundle/dmg/PROYECTA Mining_1.0.0_x64.dmg`
+Abre la app en una ventana nativa para probar antes de hacer el instalador final.
 
-## Pasos rápidos (Linux)
+## 🔧 Troubleshooting
 
-```bash
-# Ubuntu/Debian
-sudo apt install libssl-dev libgtk-3-dev libayatana-appindicator3-dev
+| Error | Solución |
+|---|---|
+| **"WebView2 not installed"** | Descargar desde https://developer.microsoft.com/microsoft-edge/webview2/ |
+| **"could not find Cargo.toml"** | `cd src-tauri && cargo build --release && cd ..` |
+| **Compilación lenta** | Normal en primera ejecución. Las posteriores son más rápidas. |
 
-# Instala Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+## 📝 Notas
 
-# Compila
-npm install
-npm run tauri:build
-```
-
-Binario en: `src-tauri/target/release/bundle/appimage/proyecta-mining_1.0.0_amd64.AppImage`
-
-## Empaquetar xmrig dentro
-
-Antes de compilar, coloca el binario xmrig compilado en:
-```
-src-tauri/resources/xmrig          (Linux/macOS)
-src-tauri/resources/xmrig.exe      (Windows)
-```
-
-O descargar un binario precompilado de: https://github.com/xmrig/xmrig/releases
-
-## Troubleshooting
-
-**Error: "WebView2 not installed"** (Windows)
-```powershell
-Invoke-WebRequest https://go.microsoft.com/fwlink/p/?LinkId=2124703 -OutFile MicrosoftEdgeWebview2Setup.exe
-.\MicrosoftEdgeWebview2Setup.exe
-```
-
-**Error: "could not find `Cargo.toml`"**
-```bash
-cd src-tauri && cargo build --release && cd ..
-```
-
-**Error: "tauri-cli not compatible"**
-```bash
-npm install -g @tauri-apps/cli@1
-cargo clean
-npm run tauri:build
-```
+- **Primera compilación**: ~15-30 minutos
+- **Compilaciones posteriores**: ~5-10 minutos
+- **RAM requerida**: Mínimo 4GB
+- **Espacio disco**: ~3GB para compilar, ~200MB para instalador
