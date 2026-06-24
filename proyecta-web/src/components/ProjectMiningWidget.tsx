@@ -225,7 +225,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                 <p className="text-xs font-bold text-slate-600">Compilar para tu SO (instrucciones):</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <a
-                    href="https://github.com/PROYECTA/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-windows"
+                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-windows"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 text-sm"
@@ -234,7 +234,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                     Windows
                   </a>
                   <a
-                    href="https://github.com/PROYECTA/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-macos"
+                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-macos"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800 text-sm"
@@ -243,7 +243,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                     macOS
                   </a>
                   <a
-                    href="https://github.com/PROYECTA/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-linux"
+                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-linux"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-700 text-sm"
