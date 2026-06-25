@@ -102,11 +102,10 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Login, Signup, Profile Setup y Create Project sin layout */}
+      {/* Login, Signup, Profile Setup sin layout */}
       <Route path="/login" element={<LoginWithEmailExperience />} />
       <Route path="/signup" element={<SignUpExperience />} />
       <Route path="/complete-profile" element={<CompleteProfileExperience />} />
-      <Route path="/create-project" element={<CreateProjectExperience />} />
 
       {/* Resto con layout */}
       <Route
@@ -117,6 +116,8 @@ function AppRoutes() {
               <Route path="/" element={<Home />} />
               <Route path="/projects" element={<ProjectsExperience />} />
               <Route path="/projects/:id" element={<ProjectDetailsExperience />} />
+              <Route path="/create" element={<CreateProjectExperience />} />
+              <Route path="/create-project" element={<CreateProjectExperience />} />
               <Route path="/profile" element={<UserProfileExperience />} />
               <Route path="/revisadas" element={<ReviewedFeedExperience />} />
               <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
