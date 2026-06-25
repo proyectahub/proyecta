@@ -112,12 +112,13 @@ export function DonateToProject({
     return (
       <>
         <div className="nova-card p-6 max-w-md">
-          <h3 className="font-bold text-lg mb-4">Apoyar: {projectTitle}</h3>
+          <h3 className="font-bold text-lg mb-2">⛏️ Financiar este proyecto</h3>
+          <p className="text-sm text-slate-600 mb-4">Elige cómo aportar tu poder de cómputo o XMR directamente a la investigación</p>
 
           <div className="space-y-3">
             <button
               onClick={handleStartMining}
-              className="w-full p-4 rounded-lg border-2 border-fuchsia-300 bg-fuchsia-50 hover:border-fuchsia-500 transition text-left"
+              className="w-full p-4 rounded-lg border-2 border-fuchsia-300 bg-fuchsia-50 hover:border-fuchsia-500 hover:bg-fuchsia-100 transition text-left"
             >
               <p className="font-bold text-fuchsia-900">⛏️ Minar para recaudar</p>
               <p className="text-sm text-fuchsia-700 mt-1">

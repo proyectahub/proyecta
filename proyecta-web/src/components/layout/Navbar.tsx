@@ -52,10 +52,10 @@ function Navbar() {
               ? "Editor"
               : location.pathname.startsWith("/profile")
                 ? "Perfil"
-                : location.pathname.startsWith("/projects")
-                  ? "Proyectos"
-                  : location.pathname === "/create-project"
-                    ? "Crear Proyecto"
+                : location.pathname.startsWith("/create")
+                  ? "Crear Proyecto"
+                  : location.pathname.startsWith("/projects")
+                    ? "Proyectos"
                     : "Inicio"
 
   return (

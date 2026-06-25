@@ -62,9 +62,6 @@ function PrivateRoute({ children }: { children: React.ReactElement }) {
 function LayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent font-sans text-slate-900">
-      {/* Banner con dirección IP local para otros dispositivos */}
-      <LocalNetworkBanner />
-
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute left-[-10%] top-[-8%] h-72 w-72 rounded-full bg-fuchsia-300/25 blur-3xl" />
         <div className="absolute right-[-8%] top-16 h-80 w-80 rounded-full bg-purple-300/25 blur-3xl" />
