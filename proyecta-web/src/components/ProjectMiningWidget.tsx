@@ -223,30 +223,38 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               </div>
 
               <div className="space-y-2 pt-4 border-t border-purple-200">
-                <p className="text-xs font-bold text-slate-600">Descarga el minero 1-click:</p>
-                <a
-                  href="https://github.com/proyectahub/proyecta/archive/refs/heads/main.zip"
-                  className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-700 text-sm"
-                >
-                  <Download className="h-5 w-5" />
-                  Descargar minero (Windows · macOS · Linux)
-                </a>
+                <p className="text-xs font-bold text-slate-600">Descarga el minero para tu sistema:</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <a
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner.exe"
+                    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-700 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Windows
+                  </a>
+                  <a
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner-macOS.command"
+                    className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg font-bold hover:bg-gray-800 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    macOS
+                  </a>
+                  <a
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner-Linux.sh"
+                    className="flex items-center justify-center gap-2 bg-orange-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-orange-700 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Linux
+                  </a>
+                </div>
                 <div className="text-xs text-slate-600 bg-blue-50 rounded p-3 border border-blue-200 space-y-1">
                   <p className="font-bold">Cómo usar:</p>
                   <ol className="list-decimal list-inside space-y-0.5">
-                    <li>Descomprime el ZIP</li>
-                    <li>Abre la carpeta <code className="font-mono">proyecta-miner-launcher</code></li>
-                    <li><strong>Windows:</strong> doble clic en <code className="font-mono">INICIAR-MINERIA.bat</code></li>
-                    <li><strong>Mac/Linux:</strong> ejecuta <code className="font-mono">./iniciar-mineria.sh</code></li>
+                    <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Miner.exe</code></li>
+                    <li><strong>macOS:</strong> doble clic en el archivo <code className="font-mono">.command</code></li>
+                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x</code> y ejecutar el <code className="font-mono">.sh</code></li>
                   </ol>
-                  <a
-                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-miner-launcher/LEEME.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block pt-1 text-blue-700 underline hover:text-blue-900"
-                  >
-                    Ver guía completa →
-                  </a>
+                  <p className="pt-1 text-slate-500">Descarga el xmrig oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
                 </div>
               </div>
 

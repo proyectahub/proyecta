@@ -12,8 +12,15 @@ $Pool     = "pool.supportxmr.com:3333"
 $Password = "proyecta"
 $WorkerId = "proyecta-desktop"
 
-# --- Rutas ---
-$Root    = Split-Path -Parent $MyInvocation.MyCommand.Path
+# --- Rutas (robusto: funciona como .ps1 y como .exe compilado con ps2exe) ---
+if ($MyInvocation.MyCommand.Path) {
+    $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+} elseif ($PSScriptRoot) {
+    $Root = $PSScriptRoot
+} else {
+    # Compilado a .exe: usar la carpeta del ejecutable
+    $Root = [System.IO.Path]::GetDirectoryName([System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName)
+}
 $BinDir  = Join-Path $Root "xmrig"
 $Exe     = Join-Path $BinDir "xmrig.exe"
 
