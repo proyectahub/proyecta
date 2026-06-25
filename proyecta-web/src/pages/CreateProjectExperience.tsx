@@ -87,13 +87,13 @@ export function CreateProjectExperience() {
 
   if (step === 'info') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-slate-900">📝 Crear proyecto</h1>
-            <p className="text-slate-600">Paso 1 de 3: Detalles e información</p>
-          </div>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-slate-900">📝 Crear proyecto</h1>
+          <p className="text-slate-600">Paso 1 de 3: Detalles e información</p>
+        </div>
 
+        <div className="max-w-4xl mx-auto">
           <div className="nova-card p-8 space-y-8">
             {/* Título */}
             <div className="space-y-2">
@@ -212,13 +212,13 @@ export function CreateProjectExperience() {
     const progressPercent = (goal / maxXMR) * 100
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-slate-900">💰 Meta de Financiamiento</h1>
-            <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en XMR</p>
-          </div>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-slate-900">💰 Meta de Financiamiento</h1>
+          <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en XMR</p>
+        </div>
 
+        <div className="max-w-2xl mx-auto">
           <div className="nova-card p-8 space-y-8">
             {/* Visualización del objetivo */}
             <div className="text-center space-y-4">
@@ -408,13 +408,13 @@ export function CreateProjectExperience() {
     }
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-slate-900">✅ Revisar y publicar</h1>
-            <p className="text-slate-600">Paso 3 de 3: Confirma los detalles de tu proyecto</p>
-          </div>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-slate-900">✅ Revisar y publicar</h1>
+          <p className="text-slate-600">Paso 3 de 3: Confirma los detalles de tu proyecto</p>
+        </div>
 
+        <div className="max-w-4xl mx-auto">
           <div className="nova-card p-8 space-y-6">
             {/* Vista previa de portada */}
             {coverImage && (
@@ -477,7 +477,7 @@ export function CreateProjectExperience() {
 
   if (step === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-50 flex items-center justify-center p-4">
+      <div className="flex items-center justify-center py-12">
         <div className="max-w-lg w-full text-center space-y-6">
           <div className="text-7xl">🎉</div>
           <h2 className="text-3xl font-bold text-emerald-900">¡Proyecto publicado!</h2>
