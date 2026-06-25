@@ -1,0 +1,4 @@
+# Forzar saltos de línea LF (Unix) en scripts shell para que funcionen
+# correctamente en macOS y Linux, sin importar el SO desde el que se commitee.
+*.sh        text eol=lf
+*.command   text eol=lf
