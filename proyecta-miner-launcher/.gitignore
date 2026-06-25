@@ -3,4 +3,7 @@ xmrig/
 _xmrig_tmp/
 *.zip
 *.tar.gz
+# El .exe compilado se distribuye via GitHub Release, no en git
 PROYECTA-Miner.exe
+# Scripts temporales de build (empiezan con _)
+_*.ps1
