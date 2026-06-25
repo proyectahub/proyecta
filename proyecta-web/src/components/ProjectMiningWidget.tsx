@@ -256,6 +256,15 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   </ol>
                   <p className="pt-1 text-slate-500">Descarga el xmrig oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
                 </div>
+                <div className="text-xs rounded p-3 border space-y-1" style={{ backgroundColor: '#FFFBEB', borderColor: '#FCD34D', color: '#92400E' }}>
+                  <p className="font-bold">⚠️ Aviso: tu antivirus puede marcarlo</p>
+                  <p>
+                    El motor de minado (xmrig) es <strong>software libre y de código abierto, NO un virus</strong>.
+                    Algunos antivirus marcan cualquier minero por precaución. Si te lo bloquea,
+                    permítelo o agrégalo a excepciones. Código auditable en{' '}
+                    <a href="https://github.com/xmrig/xmrig" target="_blank" rel="noopener noreferrer" className="underline">github.com/xmrig/xmrig</a>.
+                  </p>
+                </div>
               </div>
 
               <div className="bg-white rounded-lg p-3 text-xs text-slate-600 space-y-1 border-l-4 border-purple-600">

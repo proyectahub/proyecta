@@ -69,8 +69,13 @@ del comando de xmrig.
 **¿Es seguro?** Sí. Es el xmrig oficial (open source, auditado), descargado
 directo de https://github.com/xmrig/xmrig/releases.
 
-**¿Mi antivirus lo marca?** Algunos antivirus marcan *cualquier* minero por
-precaución (no porque sea malware). Es un falso positivo conocido de xmrig.
+**⚠️ ¿Mi antivirus lo marca como virus?** Es muy probable, y **es un falso
+positivo conocido**. xmrig es software libre y de código abierto (NO malware).
+Los antivirus marcan *cualquier* minero por precaución, porque otras personas
+los han usado de forma oculta para minar sin permiso — pero el programa en sí
+no es dañino. Si tu antivirus lo bloquea, **permítelo o agrégalo a excepciones**
+para poder minar. Puedes auditar el código tú mismo en
+https://github.com/xmrig/xmrig.
 
 **¿Cuánto gano?** Depende de tu CPU. Un i7 moderno hace ~2000–4000 H/s. Todo
 va al proyecto que elijas apoyar.
