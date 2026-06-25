@@ -403,6 +403,11 @@ app.get('/api/mining/payments/:wallet', async (req, res) => {
   }
 })
 
+// Fallback para React Router: sirve index.html para cualquier ruta que no sea API o archivo estático
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'))
+})
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
