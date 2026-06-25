@@ -91,6 +91,58 @@ export function ProjectsExperience() {
           </button>
         </div>
 
+        {/* Explicación visual: Cómo funciona */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 space-y-4">
+          <h3 className="font-bold text-slate-900 text-lg">⛏️ Cómo funciona tu aporte</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Paso 1 */}
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">1</div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm">Tu computadora</p>
+                <p className="text-xs text-slate-600">Elige un proyecto</p>
+              </div>
+            </div>
+
+            {/* Flecha */}
+            <div className="flex items-center justify-center md:col-span-0">
+              <div className="hidden md:block text-2xl text-purple-400">→</div>
+              <div className="md:hidden text-2xl text-purple-400">↓</div>
+            </div>
+
+            {/* Paso 2 */}
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-lg">2</div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm">Minería RandomX</p>
+                <p className="text-xs text-slate-600">Tu CPU calcula hashes</p>
+              </div>
+            </div>
+
+            {/* Flecha */}
+            <div className="flex items-center justify-center md:col-span-0">
+              <div className="hidden md:block text-2xl text-purple-400">→</div>
+              <div className="md:hidden text-2xl text-purple-400">↓</div>
+            </div>
+
+            {/* Paso 3 */}
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-fuchsia-600 text-white flex items-center justify-center font-bold text-lg">3</div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm">XMR directo</p>
+                <p className="text-xs text-slate-600">Se envía a investigador</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border border-purple-200">
+            <p className="text-sm text-slate-700">
+              <strong>✅ Sin intermediarios:</strong> Los XMR van directamente a la billetera del investigador. PROYECTA no custodia fondos.
+            </p>
+          </div>
+        </div>
+
         {/* Filtros */}
         {categories.length > 0 && (
           <div className="space-y-2">

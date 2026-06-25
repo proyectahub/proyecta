@@ -529,7 +529,7 @@ export default function HomeExperience() {
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-fuchsia-500/20 text-base">⚡</span>
+              <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-fuchsia-500/20 text-base">⛏️</span>
               <p className="nova-eyebrow text-fuchsia-400">Apoyo voluntario</p>
             </div>
             <h3 className="nova-title text-lg font-extrabold text-white mb-2">
@@ -541,18 +541,18 @@ export default function HomeExperience() {
               para los proyectos de investigación de la comunidad.
             </p>
             <Link
-              to="/computacion-donada"
+              to="/proyectos"
               className="mt-2 inline-block text-xs font-semibold text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
             >
-              Entender cómo funciona →
+              Ver cómo funciona →
             </Link>
           </div>
-          <button
-            onClick={() => setShowComputeDonationPopup(true)}
+          <Link
+            to="/proyectos"
             className="nova-button-solid whitespace-nowrap self-start md:self-center px-6 py-2.5 text-sm font-bold"
           >
-            Aportar mi cómputo
-          </button>
+            Cómo apoyar
+          </Link>
         </div>
       </div>
 
