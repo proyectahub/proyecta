@@ -1,5 +1,4 @@
 import { DonateToProject } from './DonateToProject'
-import { ProjectMiningWidget } from './ProjectMiningWidget'
 
 interface ProjectFundraisingCardProps {
   projectId: string
@@ -35,7 +34,7 @@ export function ProjectFundraisingCard({
     <div className="space-y-6">
       {/* Card Principal */}
       <div className="nova-card p-8 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {/* Información */}
           <div className="md:col-span-2 space-y-4">
             <div>
@@ -120,8 +119,8 @@ export function ProjectFundraisingCard({
             </div>
           </div>
 
-          {/* Widget de donación */}
-          <div>
+          {/* Widget de donación - Sticky */}
+          <div className="md:sticky md:top-6 h-fit">
             <DonateToProject
               projectId={projectId}
               fundraisingAddress={fundraisingAddress}
@@ -185,13 +184,6 @@ export function ProjectFundraisingCard({
           <li>✅ Cualquiera puede auditar en tiempo real en el explorador Monero</li>
         </ul>
       </div>
-
-      {/* Widget de Minería */}
-      <ProjectMiningWidget
-        projectId={projectId}
-        projectMoneroAddress={fundraisingAddress}
-        projectTitle={projectTitle}
-      />
     </div>
   )
 }

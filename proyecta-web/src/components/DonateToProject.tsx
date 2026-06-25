@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMoneroBlockchain } from '../hooks/useMoneroBlockchain'
 import { useWalletAuth } from '../context/WalletAuthContext'
+import { ProjectMiningWidget } from './ProjectMiningWidget'
 
 interface DonateToProjectProps {
   projectId: string
@@ -22,11 +23,20 @@ export function DonateToProject({
 
   const [donationAmount, setDonationAmount] = useState('')
   const [donationMethod, setDonationMethod] = useState<'xmr' | 'vita'>('xmr')
-  const [step, setStep] = useState<'method' | 'amount' | 'confirm' | 'monitor' | 'complete'>(
+  const [step, setStep] = useState<'method' | 'amount' | 'confirm' | 'monitor' | 'complete' | 'mining'>(
     'method'
   )
+  const [showMiningModal, setShowMiningModal] = useState(false)
   const [monitoringTx, setMonitoringTx] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const handleStartMining = () => {
+    setShowMiningModal(true)
+  }
+
+  const handleCloseMiningModal = () => {
+    setShowMiningModal(false)
+  }
 
   const handleStartDonateXMR = () => {
     setDonationMethod('xmr')
@@ -100,33 +110,68 @@ export function DonateToProject({
 
   if (step === 'method') {
     return (
-      <div className="nova-card p-6 max-w-md">
-        <h3 className="font-bold text-lg mb-4">Apoyar: {projectTitle}</h3>
+      <>
+        <div className="nova-card p-6 max-w-md">
+          <h3 className="font-bold text-lg mb-4">Apoyar: {projectTitle}</h3>
 
-        <div className="space-y-3">
-          <button
-            onClick={handleStartDonateXMR}
-            className="w-full p-4 rounded-lg border-2 border-blue-300 bg-blue-50 hover:border-blue-500 transition text-left"
-          >
-            <p className="font-bold text-blue-900">💰 XMR Directo</p>
-            <p className="text-sm text-blue-700 mt-1">
-              Envía desde tu wallet, PROYECTA solo registra
-            </p>
-          </button>
-
-          {user && (
+          <div className="space-y-3">
             <button
-              onClick={handleStartDonateVITA}
-              className="w-full p-4 rounded-lg border-2 border-purple-300 bg-purple-50 hover:border-purple-500 transition text-left"
+              onClick={handleStartMining}
+              className="w-full p-4 rounded-lg border-2 border-fuchsia-300 bg-fuchsia-50 hover:border-fuchsia-500 transition text-left"
             >
-              <p className="font-bold text-purple-900">⚡ VITA</p>
-              <p className="text-sm text-purple-700 mt-1">
-                Tengo {user.vitaBacked + user.vitaEarned - user.vitaPledged} VITA disponible
+              <p className="font-bold text-fuchsia-900">⛏️ Minar para recaudar</p>
+              <p className="text-sm text-fuchsia-700 mt-1">
+                Dedica tu CPU, genera XMR real para el proyecto
               </p>
             </button>
-          )}
+
+            <button
+              onClick={handleStartDonateXMR}
+              className="w-full p-4 rounded-lg border-2 border-blue-300 bg-blue-50 hover:border-blue-500 transition text-left"
+            >
+              <p className="font-bold text-blue-900">💰 XMR Directo</p>
+              <p className="text-sm text-blue-700 mt-1">
+                Envía desde tu wallet, PROYECTA solo registra
+              </p>
+            </button>
+
+            {user && (
+              <button
+                onClick={handleStartDonateVITA}
+                className="w-full p-4 rounded-lg border-2 border-purple-300 bg-purple-50 hover:border-purple-500 transition text-left"
+              >
+                <p className="font-bold text-purple-900">⚡ VITA</p>
+                <p className="text-sm text-purple-700 mt-1">
+                  Tengo {user.vitaBacked + user.vitaEarned - user.vitaPledged} VITA disponible
+                </p>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+
+        {showMiningModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
+                <h2 className="text-2xl font-bold">¿Cómo quieres minar?</h2>
+                <button
+                  onClick={handleCloseMiningModal}
+                  className="text-2xl text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-6">
+                <ProjectMiningWidget
+                  projectId={projectId}
+                  projectMoneroAddress={fundraisingAddress}
+                  projectTitle={projectTitle}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     )
   }
 
