@@ -1,0 +1,43 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e040a8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#c026d3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7a1e6e;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="gradShine" cx="28%" cy="24%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.28);stop-opacity:1" />
+      <stop offset="42%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" />
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo cuadrado redondeado -->
+  <rect x="16" y="16" width="480" height="480" rx="120" ry="120" fill="url(#gradMain)"/>
+
+  <!-- Brillo superior -->
+  <ellipse cx="128" cy="96" rx="80" ry="60" fill="white" opacity="0.2"/>
+
+  <!-- Ícono: Libro abierto (símbolo de investigación/ciencia) -->
+  <g transform="translate(256, 256)">
+    <!-- Página izquierda -->
+    <path d="M-96 -72 Q-72 -96 -48 -72 L-48 96 Q-72 120 -96 96 Z"
+          stroke="white" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Centro (lomo del libro) -->
+    <line x1="0" y1="-96" x2="0" y2="120" stroke="white" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Página derecha -->
+    <path d="M96 -72 Q72 -96 48 -72 L48 96 Q72 120 96 96 Z"
+          stroke="white" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Líneas de texto en el libro (simulando contenido) -->
+    <line x1="-72" y1="-24" x2="-48" y2="-24" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+    <line x1="-72" y1="8" x2="-48" y2="8" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+    <line x1="-72" y1="40" x2="-48" y2="40" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+
+    <line x1="48" y1="-24" x2="72" y2="-24" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+    <line x1="48" y1="8" x2="72" y2="8" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+    <line x1="48" y1="40" x2="72" y2="40" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>
