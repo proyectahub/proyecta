@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
+import { ProjectComments } from '../components/ProjectComments'
 
 interface Project {
   id: string
@@ -99,6 +100,8 @@ export function ProjectDetailsExperience() {
           dangerouslySetInnerHTML={{ __html: project.description }}
         />
       </div>
+
+      <ProjectComments projectId={project.id} projectAuthor={project.author} />
 
       <ProjectSecurityInfo />
     </div>
