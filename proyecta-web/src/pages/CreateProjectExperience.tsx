@@ -208,71 +208,96 @@ export function CreateProjectExperience() {
   if (step === 'funding') {
     const goal = parseFloat(fundingGoal) || 0
     const usdValue = (goal * 316.12).toFixed(0)
+    const maxXMR = 10
+    const progressPercent = (goal / maxXMR) * 100
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold text-slate-900">💰 Meta de Financiamiento</h1>
-            <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en Monero</p>
+            <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en XMR</p>
           </div>
 
           <div className="nova-card p-8 space-y-8">
             {/* Visualización del objetivo */}
             <div className="text-center space-y-4">
-              <div className="text-6xl font-black text-blue-600">
+              <div className="text-6xl font-black text-purple-600">
                 {goal.toFixed(2)}
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <p className="text-2xl font-bold text-slate-900">XMR</p>
                 <p className="text-lg text-slate-600">≈ ${usdValue} USD</p>
+                <p className="text-xs text-slate-500">(máximo {maxXMR} XMR por ahora)</p>
+              </div>
+            </div>
+
+            {/* Barra de progreso visual */}
+            <div className="space-y-3 bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border-2 border-purple-200">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm font-bold text-slate-700">
+                  Ajusta tu meta con el slider
+                </label>
+                <span className="text-xs bg-purple-600 text-white px-3 py-1 rounded-full font-bold">
+                  {progressPercent.toFixed(0)}%
+                </span>
+              </div>
+
+              <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between text-xs text-slate-600">
+                <span>0 XMR</span>
+                <span>5 XMR</span>
+                <span>10 XMR (máx)</span>
               </div>
             </div>
 
             {/* Slider para elegir objetivo */}
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-bold text-slate-700">
-                  Ajusta tu meta con el slider
-                </label>
-                <span className="text-xs text-slate-500">0.1 - 100 XMR</span>
-              </div>
-
               <input
                 type="range"
                 min="0.1"
-                max="100"
+                max={maxXMR}
                 step="0.1"
                 value={fundingGoal || '0.1'}
                 onChange={(e) => setFundingGoal(e.target.value)}
-                className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                className="w-full h-3 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-purple-600"
               />
 
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>0.1 XMR ($32)</span>
-                <span>50 XMR ($15,806)</span>
-                <span>100 XMR ($31,612)</span>
+              <div className="text-xs text-slate-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <p className="font-bold mb-1">📌 Rango permitido:</p>
+                <p>0.1 XMR (mínimo) hasta {maxXMR} XMR (máximo por ahora)</p>
               </div>
             </div>
 
             {/* Input directo */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="block text-sm font-bold text-slate-700">
-                O escribe directamente
+                O escribe el monto directamente
               </label>
               <div className="flex gap-2">
                 <input
                   type="number"
                   step="0.1"
+                  min="0.1"
+                  max={maxXMR}
                   value={fundingGoal}
                   onChange={(e) => setFundingGoal(e.target.value)}
                   placeholder="5.0"
                   className="nova-field flex-1"
                 />
-                <span className="flex items-center px-4 py-2 bg-slate-100 rounded-lg font-bold text-slate-700">
+                <span className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg font-bold">
                   XMR
                 </span>
               </div>
+              <p className="text-xs text-slate-600">
+                Este monto es la meta de financiamiento en Monero. Los minadores donarán directamente a tu dirección cuando participen en tu proyecto.
+              </p>
             </div>
 
             {/* Selección de dirección de recaudación */}
