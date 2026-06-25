@@ -19,19 +19,51 @@ import { WebSocketServer } from 'ws'
 import net from 'net'
 import cors from 'cors'
 import http from 'http'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import os from 'os'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Obtener IP local
+function getLocalIP() {
+  const interfaces = os.networkInterfaces()
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address
+      }
+    }
+  }
+  return 'localhost'
+}
+
 app.use(cors())
 app.use(express.json())
+
+// Servir archivos estáticos del frontend
+app.use(express.static(join(__dirname, 'dist')))
+
+// Endpoint para obtener IP local
+app.get('/api/local-ip', (req, res) => {
+  const localIP = getLocalIP()
+  res.json({
+    ip: localIP,
+    port: PORT,
+    url: `http://${localIP}:${PORT}`,
+  })
+})
 
 // ───────────────────────────────────────────────────────────────────────────
 // Gestión de conexiones Stratum al pool (una por wallet)
 // ───────────────────────────────────────────────────────────────────────────
 
-const POOL_HOST = 'pool.supportxmr.com'
-const POOL_PORT = 3333 // Stratum plaintext
+const POOL_HOST = 'testnet.supportxmr.com'
+const POOL_PORT = 3333 // Stratum plaintext - TESTNET
 
 /** @type {Map<string, PoolConnection>} */
 const pools = new Map()
@@ -72,6 +104,7 @@ class PoolConnection {
           pass: 'proyecta',
           agent: 'proyecta-randomx/1.0',
           algo: ['rx/0'],
+          difficulty: 50,
         },
       })
     })
@@ -162,13 +195,18 @@ class PoolConnection {
     // Error en submit u otro
     if (msg.error) {
       this.rejectedShares++
-      console.warn(`[POOL] ❌ Share rechazado / error: ${JSON.stringify(msg.error)}`)
-      this.broadcast({
-        type: 'share_result',
-        accepted: false,
-        error: msg.error.message || 'rechazado',
-        rejected_total: this.rejectedShares,
-      })
+      const errorMsg = msg.error.message || JSON.stringify(msg.error)
+      console.warn(`[POOL] ❌ Share rechazado: ${errorMsg}`)
+
+      // No mostrar errores temporales al usuario (son normales)
+      if (!errorMsg.includes('block template') && !errorMsg.includes('duplicate')) {
+        this.broadcast({
+          type: 'share_result',
+          accepted: false,
+          error: errorMsg,
+          rejected_total: this.rejectedShares,
+        })
+      }
     }
   }
 
