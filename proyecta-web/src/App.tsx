@@ -29,6 +29,7 @@ import { SignUpExperience } from "./pages/SignUpExperience"
 import { CreateProjectExperience } from "./pages/CreateProjectExperience"
 import { ProjectsExperience } from "./pages/ProjectsExperience"
 import { ProjectDetailsExperience } from "./pages/ProjectDetailsExperience"
+import { MoneroEducationExperience } from "./pages/MoneroEducationExperience"
 import { UserProfileExperience } from "./pages/UserProfileExperience"
 import { CompleteProfileExperience } from "./pages/CompleteProfileExperience"
 import OrcidCallback from "./pages/OrcidCallback"
@@ -114,6 +115,7 @@ function AppRoutes() {
               <Route path="/projects" element={<ProjectsExperience />} />
               <Route path="/projects/:id" element={<ProjectDetailsExperience />} />
               <Route path="/create" element={<CreateProjectExperience />} />
+              <Route path="/sobre-monero" element={<MoneroEducationExperience />} />
               <Route path="/create-project" element={<CreateProjectExperience />} />
               <Route path="/profile" element={<UserProfileExperience />} />
               <Route path="/revisadas" element={<ReviewedFeedExperience />} />

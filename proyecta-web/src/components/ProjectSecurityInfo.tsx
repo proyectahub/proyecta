@@ -84,10 +84,13 @@ export function ProjectSecurityInfo() {
 
       {/* CTA */}
       <div className="nova-card p-6 bg-blue-50 border-2 border-blue-200 text-center space-y-3">
-        <p className="font-bold text-blue-900">¿Tienes dudas sobre la seguridad o el mecanismo de fondos?</p>
-        <p className="text-sm text-blue-700">
-          Lee la <a href="/docs" className="underline font-bold hover:text-blue-900">documentación técnica completa</a> o
-          contacta a la comunidad en <a href="https://github.com/proyectahub/proyecta/discussions" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-900">GitHub Discussions</a>
+        <p className="font-bold text-blue-900">¿Tienes dudas sobre Monero, seguridad o el mecanismo de fondos?</p>
+        <p className="text-sm text-blue-700 space-y-2">
+          <div>
+            Lee la <a href="/sobre-monero" className="underline font-bold hover:text-blue-900">guía completa sobre Monero XMR</a>
+            {' '}(qué es, por qué lo usamos, cómo convertirlo a dinero real)
+          </div>
+          <div>O contacta a la comunidad en <a href="https://github.com/proyectahub/proyecta/discussions" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-900">GitHub Discussions</a></div>
         </p>
       </div>
     </div>
