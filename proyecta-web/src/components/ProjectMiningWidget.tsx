@@ -209,52 +209,45 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               </div>
 
               <div className="space-y-3 text-sm text-slate-700">
-                <p>Descarga la app ligera Tauri + xmrig para minar en serio.</p>
+                <p>Minero de alto rendimiento sin instalar nada. Descarga el xmrig oficial automáticamente y mina para el proyecto.</p>
 
                 <div className="bg-white rounded-lg p-4 space-y-2 text-xs">
                   <p className="font-bold text-slate-900">⚡ Ventajas:</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>100–200× más rápido (~2.000–10.000 H/s)</li>
+                    <li>100–1000× más rápido (~2.000–4.000 H/s)</li>
+                    <li>Un solo paso: descomprime y doble clic</li>
+                    <li>RandomX nativo (AES-NI + huge pages)</li>
                     <li>Sigue minando sin navegador abierto</li>
-                    <li>Optimizado a nivel nativo</li>
                   </ul>
                 </div>
               </div>
 
               <div className="space-y-2 pt-4 border-t border-purple-200">
-                <p className="text-xs font-bold text-slate-600">Compilar para tu SO (instrucciones):</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <p className="text-xs font-bold text-slate-600">Descarga el minero 1-click:</p>
+                <a
+                  href="https://github.com/proyectahub/proyecta/archive/refs/heads/main.zip"
+                  className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-700 text-sm"
+                >
+                  <Download className="h-5 w-5" />
+                  Descargar minero (Windows · macOS · Linux)
+                </a>
+                <div className="text-xs text-slate-600 bg-blue-50 rounded p-3 border border-blue-200 space-y-1">
+                  <p className="font-bold">Cómo usar:</p>
+                  <ol className="list-decimal list-inside space-y-0.5">
+                    <li>Descomprime el ZIP</li>
+                    <li>Abre la carpeta <code className="font-mono">proyecta-miner-launcher</code></li>
+                    <li><strong>Windows:</strong> doble clic en <code className="font-mono">INICIAR-MINERIA.bat</code></li>
+                    <li><strong>Mac/Linux:</strong> ejecuta <code className="font-mono">./iniciar-mineria.sh</code></li>
+                  </ol>
                   <a
-                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-windows"
+                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-miner-launcher/LEEME.md"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 text-sm"
+                    className="inline-block pt-1 text-blue-700 underline hover:text-blue-900"
                   >
-                    <Download className="h-4 w-4" />
-                    Windows
-                  </a>
-                  <a
-                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-macos"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800 text-sm"
-                  >
-                    <Download className="h-4 w-4" />
-                    macOS
-                  </a>
-                  <a
-                    href="https://github.com/proyectahub/proyecta/blob/main/proyecta-desktop/QUICK_START.md#pasos-rápidos-linux"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-700 text-sm"
-                  >
-                    <Download className="h-4 w-4" />
-                    Linux
+                    Ver guía completa →
                   </a>
                 </div>
-                <p className="text-xs text-slate-500 bg-blue-50 rounded p-2 border border-blue-200">
-                  <strong>Próximamente:</strong> Los instaladores compilados estarán disponibles en GitHub Releases. Por ahora, descarga el código fuente y compila localmente en 2 comandos.
-                </p>
               </div>
 
               <div className="bg-white rounded-lg p-3 text-xs text-slate-600 space-y-1 border-l-4 border-purple-600">
