@@ -72,16 +72,39 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
 
   if (error || !stats) {
     return (
-      <div className="nova-card p-6 bg-amber-50 border-2 border-amber-200">
+      <div className="nova-card p-6 bg-blue-50 border-2 border-blue-200 space-y-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-amber-900 flex items-center gap-2">
+          <h3 className="font-bold text-blue-900 flex items-center gap-2">
             <Zap className="h-5 w-5" />
             Minería en tiempo real
           </h3>
+          <button
+            onClick={fetchMiningStats}
+            className="text-xs text-blue-600 hover:text-blue-700 font-bold"
+          >
+            Reintentar
+          </button>
         </div>
-        <p className="text-sm text-amber-700">
-          ℹ️ No hay datos de minería aún. Cuando comience la minería comunitaria, verás el progreso aquí.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-blue-700">
+            <strong>💡 La minería está ocurriendo en SupportXMR.</strong> Si no ves datos aquí, puedes verificar manualmente:
+          </p>
+          <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-2">
+            <p className="text-sm font-bold text-slate-900">Verificar en SupportXMR directamente:</p>
+            <p className="text-xs text-slate-600 mb-2">Dirección: <code className="font-mono bg-slate-100 px-1 rounded break-all">{wallet.substring(0, 32)}...</code></p>
+            <a
+              href={`https://supportxmr.com/miner/${wallet}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm transition"
+            >
+              Ver en SupportXMR.com →
+            </a>
+          </div>
+          <p className="text-xs text-blue-600">
+            ℹ️ El widget se sincronizará automáticamente cuando SupportXMR confirme los datos (cada 2-5 minutos).
+          </p>
+        </div>
       </div>
     )
   }
