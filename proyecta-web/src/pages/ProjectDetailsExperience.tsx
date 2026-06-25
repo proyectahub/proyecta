@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
+import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 
 interface Project {
   id: string
@@ -92,9 +93,14 @@ export function ProjectDetailsExperience() {
       />
 
       <div className="nova-card p-6 space-y-4">
-        <h2 className="text-2xl font-bold">Descripcion</h2>
-        <p className="text-slate-700 whitespace-pre-wrap">{project.description}</p>
+        <h2 className="text-2xl font-bold">Descripción</h2>
+        <div
+          className="text-slate-700 space-y-4"
+          dangerouslySetInnerHTML={{ __html: project.description }}
+        />
       </div>
+
+      <ProjectSecurityInfo />
     </div>
   )
 }

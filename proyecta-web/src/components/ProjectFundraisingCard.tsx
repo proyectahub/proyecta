@@ -173,17 +173,6 @@ export function ProjectFundraisingCard({
         </div>
       )}
 
-      {/* Información de seguridad */}
-      <div className="nova-card p-6 bg-emerald-50 border-2 border-emerald-300">
-        <h3 className="font-bold text-emerald-900 mb-3">🔒 Sin custodia = Seguro</h3>
-
-        <ul className="space-y-2 text-sm text-emerald-800">
-          <li>✅ Tu dinero está en blockchain (Monero públicamente verificable)</li>
-          <li>✅ PROYECTA no toca los fondos (solo registra en IPFS)</li>
-          <li>✅ Los investigadores controlan la dirección (multisig con supervisores)</li>
-          <li>✅ Cualquiera puede auditar en tiempo real en el explorador Monero</li>
-        </ul>
-      </div>
     </div>
   )
 }
