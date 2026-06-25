@@ -536,9 +536,9 @@ export default function HomeExperience() {
               La ciencia se sostiene mejor cuando muchos la financiamos
             </h3>
             <p className="text-sm text-slate-300 leading-relaxed max-w-lg">
-              Aporta con dinero o dona una fracción del poder de cómputo de tu equipo. Cada apoyo
-              voluntario crea una base de financiamiento <strong className="text-white">descentralizada e independiente</strong>
-              para los proyectos de investigación de la comunidad.
+              Dona el poder de cómputo de tu equipo. Tu CPU genera XMR real que financia investigación directamente.
+              Cada aporte crea una base de financiamiento <strong className="text-white">descentralizada, transparente e independiente</strong>
+              para los proyectos científicos de la comunidad.
             </p>
             <Link
               to="/proyectos"

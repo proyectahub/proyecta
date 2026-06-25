@@ -36,9 +36,9 @@ export function ProjectSecurityInfo() {
           </h4>
           <ul className="space-y-2 text-sm text-slate-700">
             <li>✓ Criptomoneda privada por defecto</li>
-            <li>✓ Transacciones irreversibles (inmutables)</li>
-            <li>✓ Pseudónimo para investigadores</li>
-            <li>✓ Resiste ataques de análisis de cadena</li>
+            <li>✓ Transacciones irreversibles (no se pueden revertir)</li>
+            <li>✓ Generada por minería comunitaria real</li>
+            <li>✓ Resiste análisis de quién envía qué</li>
           </ul>
         </div>
 

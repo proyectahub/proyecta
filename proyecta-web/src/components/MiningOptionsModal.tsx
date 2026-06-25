@@ -38,12 +38,12 @@ export function MiningOptionsModal({
         <div className="p-8 space-y-8">
           {/* Explicación clara del modelo */}
           <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 space-y-3">
-            <p className="font-bold text-blue-900">🤝 ¿Cómo funciona?</p>
+            <p className="font-bold text-blue-900">⛏️ Tu aporte es cómputo = XMR para investigación</p>
             <ul className="text-sm text-blue-800 space-y-2">
               <li><strong>1.</strong> Activas minería en tu navegador o descarga la app</li>
-              <li><strong>2.</strong> Tu computadora calcula hashes RandomX (prueba de trabajo real)</li>
-              <li><strong>3.</strong> Los XMR que genera se envían DIRECTAMENTE a la billetera del proyecto</li>
-              <li><strong>4.</strong> PROYECTA nunca toca los fondos — es 100% no custodial</li>
+              <li><strong>2.</strong> Tu CPU calcula hashes RandomX (es la forma de generar XMR)</li>
+              <li><strong>3.</strong> Los XMR se envían AUTOMÁTICAMENTE a dirección del investigador</li>
+              <li><strong>4.</strong> PROYECTA no custodia nada — 100% directo a blockchain</li>
             </ul>
           </div>
 
