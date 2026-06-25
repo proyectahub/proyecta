@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useWalletAuth } from '../context/WalletAuthContext'
 import { generateMoneroAddress } from '../utils/moneroAddress'
+import { RichTextEditor } from '../components/RichTextEditor'
 
 const CATEGORIES: Record<string, string> = {
   biology: '🧬 Biología',
@@ -20,19 +21,17 @@ export function CreateProjectExperience() {
   const { user: traditionalUser, initialized } = useTraditionalAuth()
   const { user: walletUser } = useWalletAuth()
 
-  // TODOS los hooks deben declararse antes de cualquier return condicional
   const [step, setStep] = useState('info')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [coverImage, setCoverImage] = useState<string | null>(null)
   const [category, setCategory] = useState('biology')
   const [fundingGoal, setFundingGoal] = useState('')
   const [useOwnWallet, setUseOwnWallet] = useState(true)
 
-  // Dirección real del wallet vinculado del usuario (verificable en blockchain)
   const linkedWalletAddress =
     traditionalUser?.moneroWallet?.mainAddress || walletUser?.wallet?.mainAddress || ''
 
-  // Dirección Monero del proyecto: usa la real vinculada si existe, si no genera una
   const generatedAddress = useMemo(
     () => generateMoneroAddress(`proyecto_${Date.now()}_${Math.random()}`),
     []
@@ -43,8 +42,6 @@ export function CreateProjectExperience() {
 
   const isAuthenticated = !!(traditionalUser || walletUser)
 
-  // Esperar a que el contexto termine de cargar desde localStorage antes de decidir
-  // (evita redirigir al login por una condición de carrera en el primer render)
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate('/login?intent=publish')
@@ -67,9 +64,20 @@ export function CreateProjectExperience() {
     )
   }
 
+  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setCoverImage(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const canProceed = () => {
     if (step === 'info') {
-      return title.trim().length > 0 && description.trim().length > 20
+      return title.trim().length > 0 && description.trim().length > 20 && coverImage
     }
     if (step === 'funding') {
       return parseFloat(fundingGoal) > 0
@@ -80,29 +88,32 @@ export function CreateProjectExperience() {
   if (step === 'info') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-slate-900">Publicar proyecto</h1>
-            <p className="text-slate-600">Paso 1 de 3: Información básica</p>
+            <h1 className="text-4xl font-bold text-slate-900">📝 Crear proyecto</h1>
+            <p className="text-slate-600">Paso 1 de 3: Detalles e información</p>
           </div>
 
-          <div className="nova-card p-8 space-y-6">
+          <div className="nova-card p-8 space-y-8">
+            {/* Título */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-slate-700">
-                Título del proyecto
+                Título del proyecto *
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Tu proyecto de investigación"
-                className="nova-field"
+                placeholder="Ej: Modelado computacional del cambio climático"
+                className="nova-field text-lg"
               />
+              <p className="text-xs text-slate-500">Máximo 120 caracteres</p>
             </div>
 
+            {/* Categoría */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-slate-700">
-                Categoría
+                Categoría *
               </label>
               <select
                 value={category}
@@ -117,23 +128,66 @@ export function CreateProjectExperience() {
               </select>
             </div>
 
+            {/* Imagen de portada */}
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-slate-700">
+                Imagen de portada *
+              </label>
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
+                {coverImage ? (
+                  <div className="space-y-3">
+                    <img
+                      src={coverImage}
+                      alt="Portada"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => document.getElementById('cover-input')?.click()}
+                      className="nova-button-soft text-sm"
+                    >
+                      Cambiar imagen
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 py-6">
+                    <p className="text-3xl">🖼️</p>
+                    <p className="font-bold text-slate-900">Sube una imagen de portada</p>
+                    <p className="text-xs text-slate-500">PNG o JPG (máx. 5MB)</p>
+                    <button
+                      onClick={() => document.getElementById('cover-input')?.click()}
+                      className="nova-button-solid text-sm mx-auto"
+                    >
+                      Seleccionar imagen
+                    </button>
+                  </div>
+                )}
+                <input
+                  id="cover-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverImageUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Descripción con editor profesional */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-slate-700">
-                Descripción
+                Descripción del proyecto *
               </label>
-              <textarea
+              <RichTextEditor
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe tu proyecto (mínimo 20 caracteres)..."
-                rows={6}
-                className="nova-field"
+                onChange={setDescription}
+                placeholder="Describe tu proyecto en detalle. Puedes usar el editor para agregar formato, enlaces e imágenes."
               />
               <p className="text-xs text-slate-500">
-                Caracteres: {description.length} {description.length < 21 && '(mínimo 21)'}
+                {description.replace(/<[^>]*>/g, '').length} caracteres (mínimo 20)
               </p>
             </div>
 
-            <div className="flex gap-3">
+            {/* Botones de acción */}
+            <div className="flex gap-3 pt-4 border-t">
               <button onClick={() => navigate('/projects')} className="nova-button-soft flex-1">
                 Cancelar
               </button>
@@ -142,7 +196,7 @@ export function CreateProjectExperience() {
                 disabled={!canProceed()}
                 className="nova-button-solid flex-1 disabled:opacity-40"
               >
-                Continuar
+                Continuar →
               </button>
             </div>
           </div>
@@ -160,7 +214,7 @@ export function CreateProjectExperience() {
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold text-slate-900">💰 Meta de Financiamiento</h1>
-            <p className="text-slate-600">Paso 2 de 3: Elige tu objetivo en Monero</p>
+            <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en Monero</p>
           </div>
 
           <div className="nova-card p-8 space-y-8">
@@ -238,7 +292,7 @@ export function CreateProjectExperience() {
                     }`}
                   >
                     <p className="font-bold text-slate-900 text-sm">
-                      ✅ Mi wallet vinculado (recomendado para minería real)
+                      ✅ Mi wallet vinculado (recomendado)
                     </p>
                     <code className="text-xs text-slate-500 break-all">
                       {linkedWalletAddress.substring(0, 32)}...
@@ -254,7 +308,7 @@ export function CreateProjectExperience() {
                     }`}
                   >
                     <p className="font-bold text-slate-900 text-sm">
-                      🆕 Generar dirección nueva para el proyecto
+                      🆕 Generar dirección nueva
                     </p>
                     <code className="text-xs text-slate-500 break-all">
                       {generatedAddress.substring(0, 32)}...
@@ -273,11 +327,11 @@ export function CreateProjectExperience() {
                 {projectMoneroAddress}
               </code>
               <p className="text-xs text-amber-800">
-                ✅ Los minadores donarán XMR aquí directamente. PROYECTA nunca toca los fondos.
+                ✅ Los minadores donarán XMR aquí. PROYECTA nunca toca los fondos.
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4 border-t">
               <button onClick={() => setStep('info')} className="nova-button-soft flex-1">
                 ← Volver
               </button>
@@ -306,13 +360,13 @@ export function CreateProjectExperience() {
         id: `proj_${Date.now()}`,
         title,
         description,
+        coverImage,
         category,
         fundingGoal: parseFloat(fundingGoal),
         fundraisingAddress: projectMoneroAddress,
         moneroAddress: projectMoneroAddress,
         author: authorId,
         authorName: traditionalUser?.fullName || 'Investigador',
-        // Campos requeridos por la lista de proyectos y la tarjeta
         raised: 0,
         status: 'active',
         hitos: [] as Array<{ name: string; payout: number; completed: boolean }>,
@@ -330,42 +384,64 @@ export function CreateProjectExperience() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-slate-900">Revisar y publicar</h1>
-            <p className="text-slate-600">Paso 3 de 3: Confirma los datos</p>
+            <h1 className="text-4xl font-bold text-slate-900">✅ Revisar y publicar</h1>
+            <p className="text-slate-600">Paso 3 de 3: Confirma los detalles de tu proyecto</p>
           </div>
 
-          <div className="nova-card p-8 space-y-4">
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Título</p>
-              <h2 className="text-2xl font-bold">{title}</h2>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Categoría</p>
-              <p className="text-slate-700">{CATEGORIES[category]}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Descripción</p>
-              <p className="text-slate-600 whitespace-pre-wrap">{description}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Meta</p>
-              <p className="font-bold text-blue-600 text-xl">
-                {parseFloat(fundingGoal).toFixed(2)} XMR
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-slate-500">Dirección</p>
-              <code className="text-xs break-all text-slate-600">{projectMoneroAddress}</code>
+          <div className="nova-card p-8 space-y-6">
+            {/* Vista previa de portada */}
+            {coverImage && (
+              <div>
+                <p className="text-xs font-bold uppercase text-slate-500 mb-2">Imagen de portada</p>
+                <img src={coverImage} alt={title} className="w-full h-64 object-cover rounded-lg" />
+              </div>
+            )}
+
+            {/* Información */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-xs font-bold uppercase text-slate-500">Título</p>
+                <h2 className="text-2xl font-bold">{title}</h2>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase text-slate-500">Categoría</p>
+                <p className="text-slate-700 text-lg">{CATEGORIES[category]}</p>
+              </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            {/* Descripción */}
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Descripción</p>
+              <div
+                className="text-slate-600 bg-white rounded-lg p-4 border border-slate-200"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
+            </div>
+
+            {/* Meta */}
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">Meta de financiamiento</p>
+              <p className="font-bold text-blue-600 text-2xl">
+                {parseFloat(fundingGoal).toFixed(2)} XMR ≈ ${(parseFloat(fundingGoal) * 316.12).toFixed(0)}
+              </p>
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Dirección de recaudación</p>
+              <code className="text-xs break-all text-slate-600 bg-slate-50 p-3 rounded block font-mono">
+                {projectMoneroAddress}
+              </code>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
               <button onClick={() => setStep('funding')} className="nova-button-soft flex-1">
                 ← Volver
               </button>
               <button onClick={handlePublish} className="nova-button-solid flex-1">
-                Publicar proyecto
+                🚀 Publicar proyecto
               </button>
             </div>
           </div>
@@ -378,14 +454,19 @@ export function CreateProjectExperience() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-50 flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center space-y-6">
-          <div className="text-6xl">✅</div>
+          <div className="text-7xl">🎉</div>
           <h2 className="text-3xl font-bold text-emerald-900">¡Proyecto publicado!</h2>
-          <p className="text-slate-600">
-            Tu proyecto ya está visible para la comunidad. Otros usuarios pueden minar para apoyarlo.
+          <p className="text-slate-600 text-lg">
+            Tu proyecto "{title}" ya está visible para la comunidad. Otros usuarios pueden minar para apoyarlo.
           </p>
+          <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-4">
+            <p className="text-sm font-bold text-emerald-900">
+              🔗 ID del proyecto: <code className="text-xs font-mono">{`proj_${Date.now()}`}</code>
+            </p>
+          </div>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => navigate('/projects')} className="nova-button-solid">
-              Ver proyectos
+            <button onClick={() => navigate(`/projects`)} className="nova-button-solid">
+              Ver en Explorar
             </button>
             <button onClick={() => navigate('/')} className="nova-button-soft">
               Ir a inicio

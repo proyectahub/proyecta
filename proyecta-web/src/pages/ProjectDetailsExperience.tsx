@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
-import { RandomXSelfTest } from '../components/RandomXSelfTest'
 
 interface Project {
   id: string
@@ -91,8 +90,6 @@ export function ProjectDetailsExperience() {
         raised={project.raised}
         hitos={project.hitos}
       />
-
-      <RandomXSelfTest />
 
       <div className="nova-card p-6 space-y-4">
         <h2 className="text-2xl font-bold">Descripcion</h2>
