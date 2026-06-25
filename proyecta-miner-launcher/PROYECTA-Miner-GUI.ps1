@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 #  PROYECTA Miner — App con interfaz grafica
 #  Mineria RandomX (xmrig oficial) para financiar la ciencia.
 #  - Campo editable para la direccion Monero del proyecto
@@ -16,7 +16,7 @@ $HttpPort = 48000
 
 $Pools = [ordered]@{
     "SupportXMR  -  fee 0.6% (recomendado)" = "pool.supportxmr.com:3333"
-    "HeroMiners  -  pago minimo muy bajo"   = "monero.herominers.com:1111"
+    "HeroMiners  -  pago mínimo muy bajo"   = "monero.herominers.com:1111"
     "Nanopool"                              = "xmr-eu1.nanopool.org:14444"
 }
 
@@ -614,7 +614,7 @@ $header.Add_Paint({
     $f2 = New-Object System.Drawing.Font 'Segoe UI', 9.5
     $white = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::White)
     $e.Graphics.DrawString("PROYECTA", $f1, $white, $textX, 22)
-    $e.Graphics.DrawString("Mineria para financiar la ciencia", $f2, $white, ($textX + 2), 62)
+    $e.Graphics.DrawString("Minería para financiar la ciencia", $f2, $white, ($textX + 2), 62)
 })
 $form.Controls.Add($header)
 
@@ -632,7 +632,7 @@ function New-Label($text, $x, $y, $w, $size, $color, $bold) {
 }
 
 # ---------- Direccion del proyecto ----------
-$form.Controls.Add( (New-Label "Direccion Monero del proyecto" 20 112 420 9.5 $cDark $true) )
+$form.Controls.Add( (New-Label "Dirección Monero del proyecto" 20 112 420 9.5 $cDark $true) )
 $txtWallet = New-Object System.Windows.Forms.TextBox
 $txtWallet.Location = New-Object System.Drawing.Point(20, 136)
 $txtWallet.Size = New-Object System.Drawing.Size(420, 26)
@@ -641,7 +641,7 @@ $txtWallet.Text = $DefaultWallet
 $form.Controls.Add($txtWallet)
 
 # ---------- Pool ----------
-$form.Controls.Add( (New-Label "Pool de mineria" 20 174 420 9.5 $cDark $true) )
+$form.Controls.Add( (New-Label "Pool de minería" 20 174 420 9.5 $cDark $true) )
 $cmbPool = New-Object System.Windows.Forms.ComboBox
 $cmbPool.Location = New-Object System.Drawing.Point(20, 198)
 $cmbPool.Size = New-Object System.Drawing.Size(420, 26)
@@ -662,7 +662,7 @@ $numThreads.Minimum = 1
 $numThreads.Maximum = $cores
 $numThreads.Value = [Math]::Max(1, [Math]::Floor($cores/2))
 $form.Controls.Add($numThreads)
-$form.Controls.Add( (New-Label "Mas hilos = mas rapido pero mas calor/consumo" 110 264 330 8.5 $cGray $false) )
+$form.Controls.Add( (New-Label "Más hilos = más rápido pero más calor/consumo" 110 264 330 8.5 $cGray $false) )
 
 # ---------- Panel de stats ----------
 $panel = New-Object System.Windows.Forms.Panel
@@ -692,7 +692,7 @@ $panel.Controls.Add($lblStatus)
 $btn = New-Object System.Windows.Forms.Button
 $btn.Location = New-Object System.Drawing.Point(20, 446)
 $btn.Size = New-Object System.Drawing.Size(420, 50)
-$btn.Text = "Iniciar mineria"
+$btn.Text = "Iniciar minería"
 $btn.Font = New-Object System.Drawing.Font 'Segoe UI', 13, ([System.Drawing.FontStyle]::Bold)
 $btn.ForeColor = $cWhite
 $btn.BackColor = $cGreen
@@ -701,7 +701,7 @@ $btn.FlatAppearance.BorderSize = 0
 $form.Controls.Add($btn)
 
 # ---------- Footer ----------
-$lblFoot = New-Label "Los XMR van directo a la direccion del proyecto. Verifica en supportxmr.com" 20 506 420 8 $cGray $false
+$lblFoot = New-Label "Los XMR van directo a la dirección del proyecto. Verifica en supportxmr.com" 20 506 420 8 $cGray $false
 $lblFoot.Size = New-Object System.Drawing.Size(420, 30)
 $form.Controls.Add($lblFoot)
 
@@ -717,7 +717,7 @@ $avTitle = New-Label "Aviso: tu antivirus puede marcar el minero" 12 8 396 9.5 (
 $avPanel.Controls.Add($avTitle)
 
 $avBody = New-Object System.Windows.Forms.Label
-$avBody.Text = "El motor de minado (xmrig) es software libre y de codigo abierto, NO un virus. Algunos antivirus lo marcan solo por ser un minero (por su mal uso ajeno). Si te lo bloquea, permitelo o agregalo a excepciones para poder minar. El codigo es publico y auditable en github.com/xmrig/xmrig."
+$avBody.Text = "El motor de minado (xmrig) es software libre y de código abierto, NO un virus. Algunos antivirus lo marcan solo por ser un minero (por su mal uso ajeno). Si te lo bloquea, permítelo o agrégalo a excepciones para poder minar. El código es público y auditable en github.com/xmrig/xmrig."
 $avBody.Location = New-Object System.Drawing.Point(12, 30)
 $avBody.Size = New-Object System.Drawing.Size(398, 62)
 $avBody.Font = New-Object System.Drawing.Font 'Segoe UI', 8.5
@@ -767,7 +767,7 @@ function Ensure-Xmrig {
         Remove-Item $zip -Force; Remove-Item $tmp -Recurse -Force
         return $true
     } catch {
-        [System.Windows.Forms.MessageBox]::Show("No se pudo descargar xmrig.`n$($_.Exception.Message)`n`nDescargalo manualmente de github.com/xmrig/xmrig/releases y pon xmrig.exe en la carpeta xmrig\.", "PROYECTA Miner", "OK", "Error") | Out-Null
+        [System.Windows.Forms.MessageBox]::Show("No se pudo descargar xmrig.`n$($_.Exception.Message)`n`nDescárgalo manualmente de github.com/xmrig/xmrig/releases y pon xmrig.exe en la carpeta xmrig\.", "PROYECTA Miner", "OK", "Error") | Out-Null
         return $false
     }
 }
@@ -775,7 +775,7 @@ function Ensure-Xmrig {
 function Start-Mining {
     $wallet = $txtWallet.Text.Trim()
     if ($wallet -notmatch '^[48][0-9A-Za-z]{94}$') {
-        [System.Windows.Forms.MessageBox]::Show("La direccion Monero no parece valida (debe empezar con 4 y tener 95 caracteres).", "PROYECTA Miner", "OK", "Warning") | Out-Null
+        [System.Windows.Forms.MessageBox]::Show("La dirección Monero no parece válida (debe empezar con 4 y tener 95 caracteres).", "PROYECTA Miner", "OK", "Warning") | Out-Null
         return
     }
     if (-not (Ensure-Xmrig)) { return }
@@ -805,7 +805,7 @@ function Start-Mining {
     $script:proc = [System.Diagnostics.Process]::Start($psi)
 
     $timer.Start()
-    $btn.Text = "Detener mineria"
+    $btn.Text = "Detener minería"
     $btn.BackColor = [System.Drawing.Color]::FromArgb(220,38,38)
     $txtWallet.Enabled = $false; $cmbPool.Enabled = $false; $numThreads.Enabled = $false
     $lblStatus.Text = "Iniciando minero en $poolName..."
@@ -816,7 +816,7 @@ function Stop-Mining {
     if ($script:proc -and -not $script:proc.HasExited) { try { $script:proc.Kill() } catch {} }
     Get-Process xmrig -ErrorAction SilentlyContinue | Stop-Process -Force
     $script:proc = $null
-    $btn.Text = "Iniciar mineria"
+    $btn.Text = "Iniciar minería"
     $btn.BackColor = $cGreen
     $txtWallet.Enabled = $true; $cmbPool.Enabled = $true; $numThreads.Enabled = $true
     $lblHash.Text = "0 H/s"; $lblShares.Text = "0"

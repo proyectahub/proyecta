@@ -23,18 +23,18 @@ cat <<'BANNER'
   (  _ \(  _ \(  _ \( \/ )(  __)/ __)(_  _)/ _  )
    ) __/ )   / )   / \  /  ) _)( (__   )(  ( (_) )
   (__)  (__\_)(__\_) (__) (____)\___) (__)  \__\_)
-            Mineria para financiar la ciencia
+            Minería para financiar la ciencia
 BANNER
 printf '\033[0m'
 echo "  ========================================================="
-echo "    Mineria de Alto Rendimiento (xmrig nativo)"
+echo "    Minería de Alto Rendimiento (xmrig nativo)"
 echo "    Pool:   $POOL"
 echo "    Wallet: ${WALLET:0:16}...(proyecto)"
 echo "  ---------------------------------------------------------"
 echo ""
 
 if [ ! -x "$EXE" ]; then
-  echo "  [1/3] Detectando sistema y ultima version de xmrig..."
+  echo "  [1/3] Detectando sistema y última versión de xmrig..."
 
   case "$(uname -s)" in
     Linux*)  PATTERN="linux-static-x64.tar.gz";;
@@ -55,8 +55,8 @@ if [ ! -x "$EXE" ]; then
   fi
 
   if [ -z "$URL" ]; then
-    echo "  [ERROR] No se encontro binario para tu sistema."
-    echo "  Descargalo de https://github.com/xmrig/xmrig/releases"
+    echo "  [ERROR] No se encontró binario para tu sistema."
+    echo "  Descárgalo de https://github.com/xmrig/xmrig/releases"
     exit 1
   fi
 
@@ -71,14 +71,18 @@ if [ ! -x "$EXE" ]; then
   INNER=$(find "$TMP" -maxdepth 1 -type d -name "xmrig-*" | head -n1)
   cp -R "$INNER"/* "$BIN_DIR"/
   chmod +x "$EXE"
+  # macOS: quitar la cuarentena de Gatekeeper para que no bloquee el binario
+  if [ "$(uname -s)" = "Darwin" ]; then
+    xattr -dr com.apple.quarantine "$BIN_DIR" 2>/dev/null || true
+  fi
   rm -rf "$TMP"
   echo "  [OK] xmrig instalado en ./xmrig"
 else
-  echo "  [OK] xmrig ya esta instalado."
+  echo "  [OK] xmrig ya está instalado."
 fi
 
 echo ""
-echo "  Iniciando mineria... (Ctrl+C para detener)"
+echo "  Iniciando minería... (Ctrl+C para detener)"
 echo "  Verifica stats en https://supportxmr.com (pega el wallet del proyecto)"
 echo ""
 

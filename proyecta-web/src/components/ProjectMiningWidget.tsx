@@ -251,8 +251,8 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   <p className="font-bold">Cómo usar:</p>
                   <ol className="list-decimal list-inside space-y-0.5">
                     <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Miner.exe</code></li>
-                    <li><strong>macOS:</strong> doble clic en el archivo <code className="font-mono">.command</code></li>
-                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x</code> y ejecutar el <code className="font-mono">.sh</code></li>
+                    <li><strong>macOS:</strong> en Terminal: <code className="font-mono">chmod +x PROYECTA-Miner-macOS.command</code> y luego doble clic (o <code className="font-mono">./PROYECTA-Miner-macOS.command</code>)</li>
+                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x PROYECTA-Miner-Linux.sh &amp;&amp; ./PROYECTA-Miner-Linux.sh</code></li>
                   </ol>
                   <p className="pt-1 text-slate-500">Descarga el xmrig oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
                 </div>
