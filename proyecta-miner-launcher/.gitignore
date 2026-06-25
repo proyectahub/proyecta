@@ -1,0 +1,5 @@
+# El binario de xmrig se descarga solo al ejecutar el launcher
+xmrig/
+_xmrig_tmp/
+*.zip
+*.tar.gz
