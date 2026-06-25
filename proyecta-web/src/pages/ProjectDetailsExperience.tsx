@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 import { ProjectComments } from '../components/ProjectComments'
+import { MiningStatsWidget } from '../components/MiningStatsWidget'
 
 interface Project {
   id: string
@@ -91,6 +92,12 @@ export function ProjectDetailsExperience() {
         goal={project.fundingGoal}
         raised={project.raised}
         hitos={project.hitos}
+      />
+
+      <MiningStatsWidget
+        wallet={project.fundraisingAddress}
+        fundingGoal={project.fundingGoal}
+        projectTitle={project.title}
       />
 
       <div className="nova-card p-6 space-y-4">
