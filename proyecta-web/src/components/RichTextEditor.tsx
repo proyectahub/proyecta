@@ -179,12 +179,13 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
         onPaste={handlePaste}
         onFocus={() => setIsTyping(true)}
         onBlur={() => setIsTyping(false)}
-        className="nova-field min-h-[600px] p-6 focus:outline-none focus:ring-2 focus:ring-purple-500 overflow-auto text-base leading-relaxed"
+        className="min-h-[600px] p-6 focus:outline-none focus:ring-2 focus:ring-purple-500 overflow-auto text-base leading-relaxed rounded-lg"
         style={{
           wordBreak: 'break-word',
           whiteSpace: 'pre-wrap',
-          border: isTyping ? '2px solid #a855f7' : '1px solid #cbd5e1',
+          border: isTyping ? '3px solid #a855f7' : '2px solid #cbd5e1',
           backgroundColor: '#fafafa',
+          fontFamily: 'inherit',
         }}
         dangerouslySetInnerHTML={{ __html: value }}
       />
