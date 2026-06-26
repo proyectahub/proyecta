@@ -6,12 +6,18 @@ import orcidRoutes from "./orcid.js"
 dotenv.config()
 
 const app = express()
+const PORT = process.env.PORT || 3000
 
 app.use(cors())
 app.use(express.json())
 
 app.use("/api/orcid", orcidRoutes)
 
-app.listen(3000, () => {
-  console.log("🚀 Backend running on http://localhost:3000")
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" })
+})
+
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running on http://localhost:${PORT}`)
 })
