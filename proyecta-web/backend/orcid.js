@@ -47,9 +47,9 @@ router.post("/exchange", async (req, res) => {
     res.json({
       orcid,
       name:
-        profile.name.["given-names"].value +
+        profile.name["given-names"].value +
         " " +
-        profile.name.["family-name"].value,
+        profile.name["family-name"].value,
       profile,
     })
 
