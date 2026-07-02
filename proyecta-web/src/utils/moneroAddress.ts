@@ -1,35 +1,36 @@
 /**
- * Genera una direcci贸n Monero v谩lida basada en un seed
- * En producci贸n, esto vendr铆a de una wallet real
+ * Genera una direcci髇 Monero v醠ida basada en un seed
+ * En producci髇, esto vendr韆 de una wallet real
  */
 export function generateMoneroAddress(seed: string): string {
-  // SHA-256 del seed para determinismo
-  const data = new TextEncoder().encode(seed)
-  const hashBuffer = crypto.getRandomValues(new Uint8Array(32))
-
-  // Para desarrollo: crear direcci贸n v谩lida con formato Monero mainnet
-  // Direcci贸n v谩lida: comienza con 4 u 8, 95 caracteres totales
+  // Generador determinista de formato Monero para desarrollo y datos legacy.
+  // No intenta crear una wallet real, pero mantiene el formato esperado por la UI.
   const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+  let state = 0
+
+  for (let i = 0; i < seed.length; i += 1) {
+    state = (state * 31 + seed.charCodeAt(i)) >>> 0
+  }
+
   let address = '4' // Mainnet address starts with 4
 
-  // Generar 94 caracteres m谩s usando pseudoaleatorio del seed
   for (let i = 0; i < 94; i++) {
-    const char = seed.charCodeAt(i % seed.length)
-    address += chars[char % chars.length]
+    state = (state * 1664525 + 1013904223) >>> 0
+    address += chars[state % chars.length]
   }
 
   return address
 }
 
 /**
- * Valida que una direcci贸n sea un Monero address v谩lido
+ * Valida que una direcci髇 sea un Monero address v醠ido
  */
 export function isValidMoneroAddress(address: string): boolean {
   return /^[48][a-zA-Z0-9]{94}$/.test(address)
 }
 
 /**
- * Convierte una direcci贸n Monero a un VITA address (hash SHA-256)
+ * Convierte una direcci髇 Monero a un VITA address (hash SHA-256)
  */
 export async function hashMoneroAddress(address: string): Promise<string> {
   const encoder = new TextEncoder()

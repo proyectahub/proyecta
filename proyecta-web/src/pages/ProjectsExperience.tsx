@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
+import { normalizeProjects } from '../utils/projectWallet'
 
 interface Project {
   id: string
@@ -40,7 +41,9 @@ export function ProjectsExperience() {
         const saved = localStorage.getItem('proyecta_projects')
         if (saved) {
           const allProjects = JSON.parse(saved) as Project[]
-          setProjects(allProjects)
+          const normalizedProjects = normalizeProjects(allProjects)
+          localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
+          setProjects(normalizedProjects)
         }
       } catch (err) {
         console.error('Error loading projects:', err)

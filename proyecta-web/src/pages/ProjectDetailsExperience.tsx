@@ -4,6 +4,7 @@ import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 import { ProjectComments } from '../components/ProjectComments'
 import { MiningStatsWidget } from '../components/MiningStatsWidget'
+import { normalizeProjectWallet } from '../utils/projectWallet'
 
 interface Project {
   id: string
@@ -12,6 +13,7 @@ interface Project {
   category: string
   fundingGoal: number
   fundraisingAddress: string
+  moneroAddress?: string
   author: string
   hitos: Array<{ name: string; payout: number }>
   createdAt: number
@@ -22,7 +24,7 @@ interface Project {
 export function ProjectDetailsExperience() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [project, setProject] = useState(null)
+  const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,7 +38,9 @@ export function ProjectDetailsExperience() {
       const saved = localStorage.getItem('proyecta_projects')
       if (saved) {
         const projects = JSON.parse(saved)
-        const found = projects.find((p) => p.id === id)
+        const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
+        localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
+        const found = normalizedProjects.find((p: Project) => p.id === id)
         if (found) {
           setProject(found)
         }
@@ -101,7 +105,7 @@ export function ProjectDetailsExperience() {
       />
 
       <div className="nova-card p-6 space-y-4">
-        <h2 className="text-2xl font-bold">DescripciÃ³n</h2>
+        <h2 className="text-2xl font-bold">Descripción</h2>
         <div
           className="text-slate-700 space-y-4"
           dangerouslySetInnerHTML={{ __html: project.description }}
