@@ -26,6 +26,7 @@ import {
 import { toast } from "react-hot-toast"
 import type { ArticleSource, FeedArticle } from "../data/mockData"
 import { useAuth } from "../context/AuthContext"
+import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
 import { useCommunityFeedData } from "../hooks/useCommunityFeedData"
 
@@ -458,7 +459,7 @@ export default function ArticleExperience() {
   const { id } = useParams()
   const { user } = useAuth()
   const { articles } = useCommunityFeedData()
-  const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+  const apiBaseUrl = API_BASE
   const token = window.localStorage.getItem("proyecta-session-token")
   const [hasVoted, setHasVoted] = useState<0 | 1 | -1>(0)
   const [showReviewForm, setShowReviewForm] = useState(false)
@@ -1840,6 +1841,10 @@ export default function ArticleExperience() {
     </div>
   )
 }
+
+
+
+
 
 
 

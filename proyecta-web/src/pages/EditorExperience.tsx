@@ -31,6 +31,7 @@ import mammoth from "mammoth"
 import * as pdfjsLib from "pdfjs-dist"
 import { categoryLabels, submissionChecklist, type ArticleSource } from "../data/mockData"
 import { useAuth } from "../context/AuthContext"
+import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
@@ -132,7 +133,7 @@ function normalizeEditorSources(rawSources: ArticleSource[] | undefined) {
 
 export default function EditorExperience() {
   const { id } = useParams()
-  const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+  const apiBaseUrl = API_BASE
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
   const [figureImage, setFigureImage] = useState("")
@@ -1099,3 +1100,7 @@ export default function EditorExperience() {
     </div>
   )
 }
+
+
+
+

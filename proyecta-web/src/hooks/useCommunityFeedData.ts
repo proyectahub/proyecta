@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 import type { ArticleSource, FeedArticle } from "../data/mockData"
+import { API_BASE } from "../lib/api"
 
 export type ApiArticle = {
   id: string
@@ -74,7 +75,7 @@ function formatRelativeLabel(value: string) {
   if (diffInHours < 24) return `Hace ${Math.max(1, diffInHours)} horas`
 
   const diffInDays = Math.round(diffInHours / 24)
-  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} días`
+  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} dÃ­as`
 }
 
 function formatPublishedLabel(value: string) {
@@ -95,8 +96,8 @@ function formatPublishedLabel(value: string) {
 function mapApiArticle(article: ApiArticle, index: number): FeedArticle {
   return {
     id: article.id || `article-${index + 1}`,
-    title: article.title || "Publicación Proyecta",
-    excerpt: article.excerpt || "Esta publicación aún no tiene extracto disponible.",
+    title: article.title || "PublicaciÃ³n Proyecta",
+    excerpt: article.excerpt || "Esta publicaciÃ³n aÃºn no tiene extracto disponible.",
     heroKicker: "",
     category: article.category || "General",
     timeAgo: formatRelativeLabel(article.createdAt),
@@ -153,7 +154,7 @@ const defaultOverview: CommunityOverview = {
 }
 
 export function useCommunityFeedData() {
-  const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+  const apiBaseUrl = API_BASE
   const [articles, setArticles] = useState<FeedArticle[]>([])
   const [isSyncing, setIsSyncing] = useState(true)
   const [communityOverview, setCommunityOverview] = useState<CommunityOverview>(defaultOverview)
@@ -238,3 +239,6 @@ export function useCommunityFeedData() {
     refetch,
   }
 }
+
+
+

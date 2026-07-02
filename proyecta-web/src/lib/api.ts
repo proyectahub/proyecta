@@ -1,11 +1,11 @@
-export const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+﻿export const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "/api")
 const DEMO_FALLBACK_ENV = import.meta.env.VITE_ALLOW_DEMO_FALLBACK !== "false"
 
 const BACKEND_UNAVAILABLE_MESSAGE =
-  "El acceso de Proyecta está temporalmente en modo local. La portada sigue disponible mientras se reconecta el servicio."
+  "El acceso de Proyecta estÃ¡ temporalmente en modo local. La portada sigue disponible mientras se reconecta el servicio."
 
 const NETWORK_ERROR_MESSAGE =
-  "No pudimos conectar con el servidor en este momento. Verifica tu conexión a internet e intenta de nuevo."
+  "No pudimos conectar con el servidor en este momento. Verifica tu conexiÃ³n a internet e intenta de nuevo."
 
 function runningOnLocalHost() {
   if (typeof window === "undefined") return false
@@ -15,6 +15,20 @@ function runningOnLocalHost() {
 
 export function isDemoFallbackEnabled() {
   return import.meta.env.DEV || DEMO_FALLBACK_ENV || runningOnLocalHost()
+}
+
+export function resolveMiningWebSocketUrl() {
+  const configuredUrl = import.meta.env.VITE_MINING_WS_URL
+  if (configuredUrl) {
+    return configuredUrl
+  }
+
+  if (import.meta.env.DEV) {
+    return "ws://localhost:3001/ws/mining"
+  }
+
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+  return `${protocol}//${window.location.host}/ws/mining`
 }
 
 export async function parseApiJson(response: Response) {

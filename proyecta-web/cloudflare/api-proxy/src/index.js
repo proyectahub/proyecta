@@ -1,4 +1,4 @@
-const CORS_HEADERS = {
+﻿const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -9,7 +9,9 @@ const CORS_HEADERS = {
 
 function cors(response) {
   const headers = new Headers(response.headers)
-  for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v)
+  for (const [k, v] of Object.entries(CORS_HEADERS)) {
+    headers.set(k, v)
+  }
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -34,13 +36,15 @@ export default {
       if (!payload) {
         return cors(Response.json({ error: "No snapshot available yet" }, { status: 503 }))
       }
+
       const normalized = {
         ...payload,
         progress_pct:
           typeof payload.progress_pct === "number"
-             payload.progress_pct
-            : Number(payload.last_ns  0),
+            ? payload.progress_pct
+            : Number(payload.last_ns || 0),
       }
+
       return cors(Response.json(normalized))
     } catch (error) {
       return cors(

@@ -24,6 +24,7 @@ import {
 import { toast } from "react-hot-toast"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { API_BASE } from "../lib/api"
 import { ProyectaMark, ProyectaTokenSeal } from "../components/brand/ProyectaBrand"
 
 type ProfileUser = {
@@ -250,7 +251,7 @@ export default function ProfileExperience() {
   const navigate = useNavigate()
   const { user: sessionUser, refreshUser } = useAuth()
   const profileId = routeProfileId ?? sessionUser.id
-  const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+  const apiBaseUrl = API_BASE
   const [profile, setProfile] = useState<ProfileUser | null>(null)
   const [stats, setStats] = useState<UserStats>({ posts: 0, comments: 0, votes: 0 })
   const [articles, setArticles] = useState<UserArticle[]>([])
@@ -1540,4 +1541,8 @@ export default function ProfileExperience() {
     </div>
   )
 }
+
+
+
+
 

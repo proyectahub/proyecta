@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
+import { API_BASE } from '../lib/api'
 import { WalletSetupGuide } from '../components/WalletSetupGuide'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
 import { useIPFSVita } from '../hooks/useIPFSVita'
@@ -152,7 +153,7 @@ export function UserProfileExperience() {
               <p className="text-lg font-bold text-slate-900">{formData.fullName || 'No especificado'}</p>
               {!user.orcidId && (
                 <button
-                  onClick={() => window.location.href = `https://orcid.org/oauth/authorize?client_id=APP-4K7Q5BPMPWC2UUVM&response_type=code&scope=/authenticate&redirect_uri=https://novasci.vercel.app/orcid/callback`}
+                  onClick={() => window.location.href = `${API_BASE}/api/oauth/orcid`}
                   className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700"
                 >
                   <span>🔗</span> Conectar con ORCID

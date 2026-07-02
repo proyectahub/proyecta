@@ -2,9 +2,9 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
+import { API_BASE } from "../lib/api"
 
 const SESSION_STORAGE_KEY = "proyecta-session-token"
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 export default function OrcidCallback() {
   const navigate = useNavigate()
@@ -13,6 +13,7 @@ export default function OrcidCallback() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
+    const code = params.get("code")
     const error = params.get("error")
 
     if (error) {
@@ -21,8 +22,17 @@ export default function OrcidCallback() {
       return
     }
 
+    if (!token && code) {
+      const backendUrl = new URL(`${API_BASE}/api/oauth/orcid/callback`)
+      for (const [key, value] of params.entries()) {
+        backendUrl.searchParams.set(key, value)
+      }
+      window.location.replace(backendUrl.toString())
+      return
+    }
+
     if (!token) {
-      toast.error("ORCID no envio una sesión válida.")
+      toast.error("ORCID no envio una sesion valida.")
       navigate("/login")
       return
     }
@@ -38,7 +48,7 @@ export default function OrcidCallback() {
       const data = await response.json()
 
       toast.success("Sesion iniciada con ORCID.")
-      if (data.user.id) {
+      if (data.user?.id) {
         navigate(`/profile/${data.user.id}`)
         return
       }

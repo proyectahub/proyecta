@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+﻿import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface MiningStats {
   hashes: number
@@ -8,16 +8,16 @@ interface MiningStats {
   localHashRate: number
 }
 
-const BACKEND_URL = 'http://localhost:3001/api/mining'
+const BACKEND_URL = import.meta.env.VITE_MINING_API_URL ?? import.meta.env.VITE_API_URL ?? '/api/mining'
 
 /**
- * Hook para minería REAL en SupportXMR pool via Backend Proxy
+ * Hook para minerÃ­a REAL en SupportXMR pool via Backend Proxy
  *
  * Flujo:
  * 1. Navegador genera hashes locales
- * 2. Cada 100ms, envía hashes al backend
- * 3. Backend proxy conecta a SupportXMR y envía los hashes
- * 4. SupportXMR envía XMR reales a la dirección del proyecto
+ * 2. Cada 100ms, envÃ­a hashes al backend
+ * 3. Backend proxy conecta a SupportXMR y envÃ­a los hashes
+ * 4. SupportXMR envÃ­a XMR reales a la direcciÃ³n del proyecto
  */
 export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpuPercentage: number = 50) {
   const [stats, setStats] = useState<MiningStats>({
@@ -36,7 +36,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
   })
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Minería LOCAL con envío al backend proxy
+  // MinerÃ­a LOCAL con envÃ­o al backend proxy
   useEffect(() => {
     if (!enabled || !walletAddress) {
       if (intervalRef.current) {
@@ -46,7 +46,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
       return
     }
 
-    // Iniciar minería LOCAL
+    // Iniciar minerÃ­a LOCAL
     miningRef.current.startTime = Date.now()
     miningRef.current.totalHashes = 0
     miningRef.current.lastSubmittedHashes = 0
@@ -63,7 +63,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
       if (miningRef.current.totalHashes - miningRef.current.lastSubmittedHashes >= 100) {
         const hashesToSubmit = miningRef.current.totalHashes - miningRef.current.lastSubmittedHashes
 
-        // Enviar hashes al backend de forma asíncrona (sin bloquear UI)
+        // Enviar hashes al backend de forma asÃ­ncrona (sin bloquear UI)
         fetch(`${BACKEND_URL}/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -76,14 +76,14 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
           .then((res) => res.json())
           .then((data) => {
             console.log(
-              `📤 [BACKEND] ${hashesToSubmit} hashes enviados. Pool conectado: ${data.poolConnected}`
+              `ðŸ“¤ [BACKEND] ${hashesToSubmit} hashes enviados. Pool conectado: ${data.poolConnected}`
             )
             if (data.poolConnected) {
               setError(null)
             }
           })
           .catch((err) => {
-            console.warn('⚠️  Backend no disponible:', err.message)
+            console.warn('âš ï¸  Backend no disponible:', err.message)
             setError(`Backend proxy no disponible en ${BACKEND_URL}`)
           })
 
@@ -106,7 +106,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
           poolConnected = statusData.isConnected
         }
       } catch {
-        // Backend no disponible, pero la minería local sigue funcionando
+        // Backend no disponible, pero la minerÃ­a local sigue funcionando
       }
 
       setStats({
@@ -120,8 +120,8 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
 
     intervalRef.current = mineInterval
 
-    console.log(`⛏️  [MINERÍA] Iniciada @ ${cpuAdjusted} H/s`)
-    console.log(`📡 [BACKEND] Enviando hashes a ${BACKEND_URL}`)
+    console.log(`â›ï¸  [MINERÃA] Iniciada @ ${cpuAdjusted} H/s`)
+    console.log(`ðŸ“¡ [BACKEND] Enviando hashes a ${BACKEND_URL}`)
 
     return () => {
       clearInterval(mineInterval)
@@ -140,7 +140,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
 }
 
 /**
- * Hook para obtener estadísticas de minería desde SupportXMR API
+ * Hook para obtener estadÃ­sticas de minerÃ­a desde SupportXMR API
  */
 export function useSupportXMRStats(walletAddress: string) {
   const [poolStats, setPoolStats] = useState<any>(null)
@@ -175,7 +175,7 @@ export function useSupportXMRStats(walletAddress: string) {
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error')
-        // Simulación para desarrollo
+        // SimulaciÃ³n para desarrollo
         setPoolStats({
           lastHash: Date.now(),
           totalHashes: 0,
@@ -197,3 +197,5 @@ export function useSupportXMRStats(walletAddress: string) {
 
   return { poolStats, loading, error }
 }
+
+

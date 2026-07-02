@@ -1,4 +1,4 @@
-name = "nova-scientia-api"
+﻿name = "proyecta-api"
 main = "src/index.js"
 compatibility_date = "2026-04-21"
 account_id = "f9f624c23abcbd1b99724a7bd9973375"

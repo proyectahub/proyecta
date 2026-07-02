@@ -8,7 +8,7 @@ import { initializeMoneroConnection } from "./monero.js"
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = Number(process.env.PORT || 3000)
 
 app.use(cors())
 app.use(express.json())
@@ -16,16 +16,14 @@ app.use(express.json())
 app.use("/api/orcid", orcidRoutes)
 app.use("/api/monero", moneroRoutes)
 
-// Health check
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({ status: "ok" })
 })
 
-// Initialize Monero RPC connection
-initializeMoneroConnection()
+void initializeMoneroConnection()
   .then(() => console.log("[Server] Monero RPC initialized"))
   .catch((error) => console.warn("[Server] Monero RPC not available:", error))
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`)
+  console.log(`Backend running on port ${PORT}`)
 })

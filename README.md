@@ -1,40 +1,33 @@
-﻿# PROYECTA — Minería RandomX Descentralizada
+﻿# PROYECTA
 
-> **Apoyo mutuo y comunitario para la ciencia**: Sostenemos juntos la investigación mediante minería descentralizada de Monero.
+Portal de ciencia abierta y publicación comunitaria con soporte para identidad verificada, artículos, revisión, perfiles y un módulo opcional de donación de cómputo/minería para sostener infraestructura.
 
-## 🎯 ¿Qué es PROYECTA?
+## Qué contiene
+- `proyecta-web/` - frontend principal en React + Vite
+- `proyecta-web/backend/` - backend de autenticación, artículos, perfiles y ORCID
+- `proyecta-web/server.js` - proxy de minería/Soporte a SupportXMR
+- `proyecta-desktop/` - app de escritorio Tauri relacionada con el portal
+- `proyecta-miner-launcher/` - scripts de lanzamiento de minería nativa
 
-PROYECTA es una plataforma para **financiar investigación científica mediante minería descentralizada de Monero**. Sin intermediarios, sin custodia.
+## Objetivo del portal
+- Publicar artículos y proyectos científicos
+- Gestionar identidad con login, registro y ORCID
+- Dar soporte a revisión y comunidad
+- Mantener una ruta de financiamiento comunitario transparente
 
-## ⛏️ Dos Opciones de Minería
+## Desarrollo local
+```bash
+cd proyecta-web
+npm install
+npm run dev
+```
 
-### **Opción A: Navegador**
-- ✅ Sin instalar — funciona en cualquier navegador
-- ⚡ RandomX WASM real (~20–60 H/s, multi-hilo)
-- 🎯 Ideal para participación masiva
+## Verificación
+- Frontend: `http://localhost:5173`
+- Backend local: `http://localhost:3000`
+- Proxy/minería local: `http://localhost:3001`
 
-### **Opción B1: App Desktop**
-- 📦 Instalador ligero (~50 MB)
-- ⚡ xmrig nativo (~2.000–10.000 H/s)
-- 💪 Para recaudación real
-
-## 🚀 Empezar
-
-cd proyecta-web && npm install && npm run dev  → http://localhost:5174
-
-## 📁 Estructura
-
-- **proyecta-web/** — Frontend React + minería WASM + proxy Stratum
-- **proyecta-desktop/** — App Tauri + xmrig nativo
-- **MINING_OPTIONS.md** — Comparación completa A vs B1
-- **PUSH_TO_GITHUB.md** — Instrucciones para subir a GitHub
-
-## 🔒 Verificación
-
-- Auto-prueba local: Botón en cada proyecto
-- Stats públicas: https://supportxmr.com/api/miner/{WALLET}/stats
-- Blockchain: https://xmrchain.net/
-
----
-
-**Built with ❤️ for decentralized science | 2026**
+## Despliegue
+- Cloudflare Pages para el frontend
+- Railway o backend propio para la API
+- Variables de entorno documentadas en `proyecta-web/.env.production.example`
