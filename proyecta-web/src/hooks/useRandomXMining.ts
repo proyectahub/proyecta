@@ -1,192 +1,200 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { resolveMiningWebSocketUrl } from "../lib/api"
 
-interface MiningStats {
-  hashes: number
+export interface RandomXStats {
   hashRate: number
-  elapsedSeconds: number
+  totalHashes: number
   poolConnected: boolean
-  localHashRate: number
+  acceptedShares: number
+  rejectedShares: number
+  elapsedSeconds: number
+  jobHeight: number | null
+  status: string
 }
 
 const BACKEND_URL = import.meta.env.VITE_MINING_API_URL ?? import.meta.env.VITE_API_URL ?? "/api/mining"
 const WS_URL = resolveMiningWebSocketUrl()
 
-/**
- * Hook para minería REAL en SupportXMR pool via Backend Proxy
- *
- * Flujo:
- * 1. Navegador genera hashes locales
- * 2. Cada 100ms, envía hashes al backend
- * 3. Backend proxy conecta a SupportXMR y envía los hashes
- * 4. SupportXMR envía XMR reales a la dirección del proyecto
- */
-export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpuPercentage: number = 50) {
-  const [stats, setStats] = useState<MiningStats>({
-    hashes: 0,
+export function useRandomXMining(
+  walletAddress: string,
+  enabled: boolean,
+  cpuPercentage: number = 50,
+) {
+  const [stats, setStats] = useState<RandomXStats>({
     hashRate: 0,
-    elapsedSeconds: 0,
+    totalHashes: 0,
     poolConnected: false,
-    localHashRate: 0,
+    acceptedShares: 0,
+    rejectedShares: 0,
+    elapsedSeconds: 0,
+    jobHeight: null,
+    status: "Inactivo",
   })
   const [error, setError] = useState<string | null>(null)
-  const miningRef = useRef({
-    totalHashes: 0,
-    startTime: Date.now(),
-    sessionId: Math.random().toString(36),
-    lastSubmittedHashes: 0,
-  })
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const wsRef = useRef<WebSocket | null>(null)
+  const workersRef = useRef<Worker[]>([])
+  const startTimeRef = useRef<number>(0)
+  const perWorkerRef = useRef<{ rate: number; hashes: number }[]>([])
 
   useEffect(() => {
     if (!enabled || !walletAddress) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-      setStats({ hashes: 0, hashRate: 0, elapsedSeconds: 0, poolConnected: false, localHashRate: 0 })
       return
     }
 
-    miningRef.current.startTime = Date.now()
-    miningRef.current.totalHashes = 0
-    miningRef.current.lastSubmittedHashes = 0
+    const cores = navigator.hardwareConcurrency || 4
+    const threads = Math.max(1, Math.min(6, Math.round(cores * (cpuPercentage / 100))))
 
-    const baseHashRate = 200
-    const cpuAdjusted = Math.floor(baseHashRate * (cpuPercentage / 100))
+    setError(null)
+    setStats((current) => ({
+      ...current,
+      status: "Conectando al pool...",
+      poolConnected: false,
+    }))
+    startTimeRef.current = Date.now()
+    perWorkerRef.current = Array.from({ length: threads }, () => ({ rate: 0, hashes: 0 }))
 
-    const mineInterval = setInterval(() => {
-      const hashesThisInterval = Math.max(1, Math.floor(cpuAdjusted / 10))
-      miningRef.current.totalHashes += hashesThisInterval
-
-      if (miningRef.current.totalHashes - miningRef.current.lastSubmittedHashes >= 100) {
-        const hashesToSubmit = miningRef.current.totalHashes - miningRef.current.lastSubmittedHashes
-
-        fetch(`${BACKEND_URL}/submit`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            walletAddress,
-            hashes: hashesToSubmit,
-            sessionId: miningRef.current.sessionId,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            console.log(`📤 [BACKEND] ${hashesToSubmit} hashes enviados. Pool conectado: ${data.poolConnected}`)
-            if (data.poolConnected) {
-              setError(null)
-            }
-          })
-          .catch((err) => {
-            console.warn("⚠️  Backend no disponible:", err.message)
-            setError(`Backend proxy no disponible en ${BACKEND_URL}`)
-          })
-
-        miningRef.current.lastSubmittedHashes = miningRef.current.totalHashes
-      }
-    }, 100)
-
-    const statsInterval = setInterval(async () => {
-      const now = Date.now()
-      const elapsedMs = now - miningRef.current.startTime
-      const elapsedSecs = Math.floor(elapsedMs / 1000)
-
-      let poolConnected = false
-      try {
-        const statusRes = await fetch(`${BACKEND_URL}/status/${walletAddress}`)
-        if (statusRes.ok) {
-          const statusData = await statusRes.json()
-          poolConnected = statusData.isConnected
-        }
-      } catch {
-        // Backend no disponible, pero la minería local sigue funcionando
-      }
-
-      setStats({
-        hashes: miningRef.current.totalHashes,
-        hashRate: cpuAdjusted,
-        elapsedSeconds: elapsedSecs,
-        poolConnected,
-        localHashRate: elapsedSecs > 0 ? Math.floor(miningRef.current.totalHashes / elapsedSecs) : 0,
+    const workers: Worker[] = []
+    for (let index = 0; index < threads; index += 1) {
+      const worker = new Worker(new URL("../workers/randomx.worker.ts", import.meta.url), {
+        type: "module",
       })
-    }, 1000)
 
-    intervalRef.current = mineInterval
+      worker.onmessage = (event: MessageEvent) => {
+        const message = event.data
+        if (message.type === "hashrate") {
+          perWorkerRef.current[index] = { rate: message.hashRate, hashes: message.totalHashes }
+          const totalRate = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.rate, 0)
+          const totalHashes = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.hashes, 0)
+          setStats((current) => ({
+            ...current,
+            hashRate: Math.round(totalRate * 10) / 10,
+            totalHashes,
+            elapsedSeconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+            status: "Minando RandomX real",
+          }))
+        }
 
-    console.log(`⏏️  [MINERÍA] Iniciada @ ${cpuAdjusted} H/s`)
-    console.log(`📡 [BACKEND] Enviando hashes a ${BACKEND_URL}`)
+        if (message.type === "share" && wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(
+            JSON.stringify({
+              type: "share",
+              job_id: message.job_id,
+              nonce: message.nonce,
+              result: message.result,
+            }),
+          )
+        }
+
+        if (message.type === "log") {
+          setStats((current) => ({ ...current, status: message.message }))
+        }
+
+        if (message.type === "error") {
+          setError(message.error)
+        }
+      }
+
+      worker.postMessage({ type: "start" })
+      workers.push(worker)
+    }
+
+    workersRef.current = workers
+
+    const ws = new WebSocket(WS_URL)
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: "subscribe", wallet: walletAddress }))
+      setStats((current) => ({ ...current, status: "Suscrito, esperando job del pool..." }))
+    }
+
+    ws.onmessage = (event) => {
+      let message: any
+      try {
+        message = JSON.parse(event.data)
+      } catch {
+        return
+      }
+
+      if (message.type === "job") {
+        for (const worker of workersRef.current) {
+          worker.postMessage({ type: "job", job: message.job })
+        }
+        setStats((current) => ({
+          ...current,
+          poolConnected: true,
+          jobHeight: message.job?.height ?? current.jobHeight,
+          status: "Minando RandomX real",
+        }))
+      }
+
+      if (message.type === "status") {
+        setStats((current) => ({ ...current, poolConnected: !!message.connected }))
+      }
+
+      if (message.type === "share_result") {
+        if (message.accepted) {
+          setStats((current) => ({
+            ...current,
+            acceptedShares: message.accepted_total ?? current.acceptedShares + 1,
+          }))
+        } else {
+          setStats((current) => ({
+            ...current,
+            rejectedShares: message.rejected_total ?? current.rejectedShares + 1,
+          }))
+          if (message.error) {
+            setError(`Share rechazado: ${message.error}`)
+          }
+        }
+      }
+
+      if (message.type === "error") {
+        setError(message.error)
+      }
+    }
+
+    ws.onerror = () => {
+      setError(`No se pudo conectar al proxy de mineria (${WS_URL}).`)
+      setStats((current) => ({ ...current, poolConnected: false }))
+    }
+
+    ws.onclose = () => {
+      setStats((current) => ({ ...current, poolConnected: false }))
+    }
 
     return () => {
-      clearInterval(mineInterval)
-      clearInterval(statsInterval)
+      for (const worker of workersRef.current) {
+        worker.postMessage({ type: "stop" })
+        worker.terminate()
+      }
+      workersRef.current = []
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
+      setStats((current) => ({
+        ...current,
+        hashRate: 0,
+        poolConnected: false,
+        status: "Detenido",
+      }))
     }
   }, [enabled, walletAddress, cpuPercentage])
 
   const stop = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
     }
+    for (const worker of workersRef.current) {
+      worker.postMessage({ type: "stop" })
+      worker.terminate()
+    }
+    workersRef.current = []
+    setStats((current) => ({ ...current, poolConnected: false, status: "Detenido" }))
   }, [])
 
-  return { stats, error, stop, poolUrl: "wss://pool.supportxmr.com:3333" }
+  return { stats, error, stop, poolUrl: "pool.supportxmr.com:3333 (Stratum/TCP via proxy)" }
 }
-
-/**
- * Hook para obtener estadísticas de minería desde SupportXMR API
- */
-export function useSupportXMRStats(walletAddress: string) {
-  const [poolStats, setPoolStats] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!walletAddress) return
-
-    const fetchStats = async () => {
-      setLoading(true)
-      try {
-        const backendRes = await fetch(`${BACKEND_URL}/pool-stats/${walletAddress}`)
-
-        if (backendRes.ok) {
-          const data = await backendRes.json()
-          setPoolStats(data)
-          setError(null)
-          return
-        }
-
-        const response = await fetch(`https://supportxmr.com/api/miner/${walletAddress}/stats`)
-
-        if (!response.ok) {
-          throw new Error("No se pudieron cargar stats de SupportXMR")
-        }
-
-        const data = await response.json()
-        setPoolStats(data)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error")
-        setPoolStats({
-          lastHash: Date.now(),
-          totalHashes: 0,
-          totalPaid: 0,
-          paid: 0,
-          balance: 0,
-          hashrate: 0,
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStats()
-    const interval = setInterval(fetchStats, 30000)
-
-    return () => clearInterval(interval)
-  }, [walletAddress])
-
-  return { poolStats, loading, error }
-}
-
-export { useSupportXMRMining as useRandomXMining }
-

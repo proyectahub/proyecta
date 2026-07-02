@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, TrendingUp, Zap, Target } from 'lucide-react'
+import { API_BASE } from '../lib/api'
 
 interface MiningStats {
   hashrate: number
@@ -27,19 +28,40 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
       setLoading(true)
       setError(null)
 
-      // Usar la ruta API del servidor local
-      const response = await fetch(`/api/mining/pool-stats/${wallet}`)
-      const data = await response.json()
+      const apiUrls = [
+        `${API_BASE}/api/mining/pool-stats/${wallet}`,
+        `https://supportxmr.com/api/miner/${wallet}/stats`,
+      ]
 
-      if (data.error) {
-        setError(data.error)
-        setStats(null)
-      } else {
-        setStats(data)
-        setLastUpdate(new Date())
+      for (const url of apiUrls) {
+        try {
+          const response = await fetch(url)
+          if (!response.ok) {
+            continue
+          }
+
+          const data = await response.json()
+          const normalized: MiningStats = {
+            hashrate: Number(data.hashrate ?? data.hash ?? 0),
+            totalHashes: Number(data.totalHashes ?? data.total_hashes ?? 0),
+            balance: Number(data.balance ?? data.amtDue ?? 0),
+            totalPaid: Number(data.totalPaid ?? data.paid ?? 0),
+            lastHash: Number(data.lastHash ?? Date.now()),
+            minPayout: Number(data.minPayout ?? 0.3),
+          }
+
+          setStats(normalized)
+          setLastUpdate(new Date())
+          return
+        } catch {
+          continue
+        }
       }
+
+      setError('No fue posible obtener estadisticas de mineria')
+      setStats(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al obtener estadísticas')
+      setError(err instanceof Error ? err.message : 'Error al obtener estadisticas')
       setStats(null)
     } finally {
       setLoading(false)
@@ -47,10 +69,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
   }
 
   useEffect(() => {
-    // Cargar inmediatamente
     fetchMiningStats()
-
-    // Actualizar cada 30 segundos
     const interval = setInterval(fetchMiningStats, 30000)
     return () => clearInterval(interval)
   }, [wallet])
@@ -61,11 +80,11 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-slate-900 flex items-center gap-2">
             <Zap className="h-5 w-5 text-purple-600" />
-            Minería en tiempo real
+            Mineria en tiempo real
           </h3>
           <div className="inline-flex animate-spin rounded-full h-5 w-5 border-2 border-purple-600 border-t-transparent"></div>
         </div>
-        <p className="text-sm text-slate-500">Cargando estadísticas del pool...</p>
+        <p className="text-sm text-slate-500">Cargando estadisticas del pool...</p>
       </div>
     )
   }
@@ -76,7 +95,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-bold text-blue-900 flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Minería en tiempo real
+            Mineria en tiempo real
           </h3>
           <button
             onClick={fetchMiningStats}
@@ -87,29 +106,28 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         </div>
         <div className="space-y-3">
           <p className="text-sm text-blue-700">
-            <strong>💡 La minería está ocurriendo en SupportXMR.</strong> Si no ves datos aquí, puedes verificar manualmente:
+            <strong>La mineria esta ocurriendo en SupportXMR.</strong> Si no ves datos aqui, puedes verificar manualmente:
           </p>
           <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-2">
             <p className="text-sm font-bold text-slate-900">Verificar en SupportXMR directamente:</p>
-            <p className="text-xs text-slate-600 mb-2">Dirección: <code className="font-mono bg-slate-100 px-1 rounded break-all">{wallet.substring(0, 32)}...</code></p>
+            <p className="text-xs text-slate-600 mb-2">Direccion: <code className="font-mono bg-slate-100 px-1 rounded break-all">{wallet.substring(0, 32)}...</code></p>
             <a
               href={`https://supportxmr.com/miner/${wallet}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm transition"
             >
-              Ver en SupportXMR.com →
+              Ver en SupportXMR.com ?
             </a>
           </div>
           <p className="text-xs text-blue-600">
-            ℹ️ El widget se sincronizará automáticamente cuando SupportXMR confirme los datos (cada 2-5 minutos).
+            El widget se sincronizara automaticamente cuando SupportXMR confirme los datos.
           </p>
         </div>
       </div>
     )
   }
 
-  // Calcular progreso
   const progressPercent = Math.min((stats.balance / fundingGoal) * 100, 100)
   const remaining = Math.max(fundingGoal - stats.balance, 0)
   const usdValue = (stats.balance * 316.12).toFixed(2)
@@ -117,11 +135,10 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
 
   return (
     <div className="nova-card p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
           <Zap className="h-5 w-5 text-purple-600" />
-          ⛏️ Minería comunitaria en progreso
+          Mineria comunitaria en progreso
         </h3>
         <button
           onClick={fetchMiningStats}
@@ -132,7 +149,6 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         </button>
       </div>
 
-      {/* Barra de progreso */}
       <div className="space-y-2">
         <div className="flex justify-between items-baseline">
           <span className="font-bold text-slate-900">{stats.balance.toFixed(4)} XMR</span>
@@ -152,30 +168,25 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         </div>
       </div>
 
-      {/* Grid de estadísticas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Hashrate actual */}
         <div className="bg-white rounded-lg p-4 border border-slate-200">
           <p className="text-xs font-bold text-slate-600 mb-1">Hashrate actual</p>
           <p className="font-bold text-slate-900">{stats.hashrate.toFixed(2)} H/s</p>
           <p className="text-xs text-slate-500 mt-1">en tiempo real</p>
         </div>
 
-        {/* Total de hashes */}
         <div className="bg-white rounded-lg p-4 border border-slate-200">
           <p className="text-xs font-bold text-slate-600 mb-1">Total de hashes</p>
           <p className="font-bold text-slate-900">{(stats.totalHashes / 1e6).toFixed(2)}M</p>
           <p className="text-xs text-slate-500 mt-1">acumulados</p>
         </div>
 
-        {/* XMR pendientes */}
         <div className="bg-white rounded-lg p-4 border border-slate-200">
           <p className="text-xs font-bold text-slate-600 mb-1">Saldo pendiente</p>
           <p className="font-bold text-slate-900">{stats.balance.toFixed(4)} XMR</p>
           <p className="text-xs text-slate-500 mt-1">listo para pagar</p>
         </div>
 
-        {/* Total pagado */}
         <div className="bg-white rounded-lg p-4 border border-slate-200">
           <p className="text-xs font-bold text-slate-600 mb-1">Total pagado</p>
           <p className="font-bold text-slate-900">{stats.totalPaid.toFixed(4)} XMR</p>
@@ -183,17 +194,16 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         </div>
       </div>
 
-      {/* Información de pool */}
       <div className="bg-white rounded-lg p-4 border border-slate-200 space-y-2">
         <div className="flex items-center gap-2 mb-2">
           <Target className="h-4 w-4 text-purple-600" />
           <p className="font-bold text-slate-900 text-sm">Pool: SupportXMR (0.6% fee)</p>
         </div>
         <p className="text-xs text-slate-600">
-          📍 Dirección: <code className="font-mono text-xs bg-slate-100 px-2 py-1 rounded break-all">{wallet.substring(0, 32)}...</code>
+          Direccion: <code className="font-mono text-xs bg-slate-100 px-2 py-1 rounded break-all">{wallet.substring(0, 32)}...</code>
         </p>
         <p className="text-xs text-slate-600">
-          ✓ Verificable en: <a
+          Verificable en: <a
             href={`https://supportxmr.com/miner/${wallet}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -209,15 +219,14 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
         )}
       </div>
 
-      {/* Información sobre minería comunitaria */}
       <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 border-2 border-emerald-300 rounded-lg p-4 space-y-2">
-        <p className="text-xs font-bold text-emerald-900">💚 Cómo funciona la minería comunitaria</p>
+        <p className="text-xs font-bold text-emerald-900">Como funciona la mineria comunitaria</p>
         <ul className="text-xs text-emerald-800 space-y-1">
-          <li>✓ Comunidad elige iniciar minería para este proyecto</li>
-          <li>✓ Cada participante aporta poder de cómputo (App o Navegador)</li>
-          <li>✓ SupportXMR acumula hashes y paga en XMR automáticamente</li>
-          <li>✓ XMR va directamente a dirección del investigador</li>
-          <li>✓ PROYECTA solo registra, nunca custodia fondos</li>
+          <li>Comunidad elige iniciar mineria para este proyecto</li>
+          <li>Cada participante aporta poder de computo (App o Navegador)</li>
+          <li>SupportXMR acumula hashes y paga en XMR automaticamente</li>
+          <li>XMR va directamente a direccion del investigador</li>
+          <li>PROYECTA solo registra, nunca custodia fondos</li>
         </ul>
       </div>
     </div>
