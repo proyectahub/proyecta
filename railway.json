@@ -1,9 +1,10 @@
-{
+﻿{
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "nixpacks"
+    "builder": "nixpacks",
+    "rootDirectory": "proyecta-web/backend"
   },
   "deploy": {
-    "startCommand": "cd proyecta-web/backend && npm start"
+    "startCommand": "npm start"
   }
 }
