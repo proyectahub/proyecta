@@ -239,3 +239,4 @@ export function MiningOptionsModal({
     document.body,
   )
 }
+
