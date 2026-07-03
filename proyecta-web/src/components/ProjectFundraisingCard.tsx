@@ -23,7 +23,6 @@ export function ProjectFundraisingCard({
   raised,
   hitos = [],
 }: ProjectFundraisingCardProps) {
-  // Valores seguros: evita crashes por undefined/NaN en proyectos sin estos campos
   const safeRaised = Number(raised) || 0
   const safeGoal = Number(goal) || 0
   const progress = safeGoal > 0 ? Math.min((safeRaised / safeGoal) * 100, 100) : 0
@@ -32,23 +31,18 @@ export function ProjectFundraisingCard({
 
   return (
     <div className="space-y-6">
-      {/* Card Principal */}
       <div className="nova-card p-8 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {/* Información */}
           <div className="md:col-span-2 space-y-4">
             <div>
               <h2 className="nova-title text-2xl">{projectTitle}</h2>
               <p className="text-slate-600 mt-2">{projectDescription}</p>
             </div>
 
-            {/* Barra de progreso */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-slate-700">Meta de financiamiento</span>
-                <span className="text-lg font-bold text-blue-600">
-                  {progress.toFixed(0)}%
-                </span>
+                <span className="text-lg font-bold text-blue-600">{progress.toFixed(0)}%</span>
               </div>
 
               <div className="w-full bg-slate-200 rounded-full h-4">
@@ -64,9 +58,7 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-blue-600">
                     {safeRaised.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">
-                    ${(safeRaised * 316.12).toFixed(0)} USD
-                  </p>
+                  <p className="text-xs text-slate-500">${(safeRaised * 316.12).toFixed(0)} USD</p>
                 </div>
 
                 <div className="bg-white rounded-lg p-3">
@@ -74,9 +66,7 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-amber-600">
                     {remaining.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">
-                    ${(remaining * 316.12).toFixed(0)} USD
-                  </p>
+                  <p className="text-xs text-slate-500">${(remaining * 316.12).toFixed(0)} USD</p>
                 </div>
 
                 <div className="bg-white rounded-lg p-3">
@@ -84,14 +74,11 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-slate-900">
                     {safeGoal.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">
-                    ${(safeGoal * 316.12).toFixed(0)} USD
-                  </p>
+                  <p className="text-xs text-slate-500">${(safeGoal * 316.12).toFixed(0)} USD</p>
                 </div>
               </div>
             </div>
 
-            {/* Dirección pública */}
             <div className="bg-white rounded-lg p-4 space-y-2">
               <p className="text-xs font-bold text-slate-600">DIRECCIÓN PÚBLICA (Blockchain)</p>
               <div className="flex gap-2">
@@ -119,7 +106,6 @@ export function ProjectFundraisingCard({
             </div>
           </div>
 
-          {/* Widget de donación - Sticky */}
           <div className="md:sticky md:top-6 h-fit">
             <DonateToProject
               projectId={projectId}
@@ -132,7 +118,6 @@ export function ProjectFundraisingCard({
         </div>
       </div>
 
-      {/* Hitos */}
       {safeHitos.length > 0 && (
         <div className="nova-card p-6">
           <h3 className="font-bold text-lg mb-4">Hitos de financiamiento</h3>
@@ -143,25 +128,17 @@ export function ProjectFundraisingCard({
                 key={idx}
                 className="flex items-center justify-between p-4 rounded-lg"
                 style={{
-                  backgroundColor: hito.completed
-                    ? 'rgb(236, 253, 245)' // emerald-50
-                    : 'rgb(248, 250, 252)', // slate-50
+                  backgroundColor: hito.completed ? 'rgb(236, 253, 245)' : 'rgb(248, 250, 252)',
                 }}
               >
                 <div>
                   <p className="font-bold text-slate-900">{hito.name}</p>
-                  <p className="text-sm text-slate-600">
-                    {hito.payout * 100}% de la meta
-                  </p>
+                  <p className="text-sm text-slate-600">{hito.payout * 100}% de la meta</p>
                 </div>
 
                 <div className="text-right">
-                  <p className="font-bold text-blue-600">
-                    {(hito.payout * safeGoal).toFixed(2)} XMR
-                  </p>
-                  {hito.completed && (
-                    <p className="text-xs text-emerald-600 font-bold">✅ Completado</p>
-                  )}
+                  <p className="font-bold text-blue-600">{(hito.payout * safeGoal).toFixed(2)} XMR</p>
+                  {hito.completed && <p className="text-xs text-emerald-600 font-bold">✅ Completado</p>}
                 </div>
               </div>
             ))}
@@ -172,7 +149,6 @@ export function ProjectFundraisingCard({
           </p>
         </div>
       )}
-
     </div>
   )
 }

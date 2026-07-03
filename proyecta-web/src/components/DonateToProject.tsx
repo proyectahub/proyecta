@@ -44,7 +44,7 @@ export function DonateToProject({
           onClick={() => setSelectedMiningOption(null)}
           className="nova-button-soft text-sm"
         >
-          ? Cambiar opción de minería
+          â† Cambiar opciÃ³n de minerÃ­a
         </button>
         <ProjectMiningWidget
           projectId={projectId}
@@ -59,9 +59,9 @@ export function DonateToProject({
     <>
       <div className="nova-card p-8 max-w-2xl bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 space-y-6">
         <div className="space-y-2">
-          <h3 className="font-bold text-xl text-slate-900">?? Aporta tu poder de cómputo</h3>
+          <h3 className="font-bold text-xl text-slate-900">â›ï¸ Aporta tu poder de cÃ³mputo</h3>
           <p className="text-slate-700">
-            Financia esta investigación donando potencia de CPU. Tu computadora genera XMR real que va directamente al investigador.
+            Financia esta investigaciÃ³n donando potencia de CPU. Tu computadora genera XMR real que va directamente al investigador.
           </p>
         </div>
 
@@ -71,15 +71,15 @@ export function DonateToProject({
             className="p-6 rounded-lg border-2 border-blue-300 bg-white hover:border-blue-500 hover:bg-blue-50 transition text-left space-y-3"
           >
             <div>
-              <p className="font-bold text-lg text-slate-900">?? Desde el navegador</p>
+              <p className="font-bold text-lg text-slate-900">ğŸŒ Desde el navegador</p>
               <p className="text-sm text-slate-600 mt-1">Empieza a minar en segundos</p>
             </div>
             <ul className="text-sm space-y-1 text-slate-600">
-              <li>? Sin instalar nada</li>
-              <li>? Funciona aquí mismo</li>
-              <li>?? Aporte simbólico (20-60 H/s)</li>
+              <li>âœ“ Sin instalar nada</li>
+              <li>âœ“ Funciona aquÃ­ mismo</li>
+              <li>âš ï¸ Aporte simbÃ³lico (20-60 H/s)</li>
             </ul>
-            <p className="text-xs text-blue-600 font-bold mt-3">Ver opciones ?</p>
+            <p className="text-xs text-blue-600 font-bold mt-3">Ver opciones â†’</p>
           </button>
 
           <button
@@ -90,25 +90,25 @@ export function DonateToProject({
               RECOMENDADO
             </div>
             <div>
-              <p className="font-bold text-lg text-slate-900">? App profesional</p>
-              <p className="text-sm text-slate-600 mt-1">Recauda 50-500× más</p>
+              <p className="font-bold text-lg text-slate-900">âš¡ App profesional</p>
+              <p className="text-sm text-slate-600 mt-1">Recauda 50-500Ã— mÃ¡s</p>
             </div>
             <ul className="text-sm space-y-1 text-slate-600">
-              <li>? Minería nativa real</li>
-              <li>? Funciona en segundo plano</li>
-              <li>? Máxima potencia (2.000-10.000+ H/s)</li>
+              <li>âœ“ MinerÃ­a nativa real</li>
+              <li>âœ“ Funciona en segundo plano</li>
+              <li>âœ“ MÃ¡xima potencia (2.000-10.000+ H/s)</li>
             </ul>
-            <p className="text-xs text-purple-600 font-bold mt-3">Descargar ?</p>
+            <p className="text-xs text-purple-600 font-bold mt-3">Descargar â†’</p>
           </button>
         </div>
 
         <div className="bg-white rounded-lg p-4 border border-slate-200 space-y-2">
-          <p className="font-bold text-slate-900 text-sm">?? ¿Cómo funciona?</p>
+          <p className="font-bold text-slate-900 text-sm">ğŸ’¡ Â¿CÃ³mo funciona?</p>
           <ol className="text-sm text-slate-700 space-y-1">
             <li><strong>1.</strong> Elige navegador o app</li>
-            <li><strong>2.</strong> Tu CPU calcula hashes RandomX (minería real)</li>
-            <li><strong>3.</strong> XMR se acumula en dirección del investigador</li>
-            <li><strong>4.</strong> Verificable en blockchain Monero (sin intermediarios)</li>
+            <li><strong>2.</strong> Tu CPU calcula hashes RandomX (minerÃ­a real)</li>
+            <li><strong>3.</strong> XMR se acumula en la direcciÃ³n del investigador</li>
+            <li><strong>4.</strong> Verificable en la blockchain de Monero (sin intermediarios)</li>
           </ol>
         </div>
 
@@ -116,7 +116,7 @@ export function DonateToProject({
           onClick={handleStartMining}
           className="w-full nova-button-solid py-4 text-lg font-bold"
         >
-          Seleccionar opción de minería
+          Seleccionar opciÃ³n de minerÃ­a
         </button>
       </div>
 

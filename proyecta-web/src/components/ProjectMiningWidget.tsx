@@ -61,7 +61,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
 
       <div className="nova-card p-6 space-y-6 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900">⚙️ Minar para este proyecto</h3>
+          <h3 className="text-2xl font-bold text-slate-900">⛏️ Minar para este proyecto</h3>
           <p className="text-slate-600">
             Dona tu poder de cómputo a <span className="font-bold">{projectTitle}</span>
           </p>
@@ -134,7 +134,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   <p className="text-slate-700">✅ RandomX real en WASM</p>
                   <p className="text-slate-700">✅ Multi-hilo (todos tus núcleos)</p>
                   <p className="text-slate-600 text-xs mt-2">
-                    ⚠️ ~20–60 H/s (participación simbólica)
+                    ⚠️ ~20-60 H/s (participación simbólica)
                   </p>
                 </div>
 
@@ -214,7 +214,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                 <div className="bg-white rounded-lg p-4 space-y-2 text-xs">
                   <p className="font-bold text-slate-900">⚡ Ventajas:</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>100–1000× más rápido (~2.000–4.000 H/s)</li>
+                    <li>100-1000× más rápido (~2.000-4.000 H/s)</li>
                     <li>Un solo paso: descomprime y doble clic</li>
                     <li>RandomX nativo (AES-NI + huge pages)</li>
                     <li>Sigue minando sin navegador abierto</li>
@@ -252,14 +252,14 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   <ol className="list-decimal list-inside space-y-0.5">
                     <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Miner.exe</code></li>
                     <li><strong>macOS:</strong> en Terminal: <code className="font-mono">chmod +x PROYECTA-Miner-macOS.command</code> y luego doble clic (o <code className="font-mono">./PROYECTA-Miner-macOS.command</code>)</li>
-                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x PROYECTA-Miner-Linux.sh &amp;&amp; ./PROYECTA-Miner-Linux.sh</code></li>
+                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x PROYECTA-Miner-Linux.sh && ./PROYECTA-Miner-Linux.sh</code></li>
                   </ol>
                   <p className="pt-1 text-slate-500">Descarga el xmrig oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
                 </div>
                 <div className="text-xs rounded p-3 border space-y-1" style={{ backgroundColor: '#FFFBEB', borderColor: '#FCD34D', color: '#92400E' }}>
                   <p className="font-bold">⚠️ Aviso: tu antivirus puede marcarlo</p>
                   <p>
-                    El motor de minado (xmrig) es <strong>software libre y de código abierto, NO un virus</strong>.
+                    El motor de minado (xmrig) es <strong>software libre y de código abierto, no un virus</strong>.
                     Algunos antivirus marcan cualquier minero por precaución. Si te lo bloquea,
                     permítelo o agrégalo a excepciones. Código auditable en{' '}
                     <a href="https://github.com/xmrig/xmrig" target="_blank" rel="noopener noreferrer" className="underline">github.com/xmrig/xmrig</a>.
