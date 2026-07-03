@@ -2,10 +2,10 @@
 const DEMO_FALLBACK_ENV = import.meta.env.VITE_ALLOW_DEMO_FALLBACK !== "false"
 
 const BACKEND_UNAVAILABLE_MESSAGE =
-  "El acceso de Proyecta estÃ¡ temporalmente en modo local. La portada sigue disponible mientras se reconecta el servicio."
+  "El acceso de Proyecta está temporalmente en modo local. La portada sigue disponible mientras se reconecta el servicio."
 
 const NETWORK_ERROR_MESSAGE =
-  "No pudimos conectar con el servidor en este momento. Verifica tu conexiÃ³n a internet e intenta de nuevo."
+  "No pudimos conectar con el servidor en este momento. Verifica tu conexión a internet e intenta de nuevo."
 
 function runningOnLocalHost() {
   if (typeof window === "undefined") return false
@@ -25,6 +25,20 @@ export function resolveMiningWebSocketUrl() {
 
   if (import.meta.env.DEV) {
     return "ws://localhost:3001/ws/mining"
+  }
+
+  const miningApiUrl = import.meta.env.VITE_MINING_API_URL
+  const sourceUrl = miningApiUrl || API_BASE
+
+  if (typeof window !== "undefined" && sourceUrl && sourceUrl !== "/api") {
+    try {
+      const normalized = new URL(sourceUrl, window.location.origin)
+      const wsProtocol = normalized.protocol === "https:" ? "wss:" : "ws:"
+      const basePath = normalized.pathname.replace(/\/api\/?$/, "").replace(/\/api\/mining\/?$/, "")
+      return `${wsProtocol}//${normalized.host}${basePath}/ws/mining`
+    } catch {
+      // Si la URL no se puede normalizar, caemos al host actual como último recurso.
+    }
   }
 
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
