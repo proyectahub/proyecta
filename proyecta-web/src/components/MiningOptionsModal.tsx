@@ -1,4 +1,5 @@
-import { useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Download, Zap, Monitor, X } from 'lucide-react'
 
 interface MiningOptionsModalProps {
@@ -16,27 +17,45 @@ export function MiningOptionsModal({
 }: MiningOptionsModalProps) {
   const [selectedTab, setSelectedTab] = useState<'browser' | 'app' | null>(null)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen])
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center">
+  if (!isOpen || typeof document === 'undefined') return null
+
+  return createPortal(
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ zIndex: 2147483647 }}
+    >
+      <div
+        className="absolute inset-0 bg-black/65"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/10">
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
           <div>
             <h2 className="text-3xl font-bold">⛏️ Aporta cómputo para esta investigación</h2>
-            <p className="text-sm opacity-90 mt-1">
+            <p className="mt-1 text-sm opacity-90">
               Tu poder de procesamiento se convierte directamente en XMR para el proyecto. Elige tu nivel de participación.
             </p>
           </div>
-          <button onClick={onClose} className="hover:bg-white hover:bg-opacity-20 p-2 rounded">
+          <button onClick={onClose} className="rounded p-2 hover:bg-white/20">
             <X className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="p-8 space-y-8">
-          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 space-y-3">
+        <div className="max-h-[calc(90vh-88px)] overflow-y-auto p-8 space-y-8">
+          <div className="space-y-3 rounded-lg border-2 border-blue-300 bg-blue-50 p-6">
             <p className="font-bold text-blue-900">⛏️ Tu aporte es cómputo = XMR para investigación</p>
-            <ul className="text-sm text-blue-800 space-y-2">
+            <ul className="space-y-2 text-sm text-blue-800">
               <li><strong>1.</strong> Activas minería en tu navegador o descargas la app</li>
               <li><strong>2.</strong> Tu CPU calcula hashes RandomX (es la forma de generar XMR)</li>
               <li><strong>3.</strong> Los XMR se envían automáticamente a la dirección del investigador</li>
@@ -44,10 +63,10 @@ export function MiningOptionsModal({
             </ul>
           </div>
 
-          <div className="border-2 border-purple-300 rounded-xl p-8 bg-gradient-to-br from-purple-50 to-blue-50">
-            <h3 className="text-2xl font-bold mb-6 text-slate-900">📊 Comparación: tu aporte</h3>
+          <div className="rounded-xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-blue-50 p-8">
+            <h3 className="mb-6 text-2xl font-bold text-slate-900">📊 Comparación: tu aporte</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
+              <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                     <th className="border border-purple-300 p-4 text-left font-bold">Aspecto</th>
@@ -77,8 +96,8 @@ export function MiningOptionsModal({
                   </tr>
                   <tr className="bg-slate-50">
                     <td className="border border-purple-300 p-4 font-bold text-slate-900">Potencia (H/s)</td>
-                    <td className="border border-purple-300 p-4 text-center text-blue-700 font-bold">20-60 H/s</td>
-                    <td className="border border-purple-300 p-4 text-center text-purple-700 font-bold">2.000-10.000 H/s</td>
+                    <td className="border border-purple-300 p-4 text-center font-bold text-blue-700">20-60 H/s</td>
+                    <td className="border border-purple-300 p-4 text-center font-bold text-purple-700">2.000-10.000 H/s</td>
                   </tr>
                   <tr>
                     <td className="border border-purple-300 p-4 font-bold text-slate-900">Multiplicador</td>
@@ -109,7 +128,7 @@ export function MiningOptionsModal({
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 border-2 border-emerald-300 rounded-lg p-6 space-y-3">
+          <div className="rounded-lg border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-cyan-50 p-6 space-y-3">
             <p className="font-bold text-emerald-900">💡 Nuestro consejo</p>
             <p className="text-slate-700">
               Si tu PC estará disponible <strong>más de 1 hora al día</strong>, la <strong>App nativa</strong> recauda <strong>50-500× más</strong> XMR. Solo se descarga una vez y trabaja mientras usas la computadora normalmente.
@@ -121,65 +140,63 @@ export function MiningOptionsModal({
 
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-slate-900">📋 Elige tu forma de aportar</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div
-                className={`border-2 rounded-lg p-6 cursor-pointer transition ${
+                className={`cursor-pointer rounded-lg border-2 p-6 transition ${
                   selectedTab === 'browser'
                     ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-300'
-                    : 'border-gray-200 hover:border-blue-300 bg-white'
+                    : 'border-gray-200 bg-white hover:border-blue-300'
                 }`}
                 onClick={() => setSelectedTab('browser')}
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div className="mb-4 flex items-center gap-3">
                   <Monitor className="h-8 w-8 text-blue-600" />
                   <h3 className="text-lg font-bold">Navegador</h3>
                 </div>
                 <div className="space-y-3">
                   <p className="text-sm font-bold text-blue-900">Prueba rápida y sin compromiso</p>
                   <p className="text-xs text-gray-600">Perfecto para entender cómo funciona PROYECTA</p>
-
-                  <div className="space-y-2 text-sm border-t pt-3">
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>Empieza en segundos</span></div>
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>Funciona dentro de esta página</span></div>
-                    <div className="flex gap-2"><span className="text-orange-600 font-bold flex-shrink-0">⚠</span><span>Aporte simbólico (20-60 H/s)</span></div>
-                    <div className="flex gap-2"><span className="text-orange-600 font-bold flex-shrink-0">⚠</span><span>Se detiene si cierras el navegador</span></div>
+                  <div className="space-y-2 border-t pt-3 text-sm">
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>Empieza en segundos</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>Funciona dentro de esta página</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-orange-600">⚠</span><span>Aporte simbólico (20-60 H/s)</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-orange-600">⚠</span><span>Se detiene si cierras el navegador</span></div>
                   </div>
                 </div>
               </div>
 
               <div
-                className={`border-2 rounded-lg p-6 cursor-pointer transition relative ${
+                className={`relative cursor-pointer rounded-lg border-2 p-6 transition ${
                   selectedTab === 'app'
                     ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-300'
-                    : 'border-gray-200 hover:border-purple-300 bg-white'
+                    : 'border-gray-200 bg-white hover:border-purple-300'
                 }`}
                 onClick={() => setSelectedTab('app')}
               >
-                <div className="absolute top-3 right-3 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-bold">
+                <div className="absolute right-3 top-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-bold text-white">
                   RECOMENDADO
                 </div>
-                <div className="flex items-center gap-3 mb-4">
+                <div className="mb-4 flex items-center gap-3">
                   <Zap className="h-8 w-8 text-purple-600" />
                   <h3 className="text-lg font-bold">App nativa</h3>
                 </div>
                 <div className="space-y-3">
                   <p className="text-sm font-bold text-purple-900">Financiamiento real para investigación</p>
                   <p className="text-xs text-gray-600">El corazón de la red PROYECTA</p>
-
-                  <div className="space-y-2 text-sm border-t pt-3">
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>Minería nativa + profesional</span></div>
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>50-500× más poder (2.000-10.000+ H/s)</span></div>
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>Funciona en segundo plano</span></div>
-                    <div className="flex gap-2"><span className="text-green-600 font-bold flex-shrink-0">✓</span><span>Controla CPU al 100% desde tu PC</span></div>
+                  <div className="space-y-2 border-t pt-3 text-sm">
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>Minería nativa + profesional</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>50-500× más poder (2.000-10.000+ H/s)</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>Funciona en segundo plano</span></div>
+                    <div className="flex gap-2"><span className="flex-shrink-0 font-bold text-green-600">✓</span><span>Controla CPU al 100% desde tu PC</span></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg p-6">
-            <p className="font-bold text-amber-900 mb-2">🔒 Transparencia total</p>
-            <ul className="text-sm text-amber-800 space-y-1">
+          <div className="rounded-lg border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-6">
+            <p className="mb-2 font-bold text-amber-900">🔒 Transparencia total</p>
+            <ul className="space-y-1 text-sm text-amber-800">
               <li>✓ El código de PROYECTA es abierto (open source)</li>
               <li>✓ Los XMR van directo a la billetera del proyecto: PROYECTA nunca los toca</li>
               <li>✓ Puedes ver en tiempo real en cualquier explorador de Monero</li>
@@ -187,8 +204,8 @@ export function MiningOptionsModal({
             </ul>
           </div>
 
-          <div className="flex gap-4 pt-6 border-t">
-            <button onClick={onClose} className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-100">
+          <div className="flex gap-4 border-t pt-6">
+            <button onClick={onClose} className="flex-1 rounded-lg border border-gray-300 px-6 py-3 font-bold text-gray-700 hover:bg-gray-100">
               Cancelar
             </button>
             {selectedTab === 'browser' && (
@@ -197,7 +214,7 @@ export function MiningOptionsModal({
                   onSelectOption('browser')
                   onClose()
                 }}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
               >
                 <Monitor className="h-5 w-5" />
                 Probar en navegador
@@ -209,7 +226,7 @@ export function MiningOptionsModal({
                   onSelectOption('app')
                   onClose()
                 }}
-                className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-bold text-white hover:bg-purple-700"
               >
                 <Download className="h-5 w-5" />
                 Descargar app
@@ -218,6 +235,7 @@ export function MiningOptionsModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
