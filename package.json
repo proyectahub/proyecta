@@ -1,0 +1,9 @@
+﻿{
+  "name": "proyecta-root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "cd proyecta-web/backend && npm install",
+    "start": "cd proyecta-web/backend && npm start"
+  }
+}
