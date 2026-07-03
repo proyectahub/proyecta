@@ -1,9 +1,10 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Square, Zap, AlertCircle, CheckCircle2, Download } from 'lucide-react'
 import { useValidateMoneroAddress } from '../hooks/useMoneroMining'
 import { useRandomXMining } from '../hooks/useRandomXMining'
 import { useSupportXMRStats } from '../hooks/useSupportXMRMining'
 import { MiningOptionsModal } from './MiningOptionsModal'
+import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 interface ProjectMiningWidgetProps {
   projectMoneroAddress: string
@@ -31,8 +32,8 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
     return (
       <div className="nova-card p-6 bg-amber-50 border border-amber-200">
         <p className="text-amber-800 text-sm">
-          ⚠️ Este proyecto no tiene una dirección Monero válida, por lo que no se puede minar.
-          Edita el proyecto y vincula tu wallet real para habilitar minería verificable.
+          âš ï¸ Este proyecto no tiene una direcciÃ³n Monero vÃ¡lida, por lo que no se puede minar.
+          Edita el proyecto y vincula tu wallet real para habilitar minerÃ­a verificable.
         </p>
       </div>
     )
@@ -61,16 +62,16 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
 
       <div className="nova-card p-6 space-y-6 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900">⛏️ Minar para este proyecto</h3>
+          <h3 className="text-2xl font-bold text-slate-900">â›ï¸ Minar para este proyecto</h3>
           <p className="text-slate-600">
-            Dona tu poder de cómputo a <span className="font-bold">{projectTitle}</span>
+            Dona tu poder de cÃ³mputo a <span className="font-bold">{projectTitle}</span>
           </p>
           {miningMode && (
             <button
               onClick={() => setShowOptionsModal(true)}
               className="text-xs text-blue-600 underline hover:text-blue-700"
             >
-              Cambiar opción de minería
+              Cambiar opciÃ³n de minerÃ­a
             </button>
           )}
         </div>
@@ -78,7 +79,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
         {!miningMode && (
           <div className="bg-blue-50 border border-blue-300 rounded-lg p-6 text-center space-y-3">
             <p className="text-slate-700">
-              👆 Arriba aparecen opciones de minería. Elige cómo contribuir.
+              ðŸ‘† Arriba aparecen opciones de minerÃ­a. Elige cÃ³mo contribuir.
             </p>
           </div>
         )}
@@ -124,17 +125,17 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   className="w-full flex items-center justify-center gap-2 bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600"
                 >
                   <Square className="h-5 w-5" />
-                  Detener minería
+                  Detener minerÃ­a
                 </button>
               </>
             ) : (
               <>
                 <div className="bg-white rounded-lg p-4 space-y-2 text-sm border-l-4 border-blue-600">
-                  <p className="font-bold text-blue-900">💻 Opción A: Minería en navegador</p>
-                  <p className="text-slate-700">✅ RandomX real en WASM</p>
-                  <p className="text-slate-700">✅ Multi-hilo (todos tus núcleos)</p>
+                  <p className="font-bold text-blue-900">ðŸ’» OpciÃ³n A: MinerÃ­a en navegador</p>
+                  <p className="text-slate-700">âœ… RandomX real en WASM</p>
+                  <p className="text-slate-700">âœ… Multi-hilo (todos tus nÃºcleos)</p>
                   <p className="text-slate-600 text-xs mt-2">
-                    ⚠️ ~20-60 H/s (participación simbólica)
+                    âš ï¸ ~20-60 H/s (participaciÃ³n simbÃ³lica)
                   </p>
                 </div>
 
@@ -177,7 +178,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-bold">
-                  {stats.poolConnected ? '✅ Pool conectado' : `🔄 ${stats.status}`}
+                  {stats.poolConnected ? 'âœ… Pool conectado' : `ðŸ”„ ${stats.status}`}
                 </p>
                 <p className="text-xs font-mono">{poolUrl}</p>
               </div>
@@ -186,7 +187,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
             {poolStats && (
               <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-800">
                 <p>
-                  <strong>Stats:</strong> {(poolStats.totalHashes || 0).toLocaleString()} hashes ·{' '}
+                  <strong>Stats:</strong> {(poolStats.totalHashes || 0).toLocaleString()} hashes Â·{' '}
                   {((poolStats.balance || 0) > 0 ? poolStats.balance.toFixed(12) : '0')} XMR
                 </p>
               </div>
@@ -194,7 +195,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
 
             {miningError && (
               <div className="bg-red-100 border border-red-300 rounded-lg p-3 text-red-800 text-sm">
-                ⚠️ {miningError}
+                âš ï¸ {miningError}
               </div>
             )}
           </>
@@ -205,16 +206,16 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
             <div className="bg-gradient-to-r from-purple-100 to-purple-50 border border-purple-300 rounded-lg p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Zap className="h-8 w-8 text-purple-600" />
-                <h4 className="text-lg font-bold text-purple-900">Opción B1: Minería profesional</h4>
+                <h4 className="text-lg font-bold text-purple-900">OpciÃ³n B1: MinerÃ­a profesional</h4>
               </div>
 
               <div className="space-y-3 text-sm text-slate-700">
-                <p>Minero de alto rendimiento sin instalar nada. Descarga el xmrig oficial automáticamente y mina para el proyecto.</p>
+                <p>Minero de alto rendimiento sin instalar nada. Descarga el xmrig oficial automÃ¡ticamente y mina para el proyecto.</p>
 
                 <div className="bg-white rounded-lg p-4 space-y-2 text-xs">
-                  <p className="font-bold text-slate-900">⚡ Ventajas:</p>
+                  <p className="font-bold text-slate-900">âš¡ Ventajas:</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>100-1000× más rápido (~2.000-4.000 H/s)</li>
+                    <li>100-1000Ã— mÃ¡s rÃ¡pido (~2.000-4.000 H/s)</li>
                     <li>Un solo paso: descomprime y doble clic</li>
                     <li>RandomX nativo (AES-NI + huge pages)</li>
                     <li>Sigue minando sin navegador abierto</li>
@@ -248,20 +249,20 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   </a>
                 </div>
                 <div className="text-xs text-slate-600 bg-blue-50 rounded p-3 border border-blue-200 space-y-1">
-                  <p className="font-bold">Cómo usar:</p>
+                  <p className="font-bold">CÃ³mo usar:</p>
                   <ol className="list-decimal list-inside space-y-0.5">
                     <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Miner.exe</code></li>
                     <li><strong>macOS:</strong> en Terminal: <code className="font-mono">chmod +x PROYECTA-Miner-macOS.command</code> y luego doble clic (o <code className="font-mono">./PROYECTA-Miner-macOS.command</code>)</li>
                     <li><strong>Linux:</strong> <code className="font-mono">chmod +x PROYECTA-Miner-Linux.sh && ./PROYECTA-Miner-Linux.sh</code></li>
                   </ol>
-                  <p className="pt-1 text-slate-500">Descarga el xmrig oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
+                  <p className="pt-1 text-slate-500">Descarga el xmrig oficial automÃ¡ticamente y empieza a minar. Sin instalar nada mÃ¡s.</p>
                 </div>
                 <div className="text-xs rounded p-3 border space-y-1" style={{ backgroundColor: '#FFFBEB', borderColor: '#FCD34D', color: '#92400E' }}>
-                  <p className="font-bold">⚠️ Aviso: tu antivirus puede marcarlo</p>
+                  <p className="font-bold">âš ï¸ Aviso: tu antivirus puede marcarlo</p>
                   <p>
-                    El motor de minado (xmrig) es <strong>software libre y de código abierto, no un virus</strong>.
-                    Algunos antivirus marcan cualquier minero por precaución. Si te lo bloquea,
-                    permítelo o agrégalo a excepciones. Código auditable en{' '}
+                    El motor de minado (xmrig) es <strong>software libre y de cÃ³digo abierto, no un virus</strong>.
+                    Algunos antivirus marcan cualquier minero por precauciÃ³n. Si te lo bloquea,
+                    permÃ­telo o agrÃ©galo a excepciones. CÃ³digo auditable en{' '}
                     <a href="https://github.com/xmrig/xmrig" target="_blank" rel="noopener noreferrer" className="underline">github.com/xmrig/xmrig</a>.
                   </p>
                 </div>
@@ -269,7 +270,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
 
               <div className="bg-white rounded-lg p-3 text-xs text-slate-600 space-y-1 border-l-4 border-purple-600">
                 <p>
-                  <strong>Dirección:</strong>{' '}
+                  <strong>DirecciÃ³n:</strong>{' '}
                   <code className="font-mono text-xs break-all">{projectMoneroAddress}</code>
                 </p>
                 <p>
@@ -282,7 +283,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               onClick={() => setShowOptionsModal(true)}
               className="w-full px-6 py-2 border border-slate-300 rounded-lg font-bold text-slate-700 hover:bg-slate-50"
             >
-              ← Cambiar opción
+              â† Cambiar opciÃ³n
             </button>
           </div>
         )}
@@ -290,3 +291,5 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
     </>
   )
 }
+
+

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { RefreshCw, TrendingUp, Zap, Target } from 'lucide-react'
 import { API_BASE } from '../lib/api'
+import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 interface MiningStats {
   hashrate: number
@@ -41,14 +42,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
           }
 
           const data = await response.json()
-          const normalized: MiningStats = {
-            hashrate: Number(data.hashrate ?? data.hash ?? 0),
-            totalHashes: Number(data.totalHashes ?? data.total_hashes ?? 0),
-            balance: Number(data.balance ?? data.amtDue ?? 0),
-            totalPaid: Number(data.totalPaid ?? data.paid ?? 0),
-            lastHash: Number(data.lastHash ?? Date.now()),
-            minPayout: Number(data.minPayout ?? 0.3),
-          }
+          const normalized = normalizeSupportXMRStats(data)
 
           setStats(normalized)
           setLastUpdate(new Date())
@@ -232,3 +226,4 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle }: MiningS
     </div>
   )
 }
+

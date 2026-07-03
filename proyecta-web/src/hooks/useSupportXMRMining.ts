@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useRef, useCallback } from 'react'
+import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 interface MiningStats {
   hashes: number
@@ -158,7 +159,7 @@ export function useSupportXMRStats(walletAddress: string) {
 
         if (backendRes.ok) {
           const data = await backendRes.json()
-          setPoolStats(data)
+          setPoolStats(normalizeSupportXMRStats(data))
           setError(null)
           return
         }
@@ -171,7 +172,7 @@ export function useSupportXMRStats(walletAddress: string) {
         }
 
         const data = await response.json()
-        setPoolStats(data)
+        setPoolStats(normalizeSupportXMRStats(data))
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error')
@@ -197,5 +198,7 @@ export function useSupportXMRStats(walletAddress: string) {
 
   return { poolStats, loading, error }
 }
+
+
 
 
