@@ -4,6 +4,6 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm run dev"
+    "startCommand": "cd proyecta-web/backend && npm start"
   }
 }
