@@ -489,7 +489,7 @@ function toPublicUserWithStore(user, store) {
 
 function getTokenFromRequest(req) {
   const authorization = req.headers.authorization
-  if (authorization.startsWith("Bearer ")) {
+  if (typeof authorization === "string" && authorization.startsWith("Bearer ")) {
     return authorization.slice("Bearer ".length).trim()
   }
 
@@ -499,16 +499,6 @@ function getTokenFromRequest(req) {
   }
 
   return null
-}
-
-function createSession(store, userId) {
-  const token = randomUUID()
-  store.sessions.push({
-    token,
-    userId,
-    createdAt: new Date().toISOString(),
-  })
-  return token
 }
 
 async function getCurrentUser(req) {
@@ -1672,6 +1662,10 @@ async function handleOrcidCallback(req, res) {
 app.get("/api/oauth/orcid/callback", handleOrcidCallback)
 app.get("/orcid/callback", handleOrcidCallback)
 
-app.listen(PORT, () => {
-  console.log(`Backend corriendo en puerto ${PORT}`)
-})
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  app.listen(PORT, () => {
+    console.log(`Backend corriendo en puerto ${PORT}`)
+  })
+}
+
+export default app

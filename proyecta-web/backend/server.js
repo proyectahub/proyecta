@@ -1,14 +1,12 @@
-﻿import express from "express"
-import cors from "cors"
-import dotenv from "dotenv"
+import app from "./index.js"
+import express from "express"
 import http from "http"
 import net from "net"
 import { WebSocketServer } from "ws"
 import orcidRoutes from "./orcid.js"
 import moneroRoutes from "./moneroRoutes.js"
 import { initializeMoneroConnection } from "./monero.js"
-import { readStore } from "./moneroStore.js"
-
+import { readStore as readMiningStore } from "./moneroStore.js"
 function parseDecimalLike(value) {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0
@@ -67,7 +65,6 @@ function normalizeSupportXMRStats(data) {
   }
 }
 
-dotenv.config()
 
 function createMiningCompatibilityRouter() {
   const router = express.Router()
@@ -330,11 +327,8 @@ function getOrCreatePool(wallet) {
   return pool
 }
 
-const app = express()
 const PORT = Number(process.env.PORT || 3000)
 
-app.use(cors())
-app.use(express.json())
 
 app.use("/api/orcid", orcidRoutes)
 app.use("/api/monero", moneroRoutes)
