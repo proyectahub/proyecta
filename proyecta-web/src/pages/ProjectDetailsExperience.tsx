@@ -4,7 +4,7 @@ import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 import { ProjectComments } from '../components/ProjectComments'
 import { MiningStatsWidget } from '../components/MiningStatsWidget'
-import { normalizeProjectWallet } from '../utils/projectWallet'
+import { normalizeProjectWallet, normalizeProjectWalletAddress, isValidProjectWalletAddress } from '../utils/projectWallet'
 
 interface Project {
   id: string
@@ -88,6 +88,27 @@ export function ProjectDetailsExperience() {
         </button>
       </div>
 
+      <div className="nova-card p-6 space-y-3 border-2 border-slate-200 bg-white">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Wallet personal del investigador</p>
+        <p className="text-sm text-slate-600">
+          Esta es la dirección pública a la que el pool envía los XMR del proyecto.
+        </p>
+        <code className="block break-all rounded-lg bg-slate-50 p-4 font-mono text-xs text-slate-800 border border-slate-200">
+          {normalizeProjectWalletAddress(project.fundraisingAddress)}
+        </code>
+        <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+          <span>{isValidProjectWalletAddress(project.fundraisingAddress) ? 'Dirección válida' : 'Dirección pendiente de validar'}</span>
+          <a
+            href={`https://supportxmr.com/miner/${normalizeProjectWalletAddress(project.fundraisingAddress)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline font-bold"
+          >
+            Ver en SupportXMR
+          </a>
+        </div>
+      </div>
+
       <ProjectFundraisingCard
         projectId={project.id}
         projectTitle={project.title}
@@ -105,7 +126,7 @@ export function ProjectDetailsExperience() {
       />
 
       <div className="nova-card p-6 space-y-4">
-        <h2 className="text-2xl font-bold">Descripci�n</h2>
+        <h2 className="text-2xl font-bold">Descripci�n</h2>
         <div
           className="text-slate-700 space-y-4"
           dangerouslySetInnerHTML={{ __html: project.description }}

@@ -685,11 +685,11 @@ export default function ArticleExperience() {
       : `https://proyecta.pages.dev/article/${article.id}`
   const brandMarkUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/brand/nova-mark.svg`
-      : `https://proyecta.pages.dev/brand/nova-mark.svg`
+      ? `${window.location.origin}/brand/proyecta-mark.svg`
+      : `https://proyecta.pages.dev/brand/proyecta-mark.svg`
 
   // Fase 1: DOI interno (no es un DOI registrado). Sirve para trazabilidad y para el PDF.
-  const provisionalDoi = `NOVA.${article.id}`
+  const provisionalDoi = `PROYECTA.${article.id}`
   const doiValue = articleDoi.trim() ? articleDoi.trim() : provisionalDoi
   const doiKindLabel = articleDoi.trim() ? "DOI" : "DOI provisional interno"
   const citationLabel = `${article.author.name} (${formatLongDate(article.createdAt ?? "")}). ${article.title}. Proyecta. ${articleCanonicalUrl}`

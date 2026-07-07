@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useWalletAuth } from '../context/WalletAuthContext'
 import { generateMoneroAddress } from '../utils/moneroAddress'
+import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
 import { RichTextEditor } from '../components/RichTextEditor'
 
 const CATEGORIES: Record<string, string> = {
@@ -28,6 +29,7 @@ export function CreateProjectExperience() {
   const [category, setCategory] = useState('biology')
   const [fundingGoal, setFundingGoal] = useState('')
   const [useOwnWallet, setUseOwnWallet] = useState(true)
+  const [personalWalletAddress, setPersonalWalletAddress] = useState('')
 
   const linkedWalletAddress =
     traditionalUser?.moneroWallet?.mainAddress || walletUser?.wallet?.mainAddress || ''
@@ -37,8 +39,13 @@ export function CreateProjectExperience() {
     []
   )
 
+  const resolvedPersonalWallet = normalizeProjectWalletAddress(personalWalletAddress)
   const projectMoneroAddress =
-    useOwnWallet && linkedWalletAddress ? linkedWalletAddress : generatedAddress
+    useOwnWallet && isValidProjectWalletAddress(resolvedPersonalWallet)
+      ? resolvedPersonalWallet
+      : useOwnWallet && linkedWalletAddress
+        ? linkedWalletAddress
+        : generatedAddress
 
   const isAuthenticated = !!(traditionalUser || walletUser)
 
@@ -80,7 +87,13 @@ export function CreateProjectExperience() {
       return title.trim().length > 0 && description.trim().length > 20 && coverImage
     }
     if (step === 'funding') {
-      return parseFloat(fundingGoal) > 0
+      if (parseFloat(fundingGoal) <= 0) {
+        return false
+      }
+      if (useOwnWallet) {
+        return isValidProjectWalletAddress(resolvedPersonalWallet) || isValidProjectWalletAddress(linkedWalletAddress)
+      }
+      return true
     }
     return true
   }
@@ -342,6 +355,22 @@ export function CreateProjectExperience() {
                 </div>
               </div>
             )}
+
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-slate-700">
+                Wallet personal de Monero
+              </label>
+              <input
+                type="text"
+                value={personalWalletAddress}
+                onChange={(e) => setPersonalWalletAddress(e.target.value)}
+                placeholder="44yrux72BYfaVJVkugoCFpdgTYXWPtqr..."
+                className="nova-field font-mono text-sm"
+              />
+              <p className="text-xs text-slate-500">
+                Si la dirección es válida, se usará como destino del pool para este proyecto. Si la dejas vacía, se usará la wallet vinculada o una dirección generada.
+              </p>
+            </div>
 
             {/* Información de la dirección */}
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6 space-y-3">

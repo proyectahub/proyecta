@@ -268,6 +268,54 @@ async function readStore() {
   }
 }
 
+const projectsPath = path.join(dataDir, "projects.json")
+
+const defaultProjectsStore = {
+  projects: [],
+}
+
+async function ensureProjectsFile() {
+  await fs.mkdir(dataDir, { recursive: true })
+  try {
+    await fs.access(projectsPath)
+  } catch {
+    await fs.writeFile(projectsPath, JSON.stringify(defaultProjectsStore, null, 2), "utf8")
+  }
+}
+
+async function readProjectsStore() {
+  await ensureProjectsFile()
+  const file = await fs.readFile(projectsPath, "utf8")
+  try {
+    return JSON.parse(file)
+  } catch {
+    return defaultProjectsStore
+  }
+}
+
+async function writeProjectsStore(data) {
+  await fs.writeFile(projectsPath, JSON.stringify(data, null, 2), "utf8")
+}
+
+function normalizeProjectRecord(project) {
+  const fundraisingAddress = String(project.fundraisingAddress || project.moneroAddress || "").trim()
+  return {
+    id: String(project.id || `proj_${randomUUID().slice(0, 8)}`),
+    title: String(project.title || "").trim(),
+    description: String(project.description || "").trim(),
+    category: String(project.category || "other").trim(),
+    fundingGoal: Number(project.fundingGoal || 0),
+    fundraisingAddress,
+    moneroAddress: fundraisingAddress,
+    author: String(project.author || "anonymous").trim(),
+    authorName: String(project.authorName || "Investigador").trim(),
+    raised: Number(project.raised || 0),
+    status: String(project.status || "active").trim(),
+    hitos: Array.isArray(project.hitos) ? project.hitos : [],
+    createdAt: Number(project.createdAt || Date.now()),
+    updatedAt: Number(project.updatedAt || Date.now()),
+  }
+}
 async function writeStore(data) {
   await fs.writeFile(storePath, JSON.stringify(data, null, 2), "utf8")
 }
@@ -1659,6 +1707,46 @@ async function handleOrcidCallback(req, res) {
   }
 }
 
+app.get("/api/projects", async (_req, res) => {
+  const store = await readProjectsStore()
+  const projects = Array.isArray(store.projects) ? store.projects.map(normalizeProjectRecord) : []
+  return res.json(projects.sort((left, right) => right.createdAt - left.createdAt))
+})
+
+app.get("/api/projects/:id", async (req, res) => {
+  const store = await readProjectsStore()
+  const project = Array.isArray(store.projects)
+    ? store.projects.map(normalizeProjectRecord).find((item) => item.id === req.params.id)
+    : null
+
+  if (!project) {
+    return res.status(404).json({ error: "Proyecto no encontrado." })
+  }
+
+  return res.json(project)
+})
+
+app.post("/api/projects", async (req, res) => {
+  const payload = normalizeProjectRecord(req.body || {})
+
+  if (!payload.title || !payload.description || !payload.fundingGoal || !payload.fundraisingAddress) {
+    return res.status(400).json({ error: "Faltan datos del proyecto." })
+  }
+
+  const store = await readProjectsStore()
+  const nextProject = {
+    ...payload,
+    id: payload.id || `proj_${randomUUID().slice(0, 8)}`,
+    createdAt: payload.createdAt || Date.now(),
+    updatedAt: Date.now(),
+  }
+
+  const projects = Array.isArray(store.projects) ? store.projects.filter((item) => item.id !== nextProject.id) : []
+  projects.unshift(nextProject)
+  await writeProjectsStore({ projects })
+
+  return res.status(201).json(nextProject)
+})
 app.get("/api/oauth/orcid/callback", handleOrcidCallback)
 app.get("/orcid/callback", handleOrcidCallback)
 

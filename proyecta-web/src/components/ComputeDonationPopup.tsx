@@ -8,7 +8,7 @@ interface ComputeDonationPopupProps {
   triggerSource: 'register' | 'interactions';
   onClose: () => void;
   visible: boolean;
-  onDonate: (percentage: number) => void;
+  onDonate?: (percentage: number) => void;
 }
 
 export function ComputeDonationPopup({
@@ -18,7 +18,7 @@ export function ComputeDonationPopup({
 }: ComputeDonationPopupProps) {
   const { startDonation, dismissPopup, getDonationStatus } = useComputeDonation();
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedPercentage, setSelectedPercentage] = useState(50);
+  const [selectedPercentage, setSelectedPercentage] = useState(30);
   const [neverShowAgain, setNeverShowAgain] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function ComputeDonationPopup({
 
   const handleDonate = () => {
     startDonation(selectedPercentage);
-    onDonate(selectedPercentage);
+    onDonate?.(selectedPercentage);
     handleClose();
   };
 
@@ -48,17 +48,14 @@ export function ComputeDonationPopup({
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-[90] bg-slate-950/60 backdrop-blur-sm"
-        onClick={handleClose}
-      />
+      <div className="fixed inset-0 z-[90] bg-slate-950/60 backdrop-blur-sm" onClick={handleClose} />
 
       <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
         <div
           className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-1.5 w-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-purple-500" />
+          <div className="h-1.5 w-full bg-gradient-to-r from-[#21131f] via-[#7a1e6e] to-[#c026d3]" />
 
           <div className="p-6">
             <div className="mb-5 flex items-start justify-between">
@@ -69,7 +66,7 @@ export function ComputeDonationPopup({
                 <div>
                   <p className="nova-eyebrow text-fuchsia-600">Apoyo voluntario</p>
                   <h2 className="nova-title text-lg font-extrabold leading-tight text-slate-900">
-                    Dona tu cómputo a la comunidad
+                    Aporta cómputo a una causa científica
                   </h2>
                 </div>
               </div>
@@ -83,10 +80,9 @@ export function ComputeDonationPopup({
             </div>
 
             <p className="mb-5 text-sm leading-relaxed text-slate-600">
-              Proyecta existe porque personas como tú la sostienen. Puedes donar una fracción
-              de tu CPU —<strong>no dinero</strong>—, sino poder de cómputo disponible para
-              mantener esta comunidad científica abierta. Tu navegación <strong>no se verá
-              afectada.</strong>
+              Tu computadora puede sumar a una red de apoyo colectivo. Si aceptas, Proyecta usará
+              una fracción de CPU disponible para contribuir al financiamiento comunitario de la ciencia.
+              No es un cobro: es un aporte voluntario que puedes detener cuando quieras.
             </p>
 
             <Link
@@ -115,7 +111,7 @@ export function ComputeDonationPopup({
                 ))}
               </div>
               <p className="text-[11px] text-slate-500">
-                Aportando el <strong>{selectedPercentage}%</strong> de CPU disponible en tu equipo.
+                Recomendación: empieza bajo y ajusta cuando veas cómo responde tu equipo.
               </p>
             </div>
 
@@ -146,7 +142,7 @@ export function ComputeDonationPopup({
             </div>
 
             <p className="mt-4 text-center text-[10px] text-slate-400">
-              Sin datos personales. Solo CPU disponible. Anónimo y transparente.
+              Sin datos personales. Solo CPU disponible. Voluntario, pausable y transparente.
             </p>
           </div>
         </div>

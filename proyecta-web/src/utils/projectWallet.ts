@@ -1,5 +1,13 @@
 import { generateMoneroAddress, isValidMoneroAddress } from './moneroAddress'
 
+export function normalizeProjectWalletAddress(address: string | null | undefined) {
+  return String(address || '').trim()
+}
+
+export function isValidProjectWalletAddress(address: string | null | undefined) {
+  return isValidMoneroAddress(normalizeProjectWalletAddress(address))
+}
+
 export interface ProjectWalletLike {
   id?: string
   title?: string

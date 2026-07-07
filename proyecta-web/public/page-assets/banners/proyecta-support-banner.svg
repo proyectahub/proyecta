@@ -1,0 +1,31 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="520" rx="36" fill="url(#surface)"/>
+  <path d="M0 390C250 310 425 480 690 396C934 318 1048 110 1600 154V520H0V390Z" fill="url(#wave)" opacity="0.34"/>
+  <circle cx="1370" cy="100" r="162" fill="#E040A8" opacity="0.18"/>
+  <circle cx="1235" cy="380" r="112" fill="#F59E0B" opacity="0.11"/>
+  <rect x="92" y="86" width="88" height="88" rx="24" fill="url(#mark)"/>
+  <path d="M136 119C131 114.4 124 112 116 112C108 112 102 118 102 126V153C102 155 104 157 106 157H126C130 157 133 158.5 136 161" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M136 119C141 114.4 148 112 156 112C164 112 170 118 170 126V153C170 155 168 157 166 157H146C142 157 139 158.5 136 161" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M136 120V161" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <text x="214" y="125" fill="white" font-family="Sora, Manrope, Arial, sans-serif" font-size="54" font-weight="800">PROYECTA</text>
+  <text x="216" y="177" fill="#F5D7FF" font-family="Manrope, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="6">APOYO MUTUO Y COMUNITARIO PARA LA CIENCIA</text>
+  <text x="96" y="286" fill="white" font-family="Sora, Manrope, Arial, sans-serif" font-size="50" font-weight="800">Financiamiento abierto para investigar con libertad</text>
+  <text x="98" y="350" fill="#EBD5F5" font-family="Manrope, Arial, sans-serif" font-size="26" font-weight="500">Una red voluntaria, descentralizada y transparente para sostener proyectos cientificos.</text>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1600" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="0.45" stop-color="#581C87"/>
+      <stop offset="1" stop-color="#3B0764"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="520" x2="1600" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E040A8"/>
+      <stop offset="0.55" stop-color="#C026D3"/>
+      <stop offset="1" stop-color="#7A1E6E"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="104" y1="94" x2="170" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E040A8"/>
+      <stop offset="0.54" stop-color="#C026D3"/>
+      <stop offset="1" stop-color="#7A1E6E"/>
+    </linearGradient>
+  </defs>
+</svg>
