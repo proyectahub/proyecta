@@ -32,7 +32,7 @@ const purposeStatements = [
   },
   {
     title: "Construir confianza pÃºblica",
-    copy: "Dar identidad visible, valoraciÃ³n abierta y trazabilidad para que la conversaciÃ³n cientÃ­fica sea mÃ¡s clara y mÃ¡s confiable.",
+    copy: "Dar identidad visible, valoraciÃƒÆ’Ã‚Â³n abierta y trazabilidad para que la conversaciÃ³n cientÃ­fica sea mÃ¡s clara y mÃ¡s confiable.",
   },
   {
     title: "Mover comunidad en LatAm",
@@ -53,20 +53,20 @@ const communityJourney = [
   },
   {
     title: "3. Lee y valora",
-    copy: "Deja estrellas y comentarios que ayuden a otras personas a reconocer quÃ© artÃ­culo comunica mejor su aporte.",
+    copy: "Deja estrellas y comentarios que ayuden a otras personas a reconocer quÃ© artÃƒÆ’Ã‚Â­culo comunica mejor su aporte.",
     icon: BookOpenText,
   },
   {
     title: "4. Conversa en comunidad",
-    copy: "Sigue perfiles, responde ideas y ayuda a que la ciencia circule con criterio, cercanÃ­a y trazabilidad.",
+    copy: "Sigue perfiles, responde ideas y ayuda a que la ciencia circule con criterio, cercanÃƒÆ’Ã‚Â­a y trazabilidad.",
     icon: MessageSquare,
   },
 ]
 
 const publicationScope = [
-  "ArtÃ­culos de divulgaciÃ³n cientÃ­fica con lectura clara y fundamento verificable.",
-  "Preguntas abiertas, sÃ­ntesis de avances y cruces entre ciencia, sociedad y tecnologÃ­a.",
-  "Textos que aporten conversaciÃ³n pÃºblica sin perder rigor ni atribuciÃ³n de fuentes.",
+  "ArtÃƒÆ’Ã‚Â­culos de divulgaciÃƒÆ’Ã‚Â³n cientÃ­fica con lectura clara y fundamento verificable.",
+  "Preguntas abiertas, sÃƒÆ’Ã‚Â­ntesis de avances y cruces entre ciencia, sociedad y tecnologÃƒÆ’Ã‚Â­a.",
+  "Textos que aporten conversaciÃ³n pÃºblica sin perder rigor ni atribuciÃƒÆ’Ã‚Â³n de fuentes.",
 ]
 
 function getIsoWeekSeed() {
@@ -155,12 +155,12 @@ export default function HomeExperience() {
   const [busyActionId, setBusyActionId] = useState<string | null>(null)
   const [showComputeDonationPopup, setShowComputeDonationPopup] = useState(false)
 
-  // Mostrar popup de donaciÃ³n en la homepage (mÃ¡s directo)
+  // Mostrar popup de donaciÃƒÆ’Ã‚Â³n en la homepage (mÃ¡s directo)
   useEffect(() => {
     const donationStatus = getDonationStatus()
     const isAlreadyDonating = donationStatus.enabled && donationStatus.percentage > 0
 
-    // Solo mostrar si: usuario estÃ¡ autenticado, no estÃ¡ donando, y no fue descartado
+    // Solo mostrar si: usuario estÃ¡ autenticado, no estÃ¡ donando y no fue descartado
     if (isAuthenticated && !isAlreadyDonating && shouldShowPopup('interactions')) {
       // Mostrar popup mÃ¡s directo (sin esperar)
       setShowComputeDonationPopup(true)
@@ -240,7 +240,7 @@ export default function HomeExperience() {
 
   const handleFeedUpvote = async (articleId: string, currentVote: 0 | 1) => {
     if (!isAuthenticated || !sessionToken) {
-      toast("RegÃ­strate para votar y ayudar a mover el feed.")
+      toast("RegÃƒÆ’Ã‚Â­strate para votar y ayudar a mover el feed.")
       window.location.href = "/loginintent=review"
       return
     }
@@ -441,7 +441,7 @@ export default function HomeExperience() {
                   <div className="min-w-0">
                     <p className="truncate font-bold text-slate-900">{article.author.name}</p>
                     <p className="text-sm text-slate-500">
-                      {article.author.role} Â· {article.author.affiliation}
+                      {article.author.role} Ãƒâ€šÃ‚Â· {article.author.affiliation}
                     </p>
                   </div>
                 </Link>
@@ -506,7 +506,7 @@ export default function HomeExperience() {
 
   return (
     <div className="space-y-6">
-      {/* Popup de donaciÃ³n en homepage */}
+      {/* Popup de donaciÃƒÆ’Ã‚Â³n en homepage */}
       <ComputeDonationPopup
         visible={showComputeDonationPopup}
         triggerSource="interactions"
@@ -516,7 +516,7 @@ export default function HomeExperience() {
       {isSyncing ? (
         <div className="flex items-center gap-3 rounded-full border border-fuchsia-100 bg-fuchsia-50/80 px-4 py-3 text-sm font-medium text-fuchsia-700">
           <ShieldCheck size={16} />
-          Sincronizando artÃ­culos reales de la comunidad para mantener el feed al dÃ­a.
+          Sincronizando artÃ­culos reales de la comunidad para mantener el feed al dÃƒÆ’Ã‚Â­a.
         </div>
       ) : null}
 
@@ -533,25 +533,25 @@ export default function HomeExperience() {
               <p className="nova-eyebrow text-rose-200">Apoyo voluntario</p>
             </div>
             <h3 className="nova-title text-lg font-extrabold text-white mb-2">
-              Muchas computadoras pequeñas pueden sostener una investigación real
+              Muchas computadoras pequeÃƒÂ±as pueden sostener una investigaciÃƒÂ³n real
             </h3>
             <p className="max-w-2xl text-sm leading-relaxed text-rose-50/85">
-              Proyecta nace desde la comunidad científica y vuelve a ella. Puedes aportar poder de cómputo
+              Proyecta nace desde la comunidad cientÃƒÂ­fica y vuelve a ella. Puedes aportar poder de cÃƒÂ³mputo
               de forma voluntaria para que, entre muchas personas conectadas por una causa, ese esfuerzo
-              se convierta en apoyo verificable para proyectos de investigación.
+              se convierta en apoyo verificable para proyectos de investigaciÃƒÂ³n.
             </p>
             <Link
               to="/computacion-donada"
               className="mt-2 inline-block text-xs font-semibold text-rose-100 transition-colors hover:text-white"
             >
-              Entender cómo funciona →
+              Entender cÃƒÂ³mo funciona Ã¢â€ â€™
             </Link>
           </div>
           <Link
             to="/computacion-donada"
             className="nova-button-solid whitespace-nowrap self-start md:self-center px-6 py-2.5 text-sm font-bold"
           >
-            Cómo apoyar
+            CÃƒÂ³mo apoyar
           </Link>
         </div>
       </div>
@@ -605,12 +605,12 @@ export default function HomeExperience() {
 
             <div className="max-w-4xl space-y-4">
               <h1 className="nova-title text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl xl:text-6xl">
-                La ciencia también puede sostenerse desde la comunidad.
+                La ciencia tambiÃƒÂ©n puede sostenerse desde la comunidad.
               </h1>
               <p className="max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-                Proyecta es un espacio de <strong>apoyo mutuo</strong> para investigación real:
-                conecta proyectos con personas que quieren ayudar desde donde están. La idea es simple:
-                si muchas computadoras aportan una pequeña parte de su capacidad, ese esfuerzo colectivo
+                Proyecta es un espacio de <strong>apoyo mutuo</strong> para investigaciÃƒÂ³n real:
+                conecta proyectos con personas que quieren ayudar desde donde estÃƒÂ¡n. La idea es simple:
+                si muchas computadoras aportan una pequeÃƒÂ±a parte de su capacidad, ese esfuerzo colectivo
                 puede convertirse en financiamiento transparente para la ciencia que la comunidad necesita.
               </p>
 
@@ -632,14 +632,14 @@ export default function HomeExperience() {
           </div>
           <aside className="nova-card flex h-full flex-col justify-between p-6">
             <div className="space-y-4">
-              <p className="nova-eyebrow text-fuchsia-600">Guía rápida</p>
+              <p className="nova-eyebrow text-fuchsia-600">GuÃƒÂ­a rÃƒÂ¡pida</p>
               <h2 className="nova-title text-3xl font-extrabold text-slate-900">
                 Lo esencial para confiar y participar.
               </h2>
               <p className="text-sm leading-7 text-slate-600">
-                Proyecta explica cada aporte con claridad: qué proyecto recibe apoyo, cómo se participa,
-                qué control conserva tu equipo y por qué muchas contribuciones pequeñas pueden abrir
-                oportunidades reales de investigación.
+                Proyecta explica cada aporte con claridad: quÃƒÂ© proyecto recibe apoyo, cÃƒÂ³mo se participa,
+                quÃƒÂ© control conserva tu equipo y por quÃƒÂ© muchas contribuciones pequeÃƒÂ±as pueden abrir
+                oportunidades reales de investigaciÃƒÂ³n.
               </p>
             </div>
 
@@ -673,7 +673,7 @@ export default function HomeExperience() {
                 InvestigaciÃ³n apoyada por la comunidad
               </h2>
               <p className="max-w-2xl text-base leading-8 text-slate-600">
-                AquÃ­ aparecen primero los proyectos que han alcanzado o superado su meta de financiamiento. El orden se mueve por apoyo comunitario y rota cada semana entre los proyectos mÃ¡s respaldados para repartir mejor la visibilidad.
+                AquÃƒÆ’Ã‚Â­ aparecen primero los proyectos que han alcanzado o superado su meta de financiamiento. El orden se mueve por apoyo comunitario y rota cada semana entre los proyectos mÃ¡s respaldados para repartir mejor la visibilidad.
               </p>
             </div>
             <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-sm font-semibold text-emerald-700">
@@ -686,7 +686,7 @@ export default function HomeExperience() {
               reviewedPreview.map((article) => renderHomeFeedCard(article, "reviewed"))
             ) : (
               <div className="rounded-[28px] border border-emerald-100 bg-emerald-50/70 px-6 py-8 text-sm leading-7 text-slate-600">
-                No hay proyectos financiados en este momento. Cuando proyectos alcancen su meta, aparecerÃ¡n aquÃ­.
+                No hay proyectos financiados en este momento. Cuando proyectos alcancen su meta, aparecerÃƒÆ’Ã‚Â¡n aquÃ­.
               </div>
             )}
           </div>
@@ -707,7 +707,7 @@ export default function HomeExperience() {
                 InvestigaciÃ³n que necesita tu apoyo
               </h2>
               <p className="max-w-2xl text-base leading-8 text-slate-600">
-                Este bloque muestra proyectos nuevos o que aÃºn no alcanzan su meta de financiamiento. Se ordena por progreso hacia la meta, pero la rotaciÃ³n semanal evita que siempre permanezcan los mismos proyectos al inicio.
+                Este bloque muestra proyectos nuevos o que aÃºn no alcanzan su meta de financiamiento. Se ordena por progreso hacia la meta, pero la rotaciÃƒÆ’Ã‚Â³n semanal evita que siempre permanezcan los mismos proyectos al inicio.
               </p>
             </div>
             <div className="rounded-[24px] border border-amber-100 bg-amber-50/80 px-4 py-3 text-sm font-semibold text-amber-700">
@@ -720,7 +720,7 @@ export default function HomeExperience() {
               openPreview.map((article) => renderHomeFeedCard(article, "open"))
             ) : (
               <div className="rounded-[28px] border border-amber-100 bg-amber-50/70 px-6 py-8 text-sm leading-7 text-slate-600">
-                No hay proyectos en desarrollo en este momento. Cuando nuevos proyectos busquen financiamiento, aparecerÃ¡n aquÃ­.
+                No hay proyectos en desarrollo en este momento. Cuando nuevos proyectos busquen financiamiento, aparecerÃƒÆ’Ã‚Â¡n aquÃ­.
               </div>
             )}
           </div>
@@ -784,7 +784,7 @@ export default function HomeExperience() {
             Elige la ruta que mejor encaja con lo que quieres hacer hoy.
           </h2>
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-            Si vienes a leer con mÃ¡s seÃ±ales, entra al espacio de publicaciones revisadas. Si vienes a ayudar a que nuevos artÃ­culos ganen claridad, entra al espacio por revisar. AsÃ­ cada experiencia tiene su propio ritmo y el inicio se mantiene vivo.
+            Si vienes a leer con mÃ¡s seÃƒÆ’Ã‚Â±ales, entra al espacio de publicaciones revisadas. Si vienes a ayudar a que nuevos artÃ­culos ganen claridad, entra al espacio por revisar. AsÃƒÆ’Ã‚Â­ cada experiencia tiene su propio ritmo y el inicio se mantiene vivo.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -818,7 +818,7 @@ export default function HomeExperience() {
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="nova-eyebrow text-rose-100/80">Cómputo colectivo</p>
+                <p className="nova-eyebrow text-rose-100/80">CÃƒÂ³mputo colectivo</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">
                   Comunidad, consentimiento y ciencia
                 </p>
@@ -835,21 +835,21 @@ export default function HomeExperience() {
                 loop
                 playsInline
                 preload="metadata"
-                aria-label="Ilustración animada de computadoras conectadas para apoyar investigación científica"
+                aria-label="IlustraciÃƒÂ³n animada de computadoras conectadas para apoyar investigaciÃƒÂ³n cientÃƒÂ­fica"
               />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#21131f]/85 via-[#21131f]/35 to-transparent p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
-                  Una red pequeña aporta poco. Muchas conectadas pueden sostener una investigación real.
+                  Una red pequeÃƒÂ±a aporta poco. Muchas conectadas pueden sostener una investigaciÃƒÂ³n real.
                 </p>
               </div>
             </div>
             <h3 className="nova-title text-3xl font-extrabold">
-              Tu equipo suma mejor cuando lo decides tú y cuando la causa es clara.
+              Tu equipo suma mejor cuando lo decides tÃƒÂº y cuando la causa es clara.
             </h3>
             <p className="text-sm leading-7 text-white/82">
-              PROYECTA propone cómputo colectivo como un aporte voluntario: revisas, consientes y controlas
-              cuánto colaboras. Una computadora sola aporta poco, pero muchas máquinas, unidas con propósito,
-              pueden crear un respaldo tangible para proyectos científicos reales.
+              PROYECTA propone cÃƒÂ³mputo colectivo como un aporte voluntario: revisas, consientes y controlas
+              cuÃƒÂ¡nto colaboras. Una computadora sola aporta poco, pero muchas mÃƒÂ¡quinas, unidas con propÃƒÂ³sito,
+              pueden crear un respaldo tangible para proyectos cientÃƒÂ­ficos reales.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[22px] bg-white/10 p-4">
@@ -858,16 +858,16 @@ export default function HomeExperience() {
                 </p>
                 <p className="mt-2 text-lg font-extrabold">Siempre voluntario</p>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  Tú eliges el porcentaje de CPU, puedes empezar bajo y detener el aporte cuando quieras.
+                  TÃƒÂº eliges el porcentaje de CPU, puedes empezar bajo y detener el aporte cuando quieras.
                 </p>
               </div>
               <div className="rounded-[22px] bg-white/10 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">
                   Impacto acumulado
                 </p>
-                <p className="mt-2 text-lg font-extrabold">Muchas máquinas, una causa</p>
+                <p className="mt-2 text-lg font-extrabold">Muchas mÃƒÂ¡quinas, una causa</p>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  Cada equipo aporta poco; juntos pueden abrir una vía de financiamiento para proyectos reales.
+                  Cada equipo aporta poco; juntos pueden abrir una vÃƒÂ­a de financiamiento para proyectos reales.
                 </p>
               </div>
             </div>
@@ -917,7 +917,7 @@ export default function HomeExperience() {
 
         <aside className="space-y-6">
           <section className="nova-card p-6">
-            <p className="nova-eyebrow">QuÃ© tiene sentido publicar aquÃ­</p>
+            <p className="nova-eyebrow">QuÃƒÆ’Ã‚Â© tiene sentido publicar aquÃ­</p>
             <div className="mt-5 space-y-3">
               {publicationScope.map((item) => (
                 <div key={item} className="rounded-[22px] bg-slate-50/80 px-4 py-4 text-sm leading-7 text-slate-600">
