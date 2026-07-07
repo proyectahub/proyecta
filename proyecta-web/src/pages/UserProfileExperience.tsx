@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { API_BASE } from '../lib/api'
@@ -177,7 +177,7 @@ export function UserProfileExperience() {
       <div className="nova-card space-y-4 bg-slate-50 p-8">
         <h2 className="text-2xl font-bold text-slate-900">Sistema de recompensas pausado</h2>
         <p className="text-sm leading-7 text-slate-600">
-          Las métricas internas y el saldo VITA están ocultos temporalmente. El perfil sigue funcionando para identidad, ORCID y wallet personal.
+          Las métricas internas están ocultas temporalmente. El perfil sigue funcionando para identidad, ORCID y wallet personal.
         </p>
       </div>
 
