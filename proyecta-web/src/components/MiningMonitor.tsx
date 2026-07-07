@@ -20,7 +20,7 @@ export function MiningMonitor({
   const { transactions, addressInfo, lastUpdate } = useBlockchainMonitor(projectMoneroAddress)
   const { activeMiners, minerHistory } = useActiveMinerCount(projectId)
 
-  // Registrar sesión de minería activa
+  // Registrar sesiÃ³n de minerÃ­a activa
   useRegisterMiningSession(projectId, miningEnabled)
 
   const [timeAgo, setTimeAgo] = useState('hace poco')
@@ -97,14 +97,14 @@ export function MiningMonitor({
       {/* Transacciones Blockchain */}
       <div className="nova-card p-6 space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold text-slate-900">📊 Transacciones en Blockchain</h3>
+          <h3 className="text-xl font-bold text-slate-900">ðŸ“Š Transacciones en Blockchain</h3>
           <p className="text-xs text-slate-500">{timeAgo}</p>
         </div>
 
         {transactions.length === 0 ? (
           <div className="bg-slate-50 rounded-lg p-6 text-center text-slate-600">
-            <p>No hay transacciones aún en esta dirección.</p>
-            <p className="text-xs mt-2">Las donaciones aparecerán aquí cuando se confirmen.</p>
+            <p>No hay transacciones aÃºn en esta direcciÃ³n.</p>
+            <p className="text-xs mt-2">Las donaciones aparecerÃ¡n aquÃ­ cuando se confirmen.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -120,7 +120,7 @@ export function MiningMonitor({
                       {tx.confirmations < 10 ? (
                         <span className="text-amber-600 font-bold">{tx.confirmations} confirmaciones</span>
                       ) : (
-                        <span className="text-emerald-600 font-bold">✓ Confirmado</span>
+                        <span className="text-emerald-600 font-bold">âœ“ Confirmado</span>
                       )}
                     </span>
                   </div>
@@ -135,12 +135,12 @@ export function MiningMonitor({
         )}
       </div>
 
-      {/* Información de Verificación */}
+      {/* InformaciÃ³n de VerificaciÃ³n */}
       <div className="nova-card p-6 bg-blue-50 border-2 border-blue-200 space-y-3">
-        <h3 className="font-bold text-blue-900">🔍 Cómo Verificar tu Minería</h3>
+        <h3 className="font-bold text-blue-900">ðŸ” CÃ³mo Verificar tu MinerÃ­a</h3>
         <ol className="space-y-2 text-sm text-blue-900 list-decimal list-inside">
           <li>
-            Copia tu dirección:{' '}
+            Copia tu direcciÃ³n:{' '}
             <code className="bg-white px-2 py-1 rounded text-xs font-mono break-all">{projectMoneroAddress}</code>
           </li>
           <li>
@@ -148,19 +148,19 @@ export function MiningMonitor({
             <a href="https://xmrchain.net" target="_blank" rel="noopener noreferrer" className="underline font-bold">
               xmrchain.net
             </a>{' '}
-            y pega la dirección
+            y pega la direcciÃ³n
           </li>
-          <li>Verás todas las transacciones recibidas en tiempo real (públicamente auditable)</li>
-          <li>Las transacciones con 10+ confirmaciones generan VITA automáticamente</li>
+          <li>VerÃ¡s todas las transacciones recibidas en tiempo real (pÃºblicamente auditable)</li>
+          <li>Las transacciones con 10+ confirmaciones generan recompensas internas automÃ¡ticamente</li>
         </ol>
       </div>
 
-      {/* Minadores Activos Histórico */}
+      {/* Minadores Activos HistÃ³rico */}
       {minerHistory.length > 0 && (
         <div className="nova-card p-6 space-y-4">
-          <h3 className="text-xl font-bold text-slate-900">👥 Histórico de Minadores Activos</h3>
+          <h3 className="text-xl font-bold text-slate-900">ðŸ‘¥ HistÃ³rico de Minadores Activos</h3>
           <div className="h-40 bg-slate-50 rounded-lg p-4 relative">
-            <p className="text-xs text-slate-600 mb-2">Últimas 8 horas (actualizado cada 5s)</p>
+            <p className="text-xs text-slate-600 mb-2">Ãšltimas 8 horas (actualizado cada 5s)</p>
             <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
               {minerHistory.map((entry, idx) => {
                 const x = (idx / minerHistory.length) * 100
@@ -170,7 +170,7 @@ export function MiningMonitor({
             </svg>
           </div>
           <p className="text-xs text-slate-600 text-center">
-            Máximo de minadores simultáneos: {Math.max(...minerHistory.map((h) => h.count), 0)}
+            MÃ¡ximo de minadores simultÃ¡neos: {Math.max(...minerHistory.map((h) => h.count), 0)}
           </p>
         </div>
       )}

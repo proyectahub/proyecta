@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWalletAuth } from '../context/WalletAuthContext'
 
@@ -223,7 +223,7 @@ export function CompleteProfileExperience() {
             <ul className="space-y-2 text-sm text-slate-700">
               <li>Publicar tus proyectos</li>
               <li>Apoyar investigacion</li>
-              <li>Ganar VITA validando</li>
+              <li>Ganar recompensas internas validando</li>
             </ul>
           </div>
 

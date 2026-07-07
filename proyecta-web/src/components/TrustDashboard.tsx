@@ -1,39 +1,39 @@
 import { useEffect, useState } from 'react'
-import { useIPFSVita } from '../hooks/useIPFSVita'
+import { useIPFSrecompensas internas } from '../hooks/useIPFSrecompensas internas'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
 
 export function TrustDashboard() {
-  const { getTotalVitaInSystem } = useIPFSVita()
+  const { getTotalrecompensas internasInSystem } = useIPFSrecompensas internas()
   const { xmrPrice } = useMoneroPrice()
-  const [totalVita, setTotalVita] = useState(0)
+  const [totalrecompensas internas, setTotalrecompensas internas] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadTotalVita = async () => {
+    const loadTotalrecompensas internas = async () => {
       setLoading(true)
-      const total = await getTotalVitaInSystem()
-      setTotalVita(total)
+      const total = await getTotalrecompensas internasInSystem()
+      setTotalrecompensas internas(total)
       setLoading(false)
     }
 
-    loadTotalVita()
-    const interval = setInterval(loadTotalVita, 60000) // Actualizar cada minuto
+    loadTotalrecompensas internas()
+    const interval = setInterval(loadTotalrecompensas internas, 60000) // Actualizar cada minuto
 
     return () => clearInterval(interval)
-  }, [getTotalVitaInSystem])
+  }, [getTotalrecompensas internasInSystem])
 
-  const vitaUsdValue = (totalVita / 1000) * xmrPrice
+  const vitaUsdValue = (totalrecompensas internas / 1000) * xmrPrice
 
   return (
     <div className="space-y-6">
       {/* Resumen de confianza */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* XMR en circulación */}
+        {/* XMR en circulaciÃ³n */}
         <div className="nova-card p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
-          <h3 className="font-bold text-blue-900 mb-3">💰 XMR en PROYECTA</h3>
+          <h3 className="font-bold text-blue-900 mb-3">ðŸ’° XMR en PROYECTA</h3>
 
           <p className="text-3xl font-bold text-blue-600">
-            {(totalVita / 1000).toFixed(2)} <span className="text-sm">XMR</span>
+            {(totalrecompensas internas / 1000).toFixed(2)} <span className="text-sm">XMR</span>
           </p>
 
           <p className="text-sm text-blue-700 mt-2">
@@ -45,12 +45,12 @@ export function TrustDashboard() {
           </p>
         </div>
 
-        {/* VITA creado */}
+        {/* recompensas internas creado */}
         <div className="nova-card p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-          <h3 className="font-bold text-purple-900 mb-3">⚡ VITA Creado</h3>
+          <h3 className="font-bold text-purple-900 mb-3">âš¡ recompensas internas Creado</h3>
 
           <p className="text-3xl font-bold text-purple-600">
-            {totalVita.toLocaleString()}
+            {totalrecompensas internas.toLocaleString()}
           </p>
 
           <p className="text-sm text-purple-700 mt-2">
@@ -58,13 +58,13 @@ export function TrustDashboard() {
           </p>
 
           <p className="text-xs text-purple-600 mt-3">
-            1 XMR = 1,000 VITA
+            1 XMR = 1,000 recompensas internas
           </p>
         </div>
 
         {/* Precio XMR */}
         <div className="nova-card p-6 bg-gradient-to-br from-amber-50 to-orange-50">
-          <h3 className="font-bold text-amber-900 mb-3">📊 Precio XMR</h3>
+          <h3 className="font-bold text-amber-900 mb-3">ðŸ“Š Precio XMR</h3>
 
           <p className="text-3xl font-bold text-amber-600">
             ${xmrPrice.toFixed(2)}
@@ -80,17 +80,17 @@ export function TrustDashboard() {
         </div>
       </div>
 
-      {/* Auditoría pública */}
+      {/* AuditorÃ­a pÃºblica */}
       <div className="nova-card p-6">
-        <h3 className="font-bold text-lg mb-4">🔍 Auditoría Pública (En vivo)</h3>
+        <h3 className="font-bold text-lg mb-4">ðŸ” AuditorÃ­a PÃºblica (En vivo)</h3>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Verificación en Monero */}
+            {/* VerificaciÃ³n en Monero */}
             <div className="bg-blue-50 rounded-lg p-4 space-y-2">
               <p className="font-bold text-blue-900">Blockchain Monero</p>
               <p className="text-sm text-blue-700">
-                Todas las transacciones son públicas y verificables en tiempo real
+                Todas las transacciones son pÃºblicas y verificables en tiempo real
               </p>
               <a
                 href="https://xmrchain.net"
@@ -98,7 +98,7 @@ export function TrustDashboard() {
                 rel="noopener noreferrer"
                 className="text-blue-600 text-sm underline"
               >
-                Explorador Monero →
+                Explorador Monero â†’
               </a>
             </div>
 
@@ -106,7 +106,7 @@ export function TrustDashboard() {
             <div className="bg-purple-50 rounded-lg p-4 space-y-2">
               <p className="font-bold text-purple-900">IPFS Logs</p>
               <p className="text-sm text-purple-700">
-                Todos los registros de VITA se almacenan en IPFS (inmutable y público)
+                Todos los registros de recompensas internas se almacenan en IPFS (inmutable y pÃºblico)
               </p>
               <code className="text-xs bg-white px-2 py-1 rounded font-mono text-purple-600">
                 Qm... (hash IPFS)
@@ -124,7 +124,7 @@ export function TrustDashboard() {
                   1
                 </div>
                 <span>
-                  Usuario envía XMR a dirección pública del proyecto (blockchain)
+                  Usuario envÃ­a XMR a direcciÃ³n pÃºblica del proyecto (blockchain)
                 </span>
               </div>
 
@@ -133,7 +133,7 @@ export function TrustDashboard() {
                   2
                 </div>
                 <span>
-                  PROYECTA verifica la transacción (10+ confirmaciones)
+                  PROYECTA verifica la transacciÃ³n (10+ confirmaciones)
                 </span>
               </div>
 
@@ -142,7 +142,7 @@ export function TrustDashboard() {
                   3
                 </div>
                 <span>
-                  Sistema crea VITA automáticamente (100% backed por XMR)
+                  Sistema crea recompensas internas automÃ¡ticamente (100% respaldado por XMR)
                 </span>
               </div>
 
@@ -151,7 +151,7 @@ export function TrustDashboard() {
                   4
                 </div>
                 <span>
-                  Registro en IPFS (público, inmutable, verificable)
+                  Registro en IPFS (pÃºblico, inmutable, verificable)
                 </span>
               </div>
             </div>
@@ -161,31 +161,31 @@ export function TrustDashboard() {
 
       {/* Seguridad radical */}
       <div className="nova-card p-6 bg-emerald-50 border-2 border-emerald-300">
-        <h3 className="font-bold text-emerald-900 mb-4">🔐 Seguridad radical = Sin custodia</h3>
+        <h3 className="font-bold text-emerald-900 mb-4">ðŸ” Seguridad radical = Sin custodia</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-800">
           <div>
-            <p className="font-bold mb-2">✅ Lo que es seguro:</p>
+            <p className="font-bold mb-2">âœ… Lo que es seguro:</p>
             <ul className="space-y-1 list-disc list-inside">
-              <li>Tu XMR está en blockchain</li>
+              <li>Tu XMR estÃ¡ en blockchain</li>
               <li>PROYECTA no toca fondos</li>
-              <li>Auditoría 100% pública</li>
+              <li>AuditorÃ­a 100% pÃºblica</li>
               <li>Sin intermediarios</li>
             </ul>
           </div>
 
           <div>
-            <p className="font-bold mb-2">⚠️ Tu responsabilidad:</p>
+            <p className="font-bold mb-2">âš ï¸ Tu responsabilidad:</p>
             <ul className="space-y-1 list-disc list-inside">
               <li>Proteger tu wallet privada</li>
-              <li>Verificar direcciones públicas</li>
-              <li>No confíes en PROYECTA, confía en blockchain</li>
+              <li>Verificar direcciones pÃºblicas</li>
+              <li>No confÃ­es en PROYECTA, confÃ­a en blockchain</li>
             </ul>
           </div>
         </div>
 
         <p className="text-xs text-emerald-700 mt-4 italic">
-          "No confíes, verifica" — todos los números en esta página son públicamente auditables
+          "No confÃ­es, verifica" â€” todos los nÃºmeros en esta pÃ¡gina son pÃºblicamente auditables
         </p>
       </div>
     </div>

@@ -3,16 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { API_BASE } from '../lib/api'
 import { WalletSetupGuide } from '../components/WalletSetupGuide'
-import { useMoneroPrice } from '../hooks/useMoneroPrice'
-import { useIPFSVita } from '../hooks/useIPFSVita'
 
 export function UserProfileExperience() {
   const navigate = useNavigate()
   const { user, logout, updateProfile } = useTraditionalAuth()
-  const { xmrPrice } = useMoneroPrice()
-  const { loadUserVita } = useIPFSVita()
 
-  const [vitaBalance, setVitaBalance] = useState({ vitaBacked: 0, vitaEarned: 0, vitaPledged: 0 })
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -33,17 +28,7 @@ export function UserProfileExperience() {
       researchArea: user.researchArea || '',
       orcidId: user.orcidId || '',
     })
-
-    if (user.moneroWallet?.userVitaAddress) {
-      const refreshBalance = async () => {
-        const balance = await loadUserVita(user.moneroWallet!.userVitaAddress)
-        setVitaBalance(balance)
-      }
-      refreshBalance()
-      const interval = setInterval(refreshBalance, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [user, loadUserVita, navigate])
+  }, [user, navigate])
 
   if (!user) return null
 
@@ -52,30 +37,26 @@ export function UserProfileExperience() {
     setEditing(false)
   }
 
-  const totalVita = vitaBalance.vitaBacked + vitaBalance.vitaEarned - vitaBalance.vitaPledged
-  const vitaUsdValue = (totalVita / 1000) * xmrPrice
-
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-4xl font-bold text-slate-900">Mi perfil</h1>
-          <p className="text-slate-600 mt-2">{user.email}</p>
+          <p className="mt-2 text-slate-600">{user.email}</p>
         </div>
         <button onClick={logout} className="nova-button-soft text-red-600">
           Desconectar
         </button>
       </div>
 
-      {/* Información Personal */}
-      <div className="nova-card p-8 space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="nova-card space-y-6 p-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Información Personal</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Información personal</h2>
             {user.orcidId && (
-              <div className="flex items-center gap-2 mt-2">
-                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-                  ✓ Investigador/a Verificado
+              <div className="mt-2 flex items-center gap-2">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                  ✓ Investigador/a verificado
                 </span>
               </div>
             )}
@@ -90,7 +71,7 @@ export function UserProfileExperience() {
         {editing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Nombre Completo</label>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Nombre completo</label>
               <input
                 type="text"
                 value={formData.fullName}
@@ -99,17 +80,17 @@ export function UserProfileExperience() {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Institución</label>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Institución</label>
               <input
                 type="text"
                 value={formData.institution}
                 onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                placeholder="Universidad, Centro de Investigación..."
+                placeholder="Universidad, centro de investigación..."
                 className="nova-field w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Área de Investigación</label>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Área de investigación</label>
               <select
                 value={formData.researchArea}
                 onChange={(e) => setFormData({ ...formData, researchArea: e.target.value })}
@@ -125,7 +106,7 @@ export function UserProfileExperience() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">ORCID iD (opcional)</label>
+              <label className="mb-2 block text-sm font-bold text-slate-700">ORCID iD (opcional)</label>
               <input
                 type="text"
                 value={formData.orcidId}
@@ -133,7 +114,7 @@ export function UserProfileExperience() {
                 placeholder="0000-0000-0000-0000"
                 className="nova-field w-full"
               />
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="mt-1 text-xs text-slate-500">
                 No tienes ORCID? <a href="https://orcid.org/register" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Crea uno gratis</a>
               </p>
             </div>
@@ -154,14 +135,14 @@ export function UserProfileExperience() {
               {!user.orcidId && (
                 <button
                   onClick={() => window.location.href = `${API_BASE}/api/oauth/orcid`}
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
                 >
                   <span>🔗</span> Conectar con ORCID
                 </button>
               )}
               {user.orcidId && (
-                <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold rounded-lg">
-                  <span>✓</span> ORCID Conectado
+                <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800">
+                  <span>✓</span> ORCID conectado
                 </div>
               )}
             </div>
@@ -193,44 +174,18 @@ export function UserProfileExperience() {
         )}
       </div>
 
-      {/* VITA Balance */}
-      <div className="nova-card p-8 space-y-6 bg-gradient-to-br from-purple-50 to-pink-50">
-        <h2 className="text-2xl font-bold text-slate-900">Mi VITA</h2>
-
-        <div className="bg-white rounded-lg p-4">
-          <p className="text-sm text-slate-600">Total disponible</p>
-          <p className="text-3xl font-bold text-purple-600">
-            {totalVita.toLocaleString()}
-          </p>
-          <p className="text-sm text-purple-700 mt-1">
-            = ${vitaUsdValue.toFixed(2)} USD
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between p-3 bg-white rounded-lg">
-            <span className="font-bold">VITA-Backed</span>
-            <span className="text-blue-600 font-bold">{vitaBalance.vitaBacked}</span>
-          </div>
-          <div className="flex justify-between p-3 bg-white rounded-lg">
-            <span className="font-bold">VITA-Earned</span>
-            <span className="text-emerald-600 font-bold">{vitaBalance.vitaEarned}</span>
-          </div>
-          <div className="flex justify-between p-3 bg-white rounded-lg">
-            <span className="font-bold">VITA-Pledged</span>
-            <span className="text-amber-600 font-bold">-{vitaBalance.vitaPledged}</span>
-          </div>
-        </div>
+      <div className="nova-card space-y-4 bg-slate-50 p-8">
+        <h2 className="text-2xl font-bold text-slate-900">Sistema de recompensas pausado</h2>
+        <p className="text-sm leading-7 text-slate-600">
+          Las métricas internas y el saldo VITA están ocultos temporalmente. El perfil sigue funcionando para identidad, ORCID y wallet personal.
+        </p>
       </div>
 
-      {/* Wallet Setup Guide */}
       <WalletSetupGuide />
 
-      {/* Acciones */}
-      <div className="nova-card p-8 space-y-4">
+      <div className="nova-card space-y-4 p-8">
         <h2 className="text-2xl font-bold text-slate-900">Acciones</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <button onClick={() => navigate('/create-project')} className="nova-button-solid py-3">
             Publicar proyecto
           </button>

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useWalletAuth } from '../context/WalletAuthContext'
 
@@ -94,9 +94,9 @@ export function LoginExperience() {
 
             <div className="nova-card p-4 space-y-2">
               <p className="text-2xl">⚡</p>
-              <p className="font-bold text-slate-900">VITA = Voz</p>
+              <p className="font-bold text-slate-900">recompensas internas = Voz</p>
               <p className="text-sm text-slate-600">
-                Tu apoyo genera VITA para validar proyectos
+                Tu apoyo genera recompensas internas para validar proyectos
               </p>
             </div>
           </div>
@@ -274,14 +274,14 @@ export function LoginExperience() {
                 <>
                   <li>📢 Publicar tu proyecto de investigación</li>
                   <li>💰 Recibir donaciones XMR directas</li>
-                  <li>⚡ Generar VITA con tu obra científica</li>
+                  <li>⚡ Generar recompensas internas con tu obra científica</li>
                 </>
               )}
               {intent === 'support' && (
                 <>
                   <li>👁️ Explorar proyectos de investigación</li>
                   <li>💚 Donar XMR directamente a proyectos</li>
-                  <li>⚡ Ganar VITA validando investigación</li>
+                  <li>⚡ Ganar recompensas internas validando investigación</li>
                 </>
               )}
               {!intent && (
