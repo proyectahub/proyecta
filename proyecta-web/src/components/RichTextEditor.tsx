@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Wand2 } from 'lucide-react'
 
 interface RichTextEditorProps {
@@ -8,9 +8,23 @@ interface RichTextEditorProps {
   showTemplate?: boolean
 }
 
-export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu descripción...', showTemplate = true }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder = 'Escribe tu descripción...',
+  showTemplate = true,
+}: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isTyping, setIsTyping] = useState(false)
+
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    if (editor.innerHTML !== value) {
+      editor.innerHTML = value
+    }
+  }, [value])
 
   const handleInput = () => {
     const html = editorRef.current?.innerHTML || ''
@@ -56,14 +70,14 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
     input.accept = 'image/*'
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          const dataUrl = event.target?.result as string
-          document.execCommand('insertImage', false, dataUrl)
-        }
-        reader.readAsDataURL(file)
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string
+        document.execCommand('insertImage', false, dataUrl)
       }
+      reader.readAsDataURL(file)
     }
     input.click()
   }
@@ -74,30 +88,30 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
     document.execCommand('insertText', false, text)
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      document.execCommand('insertText', false, '\t')
+      return
+    }
+
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault()
+      document.execCommand('insertText', false, '\n')
+    }
+  }
+
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-t-lg border border-slate-200 p-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 rounded-t-lg border border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 p-4">
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button
-            onClick={() => executeCommand('bold')}
-            title="Negrita (Ctrl+B)"
-            className="p-2 hover:bg-slate-200 rounded text-sm font-bold transition"
-          >
+          <button onClick={() => executeCommand('bold')} title="Negrita (Ctrl+B)" className="rounded p-2 text-sm font-bold transition hover:bg-slate-200">
             B
           </button>
-          <button
-            onClick={() => executeCommand('italic')}
-            title="Cursiva (Ctrl+I)"
-            className="p-2 hover:bg-slate-200 rounded text-sm italic transition"
-          >
+          <button onClick={() => executeCommand('italic')} title="Cursiva (Ctrl+I)" className="rounded p-2 text-sm italic transition hover:bg-slate-200">
             I
           </button>
-          <button
-            onClick={() => executeCommand('underline')}
-            title="Subrayado (Ctrl+U)"
-            className="p-2 hover:bg-slate-200 rounded text-sm underline transition"
-          >
+          <button onClick={() => executeCommand('underline')} title="Subrayado (Ctrl+U)" className="rounded p-2 text-sm underline transition hover:bg-slate-200">
             U
           </button>
         </div>
@@ -108,7 +122,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
               if (e.target.value) executeCommand('formatBlock', e.target.value)
               e.target.value = ''
             }}
-            className="p-2 hover:bg-slate-200 rounded text-xs transition cursor-pointer"
+            className="cursor-pointer rounded p-2 text-xs transition hover:bg-slate-200"
           >
             <option value="">Párrafo</option>
             <option value="h2">Título 2</option>
@@ -118,42 +132,26 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
           <button
             onClick={() => executeCommand('insertUnorderedList')}
             title="Lista"
-            className="p-2 hover:bg-slate-200 rounded text-sm transition"
+            className="rounded p-2 text-sm transition hover:bg-slate-200"
           >
             • Lista
           </button>
         </div>
 
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button
-            onClick={insertLink}
-            title="Insertar enlace"
-            className="p-2 hover:bg-slate-200 rounded text-xs font-bold text-blue-600 transition"
-          >
+          <button onClick={insertLink} title="Insertar enlace" className="rounded p-2 text-xs font-bold text-blue-600 transition hover:bg-slate-200">
             🔗 Enlace
           </button>
-          <button
-            onClick={insertImage}
-            title="Insertar imagen"
-            className="p-2 hover:bg-slate-200 rounded text-sm transition"
-          >
+          <button onClick={insertImage} title="Insertar imagen" className="rounded p-2 text-sm transition hover:bg-slate-200">
             🖼️ Imagen
           </button>
         </div>
 
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button
-            onClick={() => executeCommand('undo')}
-            title="Deshacer"
-            className="p-2 hover:bg-slate-200 rounded text-sm transition"
-          >
+          <button onClick={() => executeCommand('undo')} title="Deshacer" className="rounded p-2 text-sm transition hover:bg-slate-200">
             ↶
           </button>
-          <button
-            onClick={() => executeCommand('redo')}
-            title="Rehacer"
-            className="p-2 hover:bg-slate-200 rounded text-sm transition"
-          >
+          <button onClick={() => executeCommand('redo')} title="Rehacer" className="rounded p-2 text-sm transition hover:bg-slate-200">
             ↷
           </button>
         </div>
@@ -161,7 +159,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
         {showTemplate && (
           <button
             onClick={insertTemplate}
-            className="ml-auto p-2 bg-purple-600 hover:bg-purple-700 text-white rounded flex items-center gap-1 text-xs font-bold transition"
+            className="ml-auto inline-flex items-center gap-1 rounded bg-purple-600 p-2 text-xs font-bold text-white transition hover:bg-purple-700"
             title="Insertar estructura sugerida"
           >
             <Wand2 className="h-4 w-4" />
@@ -170,19 +168,27 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
         )}
       </div>
 
-      {/* Editor */}
       <div
         ref={editorRef}
         contentEditable
+        role="textbox"
+        aria-multiline="true"
+        tabIndex={0}
+        spellCheck
         suppressContentEditableWarning
         onInput={handleInput}
         onPaste={handlePaste}
+        onKeyDown={handleKeyDown}
         onFocus={() => setIsTyping(true)}
         onBlur={() => setIsTyping(false)}
-        className="min-h-[600px] p-6 focus:outline-none focus:ring-2 focus:ring-purple-500 overflow-auto text-base leading-relaxed rounded-lg"
+        data-placeholder={placeholder}
+        className="min-h-[600px] overflow-auto rounded-lg p-6 text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-500"
         style={{
           wordBreak: 'break-word',
           whiteSpace: 'pre-wrap',
+          tabSize: 4,
+          fontVariantLigatures: 'none',
+          caretColor: '#c026d3',
           border: isTyping ? '3px solid #a855f7' : '2px solid #cbd5e1',
           backgroundColor: '#fafafa',
           fontFamily: 'inherit',
@@ -190,9 +196,13 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escribe tu desc
         dangerouslySetInnerHTML={{ __html: value }}
       />
 
-      <div className="text-xs text-slate-600 space-y-1">
-        <p>💡 <strong>Sugerencia:</strong> Haz clic en "Estructura" para agregar secciones recomendadas. Las imágenes se guardan como referencias base64.</p>
-        <p>📋 <strong>Presupuesto:</strong> Especifica en la sección de presupuesto cómo se usarán los XMR recaudados (computación, equipamiento, análisis, etc.)</p>
+      <div className="space-y-1 text-xs text-slate-600">
+        <p>
+          💡 <strong>Sugerencia:</strong> Haz clic en "Estructura" para agregar secciones recomendadas. Las imágenes se guardan como referencias base64.
+        </p>
+        <p>
+          📋 <strong>Presupuesto:</strong> Especifica en la sección de presupuesto cómo se usarán los XMR recaudados (computación, equipamiento, análisis, etc.).
+        </p>
       </div>
     </div>
   )

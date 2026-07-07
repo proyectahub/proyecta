@@ -62,8 +62,9 @@ function researchProject(frame) {
       <path d="M52 -6C80 -28 104 -26 128 -3V74H52Z" fill="#C026D3"/>
       <path d="M29 52C-6 66 -23 96 -28 128" stroke="#F8E3FF" stroke-width="18" stroke-linecap="round"/>
       <path d="M142 52C176 67 191 95 198 128" stroke="#F8E3FF" stroke-width="18" stroke-linecap="round"/>
-      <text x="64" y="196" text-anchor="middle" font-family="Sora, Manrope, Arial" font-size="25" font-weight="900" fill="#FFF7FB">PROYECTO REAL</text>
-      <text x="64" y="224" text-anchor="middle" font-family="Manrope, Arial" font-size="16" font-weight="800" fill="#F5D7FF">investigacion apoyada</text>
+      <rect x="-70" y="144" width="270" height="46" rx="20" fill="#21131F" opacity="0.78"/>
+      <text x="64" y="164" text-anchor="middle" font-family="Sora, Manrope, Arial" font-size="20" font-weight="900" fill="#FFF7FB">PROYECTO REAL</text>
+      <text x="64" y="184" text-anchor="middle" font-family="Manrope, Arial" font-size="13" font-weight="800" fill="#F5D7FF">investigacion apoyada</text>
     </g>`;
 }
 

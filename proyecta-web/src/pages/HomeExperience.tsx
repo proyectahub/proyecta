@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
@@ -817,26 +817,39 @@ export default function HomeExperience() {
         <aside className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#21131f,#7a1e6e_58%,#c026d3)] p-6 text-white shadow-2xl shadow-fuchsia-950/20">
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <p className="nova-eyebrow text-rose-100/80">Cómputo colectivo</p>
+              <div>
+                <p className="nova-eyebrow text-rose-100/80">Cómputo colectivo</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">
+                  Comunidad, consentimiento y ciencia
+                </p>
+              </div>
               <ProyectaMark size={48} />
             </div>
-            <video
-              className="aspect-video w-full rounded-[24px] border border-white/10 bg-[#21131f] object-cover shadow-2xl shadow-fuchsia-950/20"
-              src="/proyecta-community-motion.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="Ilustración animada de computadoras conectadas para apoyar investigación científica"
-            />
+            <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#21131f] shadow-2xl shadow-fuchsia-950/20">
+              <video
+                className="aspect-video w-full object-cover"
+                src="/proyecta-community-motion.mp4"
+                poster="/page-assets/banners/proyecta-community-motion-preview.jpg"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="Ilustración animada de computadoras conectadas para apoyar investigación científica"
+              />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#21131f]/85 via-[#21131f]/35 to-transparent p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
+                  Una red pequeña aporta poco. Muchas conectadas pueden sostener una investigación real.
+                </p>
+              </div>
+            </div>
             <h3 className="nova-title text-3xl font-extrabold">
-              Una red de computadoras puede convertirse en apoyo real para investigar.
+              Tu equipo suma mejor cuando lo decides tú y cuando la causa es clara.
             </h3>
-            <p className="text-sm leading-7 text-white/80">
-              La minería comunitaria requiere confianza: entender qué hace tu equipo, decidir cuánto aporta
-              y saber que una sola computadora no basta. El impacto aparece cuando muchas personas sostienen
-              una causa común durante el tiempo suficiente.
+            <p className="text-sm leading-7 text-white/82">
+              PROYECTA propone cómputo colectivo como un aporte voluntario: revisas, consientes y controlas
+              cuánto colaboras. Una computadora sola aporta poco, pero muchas máquinas, unidas con propósito,
+              pueden crear un respaldo tangible para proyectos científicos reales.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[22px] bg-white/10 p-4">
