@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import {
   AlertCircle,
   BadgeCheck,
@@ -224,7 +224,7 @@ function formatTimeAgo(value: string) {
 
 function resolveDisplayRole(profile: Pick<ProfileUser, "orcidId" | "role"> | null) {
   if (!profile) return "Divulgador/a"
-  return profile.orcidId ? "Divulgador/a cientï¿½fico/a" : "Divulgador/a"
+  return profile.orcidId ? "Divulgador/a científico/a" : "Divulgador/a"
 }
 
 function getArticleInterestScore(article: DiscoveryArticle, interests: string[]) {
@@ -611,7 +611,7 @@ export default function ProfileExperience() {
       return
     }
 
-    const confirmed = window.confirm("¿Seguro que quieres eliminar esta publicación de Proyecta")
+    const confirmed = window.confirm("?Seguro que quieres eliminar esta publicación de Proyecta")
     if (!confirmed) {
       return
     }
@@ -632,7 +632,7 @@ export default function ProfileExperience() {
         throw new Error(data.error ?? "No fue posible eliminar la publicación.")
       }
 
-      toast.success("Publicación eliminada.", { id: toastId })
+      toast.success("Publicaci?n eliminada.", { id: toastId })
       setReloadSeed((value) => value + 1)
     } catch (error) {
       const message = error instanceof Error ? error.message : "No fue posible eliminar la publicación."
@@ -718,7 +718,7 @@ export default function ProfileExperience() {
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
                 >
                   <PencilLine size={16} />
-                  {isEditing ? "Cerrar edición" : "Personalizar perfil"}
+                  {isEditing ? "Cerrar edici?n" : "Personalizar perfil"}
                 </button>
                 <button
                   onClick={handleLinkOrcid}
@@ -793,7 +793,7 @@ export default function ProfileExperience() {
                   ) : null}
                 </div>
 
-                <p className="text-slate-600">{resolvedRole} · {profile.affiliation}</p>
+                <p className="text-slate-600">{resolvedRole} ? {profile.affiliation}</p>
                 <p className="max-w-3xl text-base leading-8 text-slate-600">
                   {profile.bio || "Aquí puedes describir al investigador con tus propios datos."}
                 </p>
@@ -883,10 +883,10 @@ export default function ProfileExperience() {
                       />
                     </label>
                     <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">Título visible</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">T?tulo visible</span>
                       <p className="font-semibold text-slate-900">{resolvedRole}</p>
                       <p className="mt-2 text-sm leading-6 text-slate-500">
-                        Este título se ajusta automáticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a científico/a.
+                        Este título se ajusta autom?ticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a cient?fico/a.
                       </p>
                     </div>
                     <label className="block">
@@ -972,7 +972,7 @@ export default function ProfileExperience() {
                       Artículos para leer con contexto o revisar primero
                     </h2>
                     <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                      Proyecta cruza las áreas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte artículos cercanos a tus intereses.
+                      Proyecta cruza las ?reas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte art?culos cercanos a tus intereses.
                     </p>
                   </div>
                   <div className="flex max-w-xl flex-wrap gap-2">
@@ -987,7 +987,7 @@ export default function ProfileExperience() {
                       ))
                     ) : (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                        Tus intereses crecerï¿½n con tus publicaciones y sincronizaciones
+                        Tus intereses crecer?n con tus publicaciones y sincronizaciones
                       </span>
                     )}
                   </div>
@@ -1005,7 +1005,7 @@ export default function ProfileExperience() {
                         </h3>
                       </div>
                       <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
-                        {relatedArticles.reviewed.length} artículos
+                        {relatedArticles.reviewed.length} art?culos
                       </span>
                     </div>
 
@@ -1052,7 +1052,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <div className="rounded-[24px] bg-white/90 p-5 text-sm leading-7 text-slate-600">
-                          Aï¿½n no encontramos lecturas revisadas claramente alineadas con tu perfil. Esto se irï¿½ afinando conforme publiques y sigas ampliando tu trayectoria.
+                          Aún no encontramos lecturas revisadas claramente alineadas con tu perfil. Esto se ir? afinando conforme publiques y sigas ampliando tu trayectoria.
                         </div>
                       )}
                     </div>
@@ -1069,7 +1069,7 @@ export default function ProfileExperience() {
                         </h3>
                       </div>
                       <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
-                        {relatedArticles.open.length} artículos
+                        {relatedArticles.open.length} art?culos
                       </span>
                     </div>
 
@@ -1116,7 +1116,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <div className="rounded-[24px] bg-white/90 p-5 text-sm leading-7 text-slate-600">
-                          En este momento no hay artículos abiertos a revisión especialmente relacionados con tus intereses.
+                          En este momento no hay art?culos abiertos a revisión especialmente relacionados con tus intereses.
                         </div>
                       )}
                     </div>
@@ -1160,13 +1160,13 @@ export default function ProfileExperience() {
                         <p className="mt-3 text-sm leading-7 text-slate-600">{article.excerpt}</p>
                         <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                           <span>{formatPublishedLabel(article.createdAt)}</span>
-                          <span>·</span>
+                          <span>?</span>
                           <span>{article.readTime}</span>
                           <Link
                             to={`/article/${article.id}`}
                             className="ml-auto text-fuchsia-600 hover:text-fuchsia-700 normal-case tracking-normal font-semibold"
                           >
-                            Leer artículo â†’
+                            Leer art?culo ?
                           </Link>
                         </div>
                       </article>
@@ -1174,7 +1174,7 @@ export default function ProfileExperience() {
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5">
                       <p className="text-sm leading-7 text-slate-600">
-                        Todavía no hay publicaciones. Cuando publiques tu primera entrada, aparecer aqu.
+                        Todav?a no hay publicaciones. Cuando publiques tu primera entrada, aparecer aqu.
                       </p>
                     </div>
                   )}
@@ -1242,16 +1242,16 @@ export default function ProfileExperience() {
                             <p className="text-sm font-bold text-fuchsia-600">{review.rating}/5</p>
                           </div>
                           <h3 className="mt-3 font-bold text-slate-900">
-                            {review.article.title ? review.article.title : "Publicación no disponible"}
+                            {review.article.title ? review.article.title : "Publicaci?n no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {review.comment || "Revisión sin comentario adicional."}
+                            {review.comment || "Revisi?n sin comentario adicional."}
                           </p>
                         </article>
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        Aún no has dejado revisiónes. Cuando evalúes artículos, aparecerán aquí.
+                        Aún no has dejado revisiónes. Cuando eval?es art?culos, aparecer?n aqu?.
                       </div>
                     )}
                   </div>
@@ -1275,7 +1275,7 @@ export default function ProfileExperience() {
                             </p>
                           </div>
                           <h3 className="mt-3 font-bold text-slate-900">
-                            {vote.article.title ? vote.article.title : "Publicación no disponible"}
+                            {vote.article.title ? vote.article.title : "Publicaci?n no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
                             {vote.article.excerpt ? vote.article.excerpt : "La publicación asociada ya no esta disponible."}
@@ -1284,7 +1284,7 @@ export default function ProfileExperience() {
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        Aï¿½n no has votado publicaciones. Tus apoyos y votos aparecerï¿½n aquï¿½.
+                        Aún no has votado publicaciones. Tus apoyos y votos aparecer?n aqu?.
                       </div>
                     )}
                   </div>
@@ -1304,14 +1304,14 @@ export default function ProfileExperience() {
                           {formatPublishedLabel(comment.createdAt)}
                         </p>
                         <h3 className="mt-3 font-bold text-slate-900">
-                          {comment.article.title ? comment.article.title : "Publicación no disponible"}
+                          {comment.article.title ? comment.article.title : "Publicaci?n no disponible"}
                         </h3>
                         <p className="mt-2 text-sm leading-7 text-slate-600">{comment.comment}</p>
                       </article>
                     ))
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                      Aï¿½n no has comentado publicaciones. Tus aportes a la conversación aparecerán aquí.
+                      Aún no has comentado publicaciones. Tus aportes a la conversaci?n aparecer?n aqu?.
                     </div>
                   )}
                 </div>
@@ -1399,10 +1399,10 @@ export default function ProfileExperience() {
               </section>
 
               <section className="nova-card p-6">
-                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Como se construye la reputaciï¿½n</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Como se construye la reputación</h2>
                 <div className="mt-5 space-y-3">
                   <div className="rounded-[20px] bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
-                    La reputaciï¿½n busca equilibrio entre publicar, revisar y comentar. No depende de una sola acciï¿½n.
+                    La reputación busca equilibrio entre publicar, revisar y comentar. No depende de una sola acci?n.
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Publicaciones y votos recibidos</span>
@@ -1440,7 +1440,7 @@ export default function ProfileExperience() {
                         className="inline-flex items-center gap-2 text-sm font-semibold text-fuchsia-600"
                       >
                         <ExternalLink size={16} />
-                        Abrir ORCID pï¿½blico
+                        Abrir ORCID público
                       </a>
                       {bibliometrics.openAlexId ? (
                         <a
@@ -1490,7 +1490,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <p className="rounded-[20px] bg-slate-50/80 p-3 text-sm leading-7 text-slate-600">
-                          Aï¿½n no hay seguidores visibles en este perfil.
+                          Aún no hay seguidores visibles en este perfil.
                         </p>
                       )}
                     </div>

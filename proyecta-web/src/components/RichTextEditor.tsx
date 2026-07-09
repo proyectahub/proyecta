@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Wand2 } from 'lucide-react'
 
 interface RichTextEditorProps {
@@ -11,7 +11,7 @@ interface RichTextEditorProps {
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = 'Escribe tu descripciÃƒÂ³n...',
+  placeholder = 'Escribe tu descripción...',
   showTemplate = true,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -32,20 +32,20 @@ export function RichTextEditor({
   }
 
   const insertTemplate = () => {
-    const template = `<h2>IntroducciÃƒÂ³n</h2>
-<p>Describe brevemente el contexto del proyecto y su importancia cientÃƒÂ­fica.</p>
+    const template = `<h2>Introducción</h2>
+<p>Describe brevemente el contexto del proyecto y su importancia científica.</p>
 
 <h2>Antecedentes</h2>
-<p>Explica el estado actual del conocimiento y la brecha que tu investigaciÃƒÂ³n aborda.</p>
+<p>Explica el estado actual del conocimiento y la brecha que tu investigación aborda.</p>
 
-<h2>Material y MÃƒÂ©todos</h2>
-<p>Detalla los materiales, equipos y procedimientos que se utilizarÃƒÂ¡n.</p>
+<h2>Material y Métodos</h2>
+<p>Detalla los materiales, equipos y procedimientos que se utilizarán.</p>
 
 <h2>Resultados Esperados</h2>
-<p>Explica quÃƒÂ© esperas lograr con este proyecto y cÃƒÂ³mo beneficiarÃƒÂ¡ a la comunidad cientÃƒÂ­fica.</p>
+<p>Explica qué esperas lograr con este proyecto y cómo beneficiará a la comunidad científica.</p>
 
-<h2>DescripciÃƒÂ³n del Presupuesto</h2>
-<p>Especifica cÃƒÂ³mo se utilizarÃƒÂ¡n los XMR recaudados. Ejemplo: computaciÃƒÂ³n, equipamiento, anÃƒÂ¡lisis de datos, etc.</p>`
+<h2>Descripción del Presupuesto</h2>
+<p>Especifica cómo se utilizarán los XMR recaudados. Ejemplo: computación, equipamiento, análisis de datos, etc.</p>`
 
     if (editorRef.current) {
       editorRef.current.innerHTML = template
@@ -105,15 +105,9 @@ export function RichTextEditor({
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 rounded-t-lg border border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 p-4">
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button onClick={() => executeCommand('bold')} title="Negrita (Ctrl+B)" className="rounded p-2 text-sm font-bold transition hover:bg-slate-200">
-            B
-          </button>
-          <button onClick={() => executeCommand('italic')} title="Cursiva (Ctrl+I)" className="rounded p-2 text-sm italic transition hover:bg-slate-200">
-            I
-          </button>
-          <button onClick={() => executeCommand('underline')} title="Subrayado (Ctrl+U)" className="rounded p-2 text-sm underline transition hover:bg-slate-200">
-            U
-          </button>
+          <button onClick={() => executeCommand('bold')} title="Negrita (Ctrl+B)" className="rounded p-2 text-sm font-bold transition hover:bg-slate-200">B</button>
+          <button onClick={() => executeCommand('italic')} title="Cursiva (Ctrl+I)" className="rounded p-2 text-sm italic transition hover:bg-slate-200">I</button>
+          <button onClick={() => executeCommand('underline')} title="Subrayado (Ctrl+U)" className="rounded p-2 text-sm underline transition hover:bg-slate-200">U</button>
         </div>
 
         <div className="flex gap-1 border-r border-slate-300 pr-3">
@@ -124,36 +118,22 @@ export function RichTextEditor({
             }}
             className="cursor-pointer rounded p-2 text-xs transition hover:bg-slate-200"
           >
-            <option value="">PÃƒÂ¡rrafo</option>
-            <option value="h2">TÃƒÂ­tulo 2</option>
-            <option value="h3">TÃƒÂ­tulo 3</option>
+            <option value="">Párrafo</option>
+            <option value="h2">Título 2</option>
+            <option value="h3">Título 3</option>
           </select>
 
-          <button
-            onClick={() => executeCommand('insertUnorderedList')}
-            title="Lista"
-            className="rounded p-2 text-sm transition hover:bg-slate-200"
-          >
-            Ã¢â‚¬Â¢ Lista
-          </button>
+          <button onClick={() => executeCommand('insertUnorderedList')} title="Lista" className="rounded p-2 text-sm transition hover:bg-slate-200">• Lista</button>
         </div>
 
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button onClick={insertLink} title="Insertar enlace" className="rounded p-2 text-xs font-bold text-blue-600 transition hover:bg-slate-200">
-            Ã°Å¸â€â€” Enlace
-          </button>
-          <button onClick={insertImage} title="Insertar imagen" className="rounded p-2 text-sm transition hover:bg-slate-200">
-            Ã°Å¸â€“Â¼Ã¯Â¸Â Imagen
-          </button>
+          <button onClick={insertLink} title="Insertar enlace" className="rounded p-2 text-xs font-bold text-blue-600 transition hover:bg-slate-200">🔗 Enlace</button>
+          <button onClick={insertImage} title="Insertar imagen" className="rounded p-2 text-sm transition hover:bg-slate-200">🖼️ Imagen</button>
         </div>
 
         <div className="flex gap-1 border-r border-slate-300 pr-3">
-          <button onClick={() => executeCommand('undo')} title="Deshacer" className="rounded p-2 text-sm transition hover:bg-slate-200">
-            Ã¢â€ Â¶
-          </button>
-          <button onClick={() => executeCommand('redo')} title="Rehacer" className="rounded p-2 text-sm transition hover:bg-slate-200">
-            Ã¢â€ Â·
-          </button>
+          <button onClick={() => executeCommand('undo')} title="Deshacer" className="rounded p-2 text-sm transition hover:bg-slate-200">↶</button>
+          <button onClick={() => executeCommand('redo')} title="Rehacer" className="rounded p-2 text-sm transition hover:bg-slate-200">↷</button>
         </div>
 
         {showTemplate && (
@@ -202,10 +182,10 @@ export function RichTextEditor({
 
       <div className="space-y-1 text-xs text-slate-600">
         <p>
-          Ã°Å¸â€™Â¡ <strong>Sugerencia:</strong> Haz clic en "Estructura" para agregar secciones recomendadas. Las imÃƒÂ¡genes se guardan como referencias base64.
+          💡 <strong>Sugerencia:</strong> Haz clic en "Estructura" para agregar secciones recomendadas. Las imágenes se guardan como referencias base64.
         </p>
         <p>
-          Ã°Å¸â€œâ€¹ <strong>Presupuesto:</strong> Especifica en la secciÃƒÂ³n de presupuesto cÃƒÂ³mo se usarÃƒÂ¡n los XMR recaudados (computaciÃƒÂ³n, equipamiento, anÃƒÂ¡lisis, etc.).
+          💰 <strong>Presupuesto:</strong> Especifica en la sección de presupuesto cómo se utilizarán los XMR recaudados (computación, equipamiento, análisis, etc.).
         </p>
       </div>
     </div>
