@@ -31,7 +31,7 @@ export default function Profile() {
         </p>
       )}
 
-      {data  (
+      {data ? (
         <pre className="bg-slate-100 p-4 rounded-lg text-sm overflow-auto">
           {JSON.stringify(data, null, 2)}
         </pre>

@@ -23,17 +23,17 @@ export function SignUpExperience() {
     }
 
     if (!password.trim()) {
-      setError('Password requerida')
+      setError('Contrase?a requerida')
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Las passwords no coinciden')
+      setError('Las contrase?as no coinciden')
       return
     }
 
     if (password.length < 6) {
-      setError('Password minimo 6 caracteres')
+      setError('La contrase?a debe tener al menos 6 caracteres')
       return
     }
 
@@ -47,7 +47,7 @@ export function SignUpExperience() {
       setStep('success')
       setTimeout(() => navigate('/profile'), 2000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error en registro')
+      setError(err instanceof Error ? err.message : 'No fue posible crear tu cuenta')
     }
   }
 
@@ -57,7 +57,7 @@ export function SignUpExperience() {
         <div className="max-w-lg w-full text-center space-y-6">
           <div className="space-y-4">
             <div className="text-6xl">OK</div>
-            <h2 className="text-3xl font-bold text-emerald-900">Bienvenido!</h2>
+            <h2 className="text-3xl font-bold text-emerald-900">Bienvenido</h2>
             <p className="text-emerald-700">Tu cuenta ha sido creada exitosamente</p>
           </div>
           <p className="text-sm text-slate-600">Redirigiendo a tu perfil...</p>
@@ -100,24 +100,24 @@ export function SignUpExperience() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-700">Password</label>
+            <label className="block text-sm font-bold text-slate-700">Contrase?a</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimo 6 caracteres"
+              placeholder="M?nimo 6 caracteres"
               className="nova-field"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-700">Confirmar password</label>
+            <label className="block text-sm font-bold text-slate-700">Confirmar contrase?a</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repite la password"
+              placeholder="Repite la contrase?a"
               className="nova-field"
               disabled={loading}
             />
@@ -129,30 +129,26 @@ export function SignUpExperience() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="nova-button-solid w-full py-3"
-          >
+          <button type="submit" disabled={loading} className="nova-button-solid w-full py-3">
             {loading ? 'Registrando...' : 'Crear cuenta'}
           </button>
 
           <p className="text-sm text-slate-600 text-center">
-            Ya tienes cuenta?{' '}
+            ?Ya tienes cuenta?{' '}
             <button
               type="button"
               onClick={() => navigate('/login')}
               className="text-blue-600 underline"
             >
-              Inicia sesion
+              Inicia sesi?n
             </button>
           </p>
         </form>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-          <p className="font-bold mb-2">Proximos pasos:</p>
+          <p className="font-bold mb-2">Pr?ximos pasos:</p>
           <ul className="space-y-1 list-disc list-inside text-xs">
-            <li>Completa tu perfil con informacion personal</li>
+            <li>Completa tu perfil con informaci?n personal</li>
             <li>Conecta tu wallet Monero (opcional)</li>
             <li>Comienza a publicar y apoyar proyectos</li>
           </ul>

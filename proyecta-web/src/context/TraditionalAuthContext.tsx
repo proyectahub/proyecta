@@ -1,12 +1,20 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react'
+﻿import React, { createContext, useEffect, useState, ReactNode } from 'react'
+import { isValidMoneroAddress } from '../utils/moneroAddress'
+import { API_BASE } from '../lib/api'
 
 export interface UserProfile {
   id: string
   email: string
   fullName: string
+  name?: string
   orcidId?: string
   institution?: string
   researchArea?: string
+  role?: string
+  affiliation?: string
+  location?: string
+  bio?: string
+  image?: string
   moneroWallet?: {
     mainAddress: string
     viewKey: string
@@ -26,12 +34,67 @@ interface AuthContextType {
   error: string | null
   register: (email: string, password: string, fullName: string) => Promise<void>
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>
   linkWallet: (mainAddress: string, viewKey: string) => Promise<void>
 }
 
 export const TraditionalAuthContext = createContext<AuthContextType | null>(null)
+
+const AUTH_API_BASE = `${API_BASE}/api`
+const SESSION_STORAGE_KEY = 'proyecta_auth_session_token'
+const LEGACY_USER_CACHE_KEY = 'proyecta_user'
+const LEGACY_ALL_USERS_KEY = 'proyecta_all_profiles'
+
+function getStoredSessionToken() {
+  return window.localStorage.getItem(SESSION_STORAGE_KEY)
+}
+
+function storeSessionToken(token: string) {
+  window.localStorage.setItem(SESSION_STORAGE_KEY, token)
+}
+
+function clearSessionToken() {
+  window.localStorage.removeItem(SESSION_STORAGE_KEY)
+}
+
+function cacheUser(user: UserProfile) {
+  window.localStorage.setItem(LEGACY_USER_CACHE_KEY, JSON.stringify(user))
+
+  const allProfiles = JSON.parse(window.localStorage.getItem(LEGACY_ALL_USERS_KEY) || '{}')
+  allProfiles[user.email] = user
+  window.localStorage.setItem(LEGACY_ALL_USERS_KEY, JSON.stringify(allProfiles))
+}
+
+function removeCachedUser() {
+  window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
+}
+
+function readLegacyUser(): UserProfile | null {
+  const saved = window.localStorage.getItem(LEGACY_USER_CACHE_KEY)
+  if (!saved) return null
+
+  try {
+    return JSON.parse(saved) as UserProfile
+  } catch {
+    window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
+    return null
+  }
+}
+
+async function parseAuthResponse(response: Response) {
+  const raw = await response.text()
+
+  if (!raw) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    throw new Error('La respuesta del servidor no es v?lida.')
+  }
+}
 
 export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -40,45 +103,76 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('proyecta_user')
-    if (saved) {
-      try {
-        setUser(JSON.parse(saved))
-      } catch (err) {
-        localStorage.removeItem('proyecta_user')
+    const boot = async () => {
+      const token = getStoredSessionToken()
+
+      if (token) {
+        try {
+          const response = await fetch(`${AUTH_API_BASE}/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+
+          const data = await parseAuthResponse(response)
+
+          if (!response.ok || !data.user) {
+            throw new Error(data.error || 'No fue posible recuperar tu sesión.')
+          }
+
+          setUser(data.user)
+          cacheUser(data.user)
+          setInitialized(true)
+          return
+        } catch {
+          clearSessionToken()
+        }
       }
+
+      const legacyUser = readLegacyUser()
+      if (legacyUser) {
+        setUser(legacyUser)
+      }
+
+      setInitialized(true)
     }
-    setInitialized(true)
+
+    void boot()
   }, [])
 
   const register = async (email: string, password: string, fullName: string) => {
     setLoading(true)
     setError(null)
+
     try {
-      const users = JSON.parse(localStorage.getItem('proyecta_users') || '[]')
-      if (users.find((u: any) => u.email === email)) {
-        throw new Error('Email ya registrado')
+      const response = await fetch(`${AUTH_API_BASE}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          password,
+          acceptedPrivacyNotice: true,
+          acceptedPublishingTerms: true,
+        }),
+      })
+
+      const data = await parseAuthResponse(response)
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en registro')
       }
 
-      const newUser: UserProfile = {
-        id: `user_${Date.now()}`,
-        email,
-        fullName,
-        vitaBacked: 0,
-        vitaEarned: 0,
-        vitaPledged: 0,
-        createdAt: Date.now(),
+      if (data.token) {
+        storeSessionToken(data.token)
       }
 
-      users.push({ email, password })
-      localStorage.setItem('proyecta_users', JSON.stringify(users))
-
-      const allProfiles = JSON.parse(localStorage.getItem('proyecta_all_profiles') || '{}')
-      allProfiles[email] = newUser
-      localStorage.setItem('proyecta_all_profiles', JSON.stringify(allProfiles))
-
-      localStorage.setItem('proyecta_user', JSON.stringify(newUser))
-      setUser(newUser)
+      if (data.user) {
+        setUser(data.user)
+        cacheUser(data.user)
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error en registro'
       setError(msg)
@@ -91,24 +185,30 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
-    try {
-      const users = JSON.parse(localStorage.getItem('proyecta_users') || '[]')
-      const found = users.find((u: any) => u.email === email && u.password === password)
-      if (!found) throw new Error('Email o password incorrectos')
 
-      const allProfiles = JSON.parse(localStorage.getItem('proyecta_all_profiles') || '{}')
-      const profile = allProfiles[email] || {
-        id: `user_${Date.now()}`,
-        email,
-        fullName: '',
-        vitaBacked: 0,
-        vitaEarned: 0,
-        vitaPledged: 0,
-        createdAt: Date.now(),
+    try {
+      const response = await fetch(`${AUTH_API_BASE}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await parseAuthResponse(response)
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en login')
       }
 
-      localStorage.setItem('proyecta_user', JSON.stringify(profile))
-      setUser(profile)
+      if (data.token) {
+        storeSessionToken(data.token)
+      }
+
+      if (data.user) {
+        setUser(data.user)
+        cacheUser(data.user)
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error en login'
       setError(msg)
@@ -118,43 +218,92 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('proyecta_user')
+  const logout = async () => {
+    const token = getStoredSessionToken()
+
+    try {
+      if (token) {
+        await fetch(`${AUTH_API_BASE}/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      clearSessionToken()
+      removeCachedUser()
+      setUser(null)
+    }
   }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) throw new Error('No user')
-    const updated = { ...user, ...updates }
-    localStorage.setItem('proyecta_user', JSON.stringify(updated))
 
-    const allProfiles = JSON.parse(localStorage.getItem('proyecta_all_profiles') || '{}')
-    allProfiles[user.email] = updated
-    localStorage.setItem('proyecta_all_profiles', JSON.stringify(allProfiles))
+    const token = getStoredSessionToken()
+    if (!token) {
+      throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
+    }
 
-    setUser(updated)
+    const response = await fetch(`${AUTH_API_BASE}/profile`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    })
+
+    const data = await parseAuthResponse(response)
+
+    if (!response.ok) {
+      throw new Error(data.error || 'No fue posible actualizar tu perfil.')
+    }
+
+    if (data.user) {
+      setUser(data.user)
+      cacheUser(data.user)
+    }
   }
 
   const linkWallet = async (mainAddress: string, viewKey: string) => {
     if (!user) throw new Error('No user')
-    const vitaAddress = await hashWallet(mainAddress)
-    const updated = {
-      ...user,
-      moneroWallet: { mainAddress, viewKey, userVitaAddress: vitaAddress, linkedAt: Date.now() }
+
+    const normalizedAddress = mainAddress.trim()
+    const normalizedViewKey = viewKey.trim()
+    if (!isValidMoneroAddress(normalizedAddress)) {
+      throw new Error('Dirección Monero inválida')
     }
-    localStorage.setItem('proyecta_user', JSON.stringify(updated))
+    if (!/^[a-fA-F0-9]{64}$/.test(normalizedViewKey)) {
+      throw new Error('View key pública inválida')
+    }
 
-    const allProfiles = JSON.parse(localStorage.getItem('proyecta_all_profiles') || '{}')
-    allProfiles[user.email] = updated
-    localStorage.setItem('proyecta_all_profiles', JSON.stringify(allProfiles))
+    const token = getStoredSessionToken()
+    if (!token) {
+      throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
+    }
 
-    setUser(updated)
-  }
+    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ mainAddress: normalizedAddress, viewKey: normalizedViewKey }),
+    })
 
-  const hashWallet = async (address: string): Promise<string> => {
-    const encoder = new TextEncoder()
-    const buffer = await crypto.subtle.digest('SHA-256', encoder.encode(address))
-    return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('')
+    const data = await parseAuthResponse(response)
+
+    if (!response.ok) {
+      throw new Error(data.error || 'No fue posible vincular la wallet.')
+    }
+
+    if (data.user) {
+      setUser(data.user)
+      cacheUser(data.user)
+    }
   }
 
   return (
