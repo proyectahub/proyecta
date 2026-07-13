@@ -1614,6 +1614,17 @@ app.post("/api/oauth/orcid/link", async (req, res) => {
   }
 })
 
+app.get("/api/oauth/orcid", async (_req, res) => {
+  try {
+    const state = createOAuthState({ mode: "login" })
+    const url = buildOrcidAuthorizeUrl(state)
+    return res.redirect(url)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: "No fue posible iniciar ORCID." })
+  }
+})
+
 async function handleOrcidCallback(req, res) {
   const code = String(req.query.code || "")
   const state = String(req.query.state || "")

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { API_BASE } from '../lib/api'
@@ -9,6 +9,8 @@ export function UserProfileExperience() {
   const { user, logout, updateProfile } = useTraditionalAuth()
 
   const [editing, setEditing] = useState(false)
+  const [orcidLoading, setOrcidLoading] = useState(false)
+  const [orcidError, setOrcidError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     fullName: '',
     institution: '',
@@ -37,9 +39,40 @@ export function UserProfileExperience() {
     setEditing(false)
   }
 
+  const handleConnectOrcid = async () => {
+    setOrcidError(null)
+    setOrcidLoading(true)
+
+    try {
+      const token = window.localStorage.getItem('proyecta_auth_session_token')
+      if (!token) {
+        navigate('/login')
+        return
+      }
+
+      const response = await fetch(`${API_BASE}/api/oauth/orcid/link`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'No fue posible iniciar ORCID.')
+      }
+
+      window.location.href = data.url
+    } catch (error) {
+      setOrcidError(error instanceof Error ? error.message : 'No fue posible iniciar ORCID.')
+    } finally {
+      setOrcidLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-slate-900">Mi perfil</h1>
           <p className="mt-2 text-slate-600">{user.email}</p>
@@ -50,22 +83,22 @@ export function UserProfileExperience() {
       </div>
 
       <div className="nova-card space-y-6 p-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Información personal</h2>
-            {user.orcidId && (
+            {user.orcidId ? (
               <div className="mt-2 flex items-center gap-2">
                 <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
-                  ✓ Investigador/a verificado
+                  <span aria-hidden="true">✓</span> Investigador/a verificado
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
-          {!editing && (
+          {!editing ? (
             <button onClick={() => setEditing(true)} className="nova-button-soft text-sm">
               Editar
             </button>
-          )}
+          ) : null}
         </div>
 
         {editing ? (
@@ -128,56 +161,59 @@ export function UserProfileExperience() {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <p className="text-xs font-bold text-slate-600">NOMBRE</p>
               <p className="text-lg font-bold text-slate-900">{formData.fullName || 'No especificado'}</p>
-              {!user.orcidId && (
+              {!user.orcidId ? (
                 <button
-                  onClick={() => window.location.href = `${API_BASE}/api/oauth/orcid`}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
+                  onClick={handleConnectOrcid}
+                  disabled={orcidLoading}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-60"
                 >
-                  <span>🔗</span> Conectar con ORCID
+                  <span aria-hidden="true">↻</span> {orcidLoading ? 'Conectando...' : 'Conectar con ORCID'}
                 </button>
-              )}
-              {user.orcidId && (
+              ) : (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800">
-                  <span>✓</span> ORCID conectado
+                  <span aria-hidden="true">✓</span> ORCID conectado
                 </div>
               )}
+              {orcidError ? (
+                <p className="mt-2 text-sm text-rose-700">{orcidError}</p>
+              ) : null}
             </div>
             <div>
               <p className="text-xs font-bold text-slate-600">EMAIL</p>
               <p className="text-sm text-slate-700">{user.email}</p>
             </div>
-            {formData.institution && (
+            {formData.institution ? (
               <div>
                 <p className="text-xs font-bold text-slate-600">INSTITUCIÓN</p>
                 <p className="text-sm text-slate-700">{formData.institution}</p>
               </div>
-            )}
-            {formData.researchArea && (
+            ) : null}
+            {formData.researchArea ? (
               <div>
                 <p className="text-xs font-bold text-slate-600">ÁREA DE INVESTIGACIÓN</p>
                 <p className="text-sm text-slate-700 capitalize">{formData.researchArea}</p>
               </div>
-            )}
-            {formData.orcidId && (
+            ) : null}
+            {formData.orcidId ? (
               <div>
                 <p className="text-xs font-bold text-slate-600">ORCID</p>
                 <a href={`https://orcid.org/${formData.orcidId}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
                   {formData.orcidId}
                 </a>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
 
       <div className="nova-card space-y-4 bg-slate-50 p-8">
-        <h2 className="text-2xl font-bold text-slate-900">Sistema de recompensas pausado</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Wallet personal del investigador</h2>
         <p className="text-sm leading-7 text-slate-600">
-          Las métricas internas están ocultas temporalmente. El perfil sigue funcionando para identidad, ORCID y wallet personal.
+          Esta dirección de Monero queda registrada en tu perfil y se usa como destino al crear proyectos. Tú la administras y puedes actualizarla cuando lo necesites.
         </p>
       </div>
 
