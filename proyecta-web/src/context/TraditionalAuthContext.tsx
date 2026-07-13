@@ -41,7 +41,7 @@ interface AuthContextType {
 
 export const TraditionalAuthContext = createContext<AuthContextType | null>(null)
 
-const AUTH_API_BASE = `${API_BASE}/api`
+const AUTH_API_BASE = '/cf-api/auth'
 const SESSION_STORAGE_KEY = 'proyecta_auth_session_token'
 const LEGACY_USER_CACHE_KEY = 'proyecta_user'
 const LEGACY_ALL_USERS_KEY = 'proyecta_all_profiles'
