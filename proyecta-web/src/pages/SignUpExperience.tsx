@@ -23,7 +23,7 @@ export function SignUpExperience() {
     }
 
     if (!password.trim()) {
-      setError('Contrase?a requerida')
+      setError('Contraseña requerida')
       return
     }
 
@@ -33,7 +33,7 @@ export function SignUpExperience() {
     }
 
     if (password.length < 6) {
-      setError('La contrase?a debe tener al menos 6 caracteres')
+      setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
@@ -100,24 +100,24 @@ export function SignUpExperience() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-700">Contrase?a</label>
+            <label className="block text-sm font-bold text-slate-700">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="M?nimo 6 caracteres"
+              placeholder="Mínimo 6 caracteres"
               className="nova-field"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-700">Confirmar contrase?a</label>
+            <label className="block text-sm font-bold text-slate-700">Confirmar contraseña</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repite la contrase?a"
+              placeholder="Repite la contraseña"
               className="nova-field"
               disabled={loading}
             />
@@ -134,7 +134,7 @@ export function SignUpExperience() {
           </button>
 
           <p className="text-sm text-slate-600 text-center">
-            ?Ya tienes cuenta?{' '}
+            ¿Ya tienes cuenta?{' '}
             <button
               type="button"
               onClick={() => navigate('/login')}
@@ -146,9 +146,9 @@ export function SignUpExperience() {
         </form>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-          <p className="font-bold mb-2">Pr?ximos pasos:</p>
+          <p className="font-bold mb-2">Próximos pasos:</p>
           <ul className="space-y-1 list-disc list-inside text-xs">
-            <li>Completa tu perfil con informaci?n personal</li>
+            <li>Completa tu perfil con información personal</li>
             <li>Conecta tu wallet Monero (opcional)</li>
             <li>Comienza a publicar y apoyar proyectos</li>
           </ul>

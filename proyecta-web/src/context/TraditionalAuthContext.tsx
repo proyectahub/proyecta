@@ -92,7 +92,7 @@ async function parseAuthResponse(response: Response) {
   try {
     return JSON.parse(raw)
   } catch {
-    throw new Error('La respuesta del servidor no es v?lida.')
+    throw new Error('La respuesta del servidor no es válida.')
   }
 }
 

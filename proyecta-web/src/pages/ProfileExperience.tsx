@@ -426,7 +426,7 @@ export default function ProfileExperience() {
 
   const handleLinkOrcid = async () => {
     if (!token) {
-      toast.error("Necesitas iniciar sesión para vincular ORCID.")
+      toast.error("Necesitas iniciar sesi?n para vincular ORCID.")
       return
     }
 
@@ -458,7 +458,7 @@ export default function ProfileExperience() {
 
   const handleSaveProfile = async () => {
     if (!token) {
-      toast.error("Necesitas iniciar sesión para guardar cambios.")
+      toast.error("Necesitas iniciar sesi?n para guardar cambios.")
       return
     }
 
@@ -508,7 +508,7 @@ export default function ProfileExperience() {
 
   const persistProfileImage = async (imageDataUrl: string) => {
     if (!token) {
-      toast.error("Necesitas iniciar sesión para actualizar tu foto.")
+      toast.error("Necesitas iniciar sesi?n para actualizar tu foto.")
       return
     }
 
@@ -611,7 +611,7 @@ export default function ProfileExperience() {
       return
     }
 
-    const confirmed = window.confirm("?Seguro que quieres eliminar esta publicación de Proyecta")
+    const confirmed = window.confirm("¿Seguro que quieres eliminar esta publicación de Proyecta")
     if (!confirmed) {
       return
     }
@@ -644,7 +644,7 @@ export default function ProfileExperience() {
 
   const handleToggleFollow = async () => {
     if (!token || !profile) {
-      toast.error("Necesitas iniciar sesión para seguir perfiles.")
+      toast.error("Necesitas iniciar sesi?n para seguir perfiles.")
       return
     }
 
@@ -718,7 +718,7 @@ export default function ProfileExperience() {
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
                 >
                   <PencilLine size={16} />
-                  {isEditing ? "Cerrar edici?n" : "Personalizar perfil"}
+                  {isEditing ? "Cerrar edición" : "Personalizar perfil"}
                 </button>
                 <button
                   onClick={handleLinkOrcid}
@@ -795,7 +795,7 @@ export default function ProfileExperience() {
 
                 <p className="text-slate-600">{resolvedRole} ? {profile.affiliation}</p>
                 <p className="max-w-3xl text-base leading-8 text-slate-600">
-                  {profile.bio || "Aquí puedes describir al investigador con tus propios datos."}
+                  {profile.bio || "Aqu puedes describir al investigador con tus propios datos."}
                 </p>
                 {isOwner ? (
                   <p className="text-sm font-medium text-slate-500">
@@ -856,7 +856,7 @@ export default function ProfileExperience() {
                           <div>
                             <p className="text-sm font-bold text-slate-900">Foto de perfil</p>
                             <p className="mt-1 text-sm leading-6 text-slate-500">
-                              Una imagen clara ayuda a que tu identidad se sienta más cercana y reconocible en la comunidad.
+                              Una imagen clara ayuda a que tu identidad se sienta ms cercana y reconocible en la comunidad.
                             </p>
                           </div>
                         </div>
@@ -886,11 +886,11 @@ export default function ProfileExperience() {
                       <span className="mb-2 block text-sm font-semibold text-slate-600">T?tulo visible</span>
                       <p className="font-semibold text-slate-900">{resolvedRole}</p>
                       <p className="mt-2 text-sm leading-6 text-slate-500">
-                        Este título se ajusta autom?ticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a cient?fico/a.
+                        Este título se ajusta automáticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a científico/a.
                       </p>
                     </div>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">Afiliacion</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Afiliación</span>
                       <input
                         value={form.affiliation}
                         onChange={(event) => setForm((prev) => ({ ...prev, affiliation: event.target.value }))}
@@ -898,7 +898,7 @@ export default function ProfileExperience() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">Ubicacion</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Ubicación</span>
                       <input
                         value={form.location}
                         onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
@@ -906,7 +906,7 @@ export default function ProfileExperience() {
                       />
                     </label>
                     <label className="block md:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">Bio</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Biografía</span>
                       <textarea
                         value={form.bio}
                         onChange={(event) => setForm((prev) => ({ ...prev, bio: event.target.value }))}
@@ -924,7 +924,7 @@ export default function ProfileExperience() {
                 </div>
                 <div className="nova-card-soft p-5 text-center">
                   <p className="nova-title text-3xl font-extrabold text-slate-900">{resolvedWorksCount}</p>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Artículos / obras</p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Artculos / obras</p>
                 </div>
                 <div className="nova-card-soft p-5 text-center">
                   <p className="nova-title text-3xl font-extrabold text-slate-900">
@@ -969,10 +969,10 @@ export default function ProfileExperience() {
                   <div className="space-y-2">
                     <p className="nova-eyebrow">Lecturas afines a tu perfil</p>
                     <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-                      Artículos para leer con contexto o revisar primero
+                      Artculos para leer con contexto o revisar primero
                     </h2>
                     <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                      Proyecta cruza las ?reas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte art?culos cercanos a tus intereses.
+                      Proyecta cruza las áreas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte artículos cercanos a tus intereses.
                     </p>
                   </div>
                   <div className="flex max-w-xl flex-wrap gap-2">
@@ -987,7 +987,7 @@ export default function ProfileExperience() {
                       ))
                     ) : (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                        Tus intereses crecer?n con tus publicaciones y sincronizaciones
+                        Tus intereses crecerán con tus publicaciones y sincronizaciones
                       </span>
                     )}
                   </div>
@@ -1001,7 +1001,7 @@ export default function ProfileExperience() {
                           Ya revisadas
                         </p>
                         <h3 className="mt-2 text-xl font-extrabold text-slate-900">
-                          Para leer con más contexto
+                          Para leer con ms contexto
                         </h3>
                       </div>
                       <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
@@ -1052,7 +1052,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <div className="rounded-[24px] bg-white/90 p-5 text-sm leading-7 text-slate-600">
-                          Aún no encontramos lecturas revisadas claramente alineadas con tu perfil. Esto se ir? afinando conforme publiques y sigas ampliando tu trayectoria.
+                          An no encontramos lecturas revisadas claramente alineadas con tu perfil. Esto se ir? afinando conforme publiques y sigas ampliando tu trayectoria.
                         </div>
                       )}
                     </div>
@@ -1116,7 +1116,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <div className="rounded-[24px] bg-white/90 p-5 text-sm leading-7 text-slate-600">
-                          En este momento no hay art?culos abiertos a revisión especialmente relacionados con tus intereses.
+                          En este momento no hay artículos abiertos a revisión especialmente relacionados con tus intereses.
                         </div>
                       )}
                     </div>
@@ -1174,7 +1174,7 @@ export default function ProfileExperience() {
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5">
                       <p className="text-sm leading-7 text-slate-600">
-                        Todav?a no hay publicaciones. Cuando publiques tu primera entrada, aparecer aqu.
+                        Todavía no hay publicaciones. Cuando publiques tu primera entrada, aparecerá aquí.
                       </p>
                     </div>
                   )}
@@ -1245,13 +1245,13 @@ export default function ProfileExperience() {
                             {review.article.title ? review.article.title : "Publicaci?n no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {review.comment || "Revisi?n sin comentario adicional."}
+                            {review.comment || "Revisión sin comentario adicional."}
                           </p>
                         </article>
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        Aún no has dejado revisiónes. Cuando eval?es art?culos, aparecer?n aqu?.
+                        Aún no has dejado revisiones. Cuando evalúes artículos, aparecerán aquí.
                       </div>
                     )}
                   </div>
@@ -1275,16 +1275,16 @@ export default function ProfileExperience() {
                             </p>
                           </div>
                           <h3 className="mt-3 font-bold text-slate-900">
-                            {vote.article.title ? vote.article.title : "Publicaci?n no disponible"}
+                            {vote.article.title ? vote.article.title : "Publicación no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {vote.article.excerpt ? vote.article.excerpt : "La publicación asociada ya no esta disponible."}
+                            {vote.article.excerpt ? vote.article.excerpt : "La publicación asociada ya no está disponible."}
                           </p>
                         </article>
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        Aún no has votado publicaciones. Tus apoyos y votos aparecer?n aqu?.
+                        Aún no has votado publicaciones. Tus apoyos y votos aparecerán aquí.
                       </div>
                     )}
                   </div>
@@ -1294,7 +1294,7 @@ export default function ProfileExperience() {
               <div className="nova-card p-6">
                 <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   <MessageSquare size={16} className="text-fuchsia-500" />
-                  Comentarios científicos realizados
+                  Comentarios cientficos realizados
                 </h2>
                 <div className="mt-6 space-y-4">
                   {activityComments.length > 0 ? (
@@ -1311,7 +1311,7 @@ export default function ProfileExperience() {
                     ))
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                      Aún no has comentado publicaciones. Tus aportes a la conversaci?n aparecer?n aqu?.
+                      Aún no has comentado publicaciones. Tus aportes a la conversación aparecerán aquí.
                     </div>
                   )}
                 </div>
@@ -1329,7 +1329,7 @@ export default function ProfileExperience() {
                 </div>
                 <div className="mt-5 space-y-3">
                   <div className="rounded-[20px] bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
-                    CRÉDITOS funciona hoy como incentivo interno verificable. La ruta futura elegida para migración on-chain es Base.
+                    CR?DITOS funciona hoy como incentivo interno verificable. La ruta futura elegida para migraci?n on-chain es Base.
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Saldo actual</span>
@@ -1368,11 +1368,11 @@ export default function ProfileExperience() {
                     <span className="font-semibold text-slate-900">{profile.id}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600">Ubicacion</span>
+                    <span className="text-slate-600">Ubicaci?n</span>
                     <span className="font-semibold text-slate-900">{profile.location || "No definida"}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600">Afiliacion</span>
+                    <span className="text-slate-600">Afiliaci?n</span>
                     <span className="font-semibold text-slate-900">{resolvedAffiliation}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -1399,10 +1399,10 @@ export default function ProfileExperience() {
               </section>
 
               <section className="nova-card p-6">
-                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Como se construye la reputación</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">C?mo se construye la reputaci?n</h2>
                 <div className="mt-5 space-y-3">
                   <div className="rounded-[20px] bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
-                    La reputación busca equilibrio entre publicar, revisar y comentar. No depende de una sola acci?n.
+                    La reputaci?n busca equilibrio entre publicar, revisar y comentar. No depende de una sola acci?n.
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Publicaciones y votos recibidos</span>
@@ -1423,7 +1423,7 @@ export default function ProfileExperience() {
               </section>
 
               <section className="nova-card p-6">
-                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sincronizacion ORCID</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sincronización ORCID</h2>
                 <div className="mt-4 space-y-3">
                   {profile.orcidId ? (
                     <>
@@ -1490,7 +1490,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <p className="rounded-[20px] bg-slate-50/80 p-3 text-sm leading-7 text-slate-600">
-                          Aún no hay seguidores visibles en este perfil.
+                          A?n no hay seguidores visibles en este perfil.
                         </p>
                       )}
                     </div>
