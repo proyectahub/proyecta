@@ -1,8 +1,12 @@
 ﻿import { ensureSchema, getUserFromRequest, json } from '../_shared/auth.js'
 import { buildOrcidAuthorizeUrl, buildOrcidRedirectUri, encodeOrcidState } from '../_shared/orcid.js'
 
-export async function onRequestPost(context) {
+export async function onRequest(context) {
   const { env, request } = context
+  if (request.method !== 'POST') {
+    return json({ error: 'Método no permitido.' }, { status: 405 })
+  }
+
   await ensureSchema(env.proyecta_auth)
 
   const user = await getUserFromRequest(env.proyecta_auth, request)
