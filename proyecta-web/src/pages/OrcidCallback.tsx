@@ -1,10 +1,9 @@
-import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { toast } from "react-hot-toast"
-import { useAuth } from "../context/AuthContext"
-import { API_BASE } from "../lib/api"
+﻿import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
+import { useAuth } from '../context/AuthContext'
 
-const SESSION_STORAGE_KEY = "proyecta-session-token"
+const SESSION_STORAGE_KEY = 'proyecta-session-token'
 
 export default function OrcidCallback() {
   const navigate = useNavigate()
@@ -12,48 +11,26 @@ export default function OrcidCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const token = params.get("token")
-    const code = params.get("code")
-    const error = params.get("error")
+    const token = params.get('token')
+    const error = params.get('error')
 
     if (error) {
-      toast.error("No fue posible completar el acceso con ORCID.")
-      navigate("/login")
-      return
-    }
-
-    if (!token && code) {
-      const backendUrl = new URL(`${API_BASE}/api/oauth/orcid/callback`)
-      for (const [key, value] of params.entries()) {
-        backendUrl.searchParams.set(key, value)
-      }
-      window.location.replace(backendUrl.toString())
+      toast.error('No fue posible completar el acceso con ORCID.')
+      navigate('/login')
       return
     }
 
     if (!token) {
-      toast.error("ORCID no envio una sesion valida.")
-      navigate("/login")
+      toast.error('ORCID no envió una sesión válida.')
+      navigate('/login')
       return
     }
 
     async function completeOAuthLogin() {
       window.localStorage.setItem(SESSION_STORAGE_KEY, token)
       await refreshUser()
-      const response = await fetch(`${API_BASE}/api/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-
-      toast.success("Sesion iniciada con ORCID.")
-      if (data.user?.id) {
-        navigate(`/profile/${data.user.id}`)
-        return
-      }
-
-      navigate("/")
+      toast.success('Sesión iniciada con ORCID.')
+      navigate('/profile')
     }
 
     void completeOAuthLogin()

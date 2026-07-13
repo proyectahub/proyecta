@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
-import { API_BASE } from '../lib/api'
 import { WalletSetupGuide } from '../components/WalletSetupGuide'
 
 export function UserProfileExperience() {
@@ -50,7 +49,7 @@ export function UserProfileExperience() {
         return
       }
 
-      const response = await fetch(`${API_BASE}/api/oauth/orcid/link`, {
+      const response = await fetch(`/cf-api/auth/orcid-link`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -233,3 +232,7 @@ export function UserProfileExperience() {
     </div>
   )
 }
+
+
+
+
