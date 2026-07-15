@@ -270,7 +270,7 @@ export function WalletSetupGuide() {
               {loading ? 'Guardando...' : 'Guardar wallet'}
             </button>
             <button type="button" onClick={() => window.open(buildMoneroWebBridgeUrl(walletWebUrl), '_blank', 'noopener,noreferrer')} className="nova-button-soft w-full py-3">
-              Abrir panel real
+              Abrir Monero Web
             </button>
           </div>
         </div>
@@ -289,7 +289,7 @@ export function WalletSetupGuide() {
             El modo Monero Web sirve para generar y administrar la wallet en un panel aparte. La dirección final sigue siendo la que queda asociada al proyecto.
           </div>
           <div className="rounded-[18px] border border-fuchsia-200 bg-fuchsia-50/70 p-4 text-sm leading-7 text-fuchsia-800">
-            Monero Web queda aparte, con aislamiento y consentimiento explícito, para quienes prefieren administrar su wallet real dentro del portal.
+            Monero Web queda aparte, con aislamiento y consentimiento explícito, para quienes prefieren administrar su wallet real desde una pestaña externa.
           </div>
         </div>
       </div>

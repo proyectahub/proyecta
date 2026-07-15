@@ -1,36 +1,43 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react'
+﻿import React, { createContext, useEffect, useState, ReactNode } from 'react'
 import { useMoneroBlockchain } from '../hooks/useMoneroBlockchain'
 import { useIPFSVita } from '../hooks/useIPFSVita'
 
 export interface UserWallet {
-  mainAddress: string // 95 chars - para recibir
-  viewKey: string // View-only key (público, no revela dinero)
-  userVitaAddress: string // Hash del mainAddress
+  mainAddress: string
+  viewKey: string
+  userVitaAddress: string
   createdAt: number
 }
 
 export interface UserProfile {
   wallet: UserWallet
+  fullName?: string
+  email?: string
+  institution?: string
+  researchArea?: string
   orcidId?: string
-  reputation: number // VITA earned
-  vitaBacked: number // VITA convertido de XMR
-  vitaEarned: number // VITA por contribuciones
-  vitaPledged: number // VITA apoyando proyectos
+  reputation: number
+  vitaBacked: number
+  vitaEarned: number
+  vitaPledged: number
 }
 
 interface WalletAuthContextType {
   user: UserProfile | null
   loading: boolean
   error: string | null
-
-  // Acciones
   loginWithWallet: (mainAddress: string, viewKey: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>
   updateVitaBalance: () => Promise<void>
   watchWallet: () => () => void
 }
 
 export const WalletAuthContext = createContext<WalletAuthContextType | null>(null)
+
+const AUTH_API_BASE = '/cf-api/auth'
+const SESSION_STORAGE_KEY = 'proyecta_wallet_session_token'
+const CACHE_KEY = 'proyecta_wallet'
 
 export function WalletAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -40,7 +47,6 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
   const { isValidAddress, getAddressTransactions } = useMoneroBlockchain()
   const { loadUserVita, recordVita } = useIPFSVita()
 
-  // Generar hash SHA-256 del wallet (para dirección VITA)
   const hashWallet = async (address: string): Promise<string> => {
     const encoder = new TextEncoder()
     const data = encoder.encode(address)
@@ -49,45 +55,138 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
   }
 
-  // Login con wallet Monero
+  const storeSessionToken = (token: string) => {
+    localStorage.setItem(SESSION_STORAGE_KEY, token)
+  }
+
+  const getSessionToken = () => localStorage.getItem(SESSION_STORAGE_KEY)
+
+  const clearSession = () => {
+    localStorage.removeItem(SESSION_STORAGE_KEY)
+    localStorage.removeItem(CACHE_KEY)
+  }
+
+  const cacheUser = (profile: UserProfile) => {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(profile))
+  }
+
+  const loadCachedUser = (): UserProfile | null => {
+    const saved = localStorage.getItem(CACHE_KEY)
+    if (!saved) return null
+    try {
+      return JSON.parse(saved) as UserProfile
+    } catch {
+      localStorage.removeItem(CACHE_KEY)
+      return null
+    }
+  }
+
+  const persistWalletProfile = async (profile: UserProfile) => {
+    const token = getSessionToken()
+    if (!token) {
+      return profile
+    }
+
+    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        fullName: profile.fullName,
+        email: profile.email,
+        institution: profile.institution,
+        researchArea: profile.researchArea,
+        orcidId: profile.orcidId,
+      }),
+    })
+
+    if (!response.ok) {
+      return profile
+    }
+
+    const data = await response.json()
+    return data.user as UserProfile
+  }
+
+  const refreshFromServer = async () => {
+    const token = getSessionToken()
+    if (!token) {
+      const cached = loadCachedUser()
+      if (cached) setUser(cached)
+      return
+    }
+
+    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      clearSession()
+      const cached = loadCachedUser()
+      if (cached) setUser(cached)
+      return
+    }
+
+    const data = await response.json()
+    if (data.user) {
+      setUser(data.user)
+      cacheUser(data.user)
+    }
+  }
+
   const loginWithWallet = async (mainAddress: string, viewKey: string) => {
     setLoading(true)
     setError(null)
 
     try {
-      // Validar dirección
       if (!isValidAddress(mainAddress)) {
         throw new Error('Dirección Monero inválida')
       }
 
-      // Generar dirección VITA
       const userVitaAddress = await hashWallet(mainAddress)
+      const vitaBalance = await loadUserVita(userVitaAddress)
 
-      // Crear perfil
-      const profile: UserProfile = {
-        wallet: {
+      const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           mainAddress,
           viewKey,
-          userVitaAddress,
-          createdAt: Date.now(),
-        },
-        reputation: 0,
-        vitaBacked: 0,
-        vitaEarned: 0,
-        vitaPledged: 0,
+          reputation: vitaBalance.vitaEarned,
+          vitaBacked: vitaBalance.vitaBacked,
+          vitaEarned: vitaBalance.vitaEarned,
+          vitaPledged: vitaBalance.vitaPledged,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
       }
 
-      // Cargar VITA desde IPFS
-      const vitaBalance = await loadUserVita(userVitaAddress)
-      profile.vitaBacked = vitaBalance.vitaBacked
-      profile.vitaEarned = vitaBalance.vitaEarned
-      profile.vitaPledged = vitaBalance.vitaPledged
-      profile.reputation = vitaBalance.vitaEarned
+      if (data.token) {
+        storeSessionToken(data.token)
+      }
 
-      // Guardar en localStorage
-      localStorage.setItem('proyecta_wallet', JSON.stringify(profile))
-
-      setUser(profile)
+      if (data.user) {
+        const profile = {
+          ...data.user,
+          vitaBacked: vitaBalance.vitaBacked,
+          vitaEarned: vitaBalance.vitaEarned,
+          vitaPledged: vitaBalance.vitaPledged,
+          reputation: vitaBalance.vitaEarned,
+        }
+        setUser(profile)
+        cacheUser(profile)
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Login failed'
       setError(errorMsg)
@@ -97,13 +196,54 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Logout
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('proyecta_wallet')
+  const logout = async () => {
+    const token = getSessionToken()
+
+    try {
+      if (token) {
+        await fetch(`${AUTH_API_BASE}/wallet`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      clearSession()
+      setUser(null)
+    }
   }
 
-  // Actualizar balance de VITA
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) throw new Error('No user')
+
+    const token = getSessionToken()
+    if (!token) {
+      throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
+    }
+
+    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || 'No fue posible actualizar el perfil.')
+    }
+
+    if (data.user) {
+      setUser(data.user)
+      cacheUser(data.user)
+    }
+  }
+
   const updateVitaBalance = async () => {
     if (!user) return
 
@@ -117,24 +257,19 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
             vitaPledged: vitaBalance.vitaPledged,
             reputation: vitaBalance.vitaEarned,
           }
-        : null
+        : null,
     )
   }
 
-  // Monitorear transacciones de wallet
   const watchWallet = () => {
     if (!user) return () => {}
 
-    // Observar cada 30 segundos
     const interval = setInterval(async () => {
       const txs = await getAddressTransactions(user.wallet.mainAddress)
 
       for (const tx of txs) {
         if (tx.isConfirmed) {
-          // Crear VITA automáticamente
-          const vita = Math.floor(tx.amount * 1000) // 1 XMR = 1000 VITA
-
-          // Registrar en IPFS
+          const vita = Math.floor(tx.amount * 1000)
           await recordVita({
             type: 'donation',
             user: user.wallet.userVitaAddress,
@@ -143,7 +278,6 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
             description: 'Donación a proyecto',
           })
 
-          // Actualizar balance
           await updateVitaBalance()
         }
       }
@@ -152,18 +286,8 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval)
   }
 
-  // Cargar wallet desde localStorage al iniciar
   useEffect(() => {
-    const saved = localStorage.getItem('proyecta_wallet')
-    if (saved) {
-      try {
-        const profile = JSON.parse(saved)
-        setUser(profile)
-      } catch (err) {
-        console.error('Error loading wallet:', err)
-        localStorage.removeItem('proyecta_wallet')
-      }
-    }
+    void refreshFromServer()
   }, [])
 
   return (
@@ -174,6 +298,7 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
         error,
         loginWithWallet,
         logout,
+        updateProfile,
         updateVitaBalance,
         watchWallet,
       }}

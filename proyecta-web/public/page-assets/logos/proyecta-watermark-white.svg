@@ -1,0 +1,11 @@
+<svg width="1100" height="260" viewBox="0 0 1100 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.86">
+    <rect x="42" y="38" width="184" height="184" rx="48" fill="white" fill-opacity="0.12"/>
+    <path d="M134 99C125.4 90.7 113.4 86 99.7 86C86 86 75.5 96.6 75.5 110V163.7C75.5 167.1 78.4 170 81.8 170H121.2C126.3 170 130.6 172 134 176" stroke="white" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M134 99C142.6 90.7 154.6 86 168.3 86C182 86 192.5 96.6 192.5 110V163.7C192.5 167.1 189.6 170 186.2 170H146.8C141.7 170 137.4 172 134 176" stroke="white" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M134 100.5V176.8" stroke="white" stroke-width="9.2" stroke-linecap="round"/>
+    <text x="266" y="121" font-family="Sora, Manrope, Arial, sans-serif" font-size="66" font-weight="900" letter-spacing="-2" fill="white">PROYECTA</text>
+    <text x="270" y="164" font-family="Manrope, Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="7" fill="white" opacity="0.72">APOYO MUTUO Y COMUNITARIO PARA LA CIENCIA</text>
+    <text x="270" y="200" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="700" fill="white" opacity="0.72">Cómputo colectivo para investigación real</text>
+  </g>
+</svg>

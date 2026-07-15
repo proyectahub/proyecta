@@ -1,4 +1,4 @@
-import express from "express"
+﻿import express from "express"
 import fetch from "node-fetch"
 
 const router = express.Router()
@@ -9,7 +9,7 @@ function buildRedirectUri() {
     return configured
   }
 
-  const base = process.env.PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://proyecta-mining.pages.dev"
+  const base = process.env.PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://proyecta.pages.dev"
   return `${base.replace(/\/$/, "")}/orcid/callback`
 }
 
@@ -69,3 +69,4 @@ router.post("/exchange", async (req, res) => {
 })
 
 export default router
+

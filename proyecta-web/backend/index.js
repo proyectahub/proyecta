@@ -1,4 +1,4 @@
-import cors from "cors"
+﻿import cors from "cors"
 import dotenv from "dotenv"
 import express from "express"
 import fetch from "node-fetch"
@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const dataDir = path.join(__dirname, "data")
 const storePath = path.join(dataDir, "store.json")
-const FRONTEND_URL = process.env.FRONTEND_URL || process.env.PUBLIC_APP_URL || "https://proyecta-mining.pages.dev"
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.PUBLIC_APP_URL || "https://proyecta.pages.dev"
 const PASSWORD_RESET_BASE_URL =
   process.env.PASSWORD_RESET_BASE_URL || process.env.PUBLIC_APP_URL || FRONTEND_URL
 const PASSWORD_RESET_TTL_MINUTES = Number(process.env.PASSWORD_RESET_TTL_MINUTES || 60)
@@ -336,7 +336,7 @@ function normalizeSources(rawSources) {
 }
 
 function createUserProfile(base = {}) {
-  const name = (base.name || "").trim() || "Investigador DivulgarÃ­a"
+  const name = (base.name || "").trim() || "Investigador DivulgarÃƒÂ­a"
   return {
     id: base.id || `usr_${randomUUID().slice(0, 8)}`,
     name,
@@ -346,10 +346,10 @@ function createUserProfile(base = {}) {
       base.image ||
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop&crop=faces",
     role: base.role || resolvePublicRole(base),
-    affiliation: base.affiliation || "Comunidad DivulgarÃ­a",
+    affiliation: base.affiliation || "Comunidad DivulgarÃƒÂ­a",
     orcidId: base.orcidId || "",
     reputation: Number(base.reputation || 0),
-    bio: base.bio || "Perfil cientÃ­fico en crecimiento dentro de DivulgarÃ­a.",
+    bio: base.bio || "Perfil cientÃƒÂ­fico en crecimiento dentro de DivulgarÃƒÂ­a.",
     location: base.location || "LatAm",
     legalAcceptance: base.legalAcceptance || null,
     createdAt: base.createdAt || new Date().toISOString(),
@@ -357,7 +357,7 @@ function createUserProfile(base = {}) {
 }
 
 function resolvePublicRole(user) {
-  return user.orcidId ? "Divulgador/a cientÃ­fico/a" : "Divulgador/a"
+  return user.orcidId ? "Divulgador/a cientÃƒÂ­fico/a" : "Divulgador/a"
 }
 
 function hashPasswordResetToken(token) {
@@ -381,7 +381,7 @@ function purgePasswordResets(store) {
 
 function buildPasswordResetLink(token) {
   const base = PASSWORD_RESET_BASE_URL.replace(/\/+$/, "")
-  return `${base}/restablecer-contraseÃ±a?token=${encodeURIComponent(token)}`
+  return `${base}/restablecer-contraseÃƒÂ±a?token=${encodeURIComponent(token)}`
 }
 
 function allowPasswordResetPreview(req) {
@@ -403,11 +403,11 @@ async function sendPasswordResetEmail({ user, resetLink }) {
     }
   }
 
-  const subject = "Recupera tu contraseÃ±a de DivulgarÃƒÂ­a"
+  const subject = "Recupera tu contraseÃƒÂ±a de DivulgarÃƒÆ’Ã‚Â­a"
   const text = [
     `Hola, ${user.name}.`,
     "",
-    "Recibimos una solicitud para restablecer tu contraseÃ±a en DivulgarÃƒÂ­a.",
+    "Recibimos una solicitud para restablecer tu contraseÃƒÂ±a en DivulgarÃƒÆ’Ã‚Â­a.",
     "Si fuiste tu, abre el siguiente enlace:",
     resetLink,
     "",
@@ -418,17 +418,17 @@ async function sendPasswordResetEmail({ user, resetLink }) {
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;color:#14213d;max-width:640px;margin:0 auto;padding:24px">
       <p style="font-size:14px;letter-spacing:0.18em;text-transform:uppercase;color:#3b82f6;font-weight:700;margin:0 0 16px">
-        DivulgarÃƒÂ­a
+        DivulgarÃƒÆ’Ã‚Â­a
       </p>
-      <h1 style="font-size:28px;line-height:1.2;margin:0 0 16px">Recupera tu contraseÃ±a</h1>
+      <h1 style="font-size:28px;line-height:1.2;margin:0 0 16px">Recupera tu contraseÃƒÂ±a</h1>
       <p style="font-size:16px;margin:0 0 12px">Hola, ${user.name}.</p>
       <p style="font-size:16px;margin:0 0 18px">
-        Recibimos una solicitud para restablecer tu contraseÃ±a en DivulgarÃƒÂ­a.
+        Recibimos una solicitud para restablecer tu contraseÃƒÂ±a en DivulgarÃƒÆ’Ã‚Â­a.
         Si fuiste tu, usa el siguiente boton.
       </p>
       <p style="margin:0 0 24px">
         <a href="${resetLink}" style="display:inline-block;background:#255cff;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:999px;font-weight:700">
-          Restablecer contraseÃ±a
+          Restablecer contraseÃƒÂ±a
         </a>
       </p>
       <p style="font-size:14px;color:#52607a;margin:0 0 8px">
@@ -593,12 +593,12 @@ function mapPostToArticle(post, author, options = {}) {
     readTime: post.readTime || "3 min de lectura",
     author: {
       id: author.id || "usr_unknown",
-      name: author.name || "Autor/a DivulgarÃ­a",
+      name: author.name || "Autor/a DivulgarÃƒÂ­a",
       image:
         author.image ||
         "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop",
       role: author.role || resolvePublicRole(author),
-      affiliation: author.affiliation || "Comunidad DivulgarÃ­a",
+      affiliation: author.affiliation || "Comunidad DivulgarÃƒÂ­a",
       orcidId: author.orcidId || "",
       reputation: author.reputation || 0,
     },
@@ -1043,7 +1043,7 @@ app.get("/api/meta/community", async (_req, res) => {
       storage: "offchain",
       targetNetwork: "Base",
       summary:
-        "DIVULS incentiva publicacin, revisin y divulgaciÃƒÂ³n dentro de DivulgarÃƒÂ­a. En esta fase funciona como saldo interno, listo para una futura migraciÃ³n a Base.",
+        "DIVULS incentiva publicacin, revisin y divulgaciÃƒÆ’Ã‚Â³n dentro de DivulgarÃƒÆ’Ã‚Â­a. En esta fase funciona como saldo interno, listo para una futura migraciÃƒÂ³n a Base.",
       policy: {
         publicationReward: 25,
         reviewReward: 15,
@@ -1102,7 +1102,7 @@ app.post("/api/register", async (req, res) => {
   }
 
   if (String(password).length < 6) {
-    return res.status(400).json({ error: "La contraseÃ±a debe tener mÃ­nimo 6 caracteres." })
+    return res.status(400).json({ error: "La contraseÃƒÂ±a debe tener mÃƒÂ­nimo 6 caracteres." })
   }
 
   const normalizedEmail = String(email).trim().toLowerCase()
@@ -1175,7 +1175,7 @@ app.post("/api/password/forgot", async (req, res) => {
   if (!passwordResetMailer && !allowPasswordResetPreview(req)) {
     return res.status(503).json({
       error:
-        "La recuperaciÃ³n por correo a?n no esta configurada en este entorno pÃºblico. Podemos dejarla activa en cuanto conectemos un servicio SMTP.",
+        "La recuperaciÃƒÂ³n por correo a?n no esta configurada en este entorno pÃƒÂºblico. Podemos dejarla activa en cuanto conectemos un servicio SMTP.",
     })
   }
 
@@ -1210,7 +1210,7 @@ app.post("/api/password/forgot", async (req, res) => {
   return res.json({
     ok: true,
     message:
-      "Si el correo existe en DivulgarÃƒÂ­a, enviaremos un enlace temporal para restablecer la contraseÃ±a.",
+      "Si el correo existe en DivulgarÃƒÆ’Ã‚Â­a, enviaremos un enlace temporal para restablecer la contraseÃƒÂ±a.",
     previewResetLink,
   })
 })
@@ -1219,7 +1219,7 @@ app.get("/api/password/reset/validate", async (req, res) => {
   const token = String(req.query.token || "").trim()
 
   if (!token) {
-    return res.status(400).json({ error: "El token de recuperaciÃ³n es obligatorio." })
+    return res.status(400).json({ error: "El token de recuperaciÃƒÂ³n es obligatorio." })
   }
 
   const store = await readStore()
@@ -1231,7 +1231,7 @@ app.get("/api/password/reset/validate", async (req, res) => {
 
   if (!resetRequest) {
     await writeStore(store)
-    return res.status(400).json({ error: "El enlace de recuperaciÃ³n ya no es valido o ha expirado." })
+    return res.status(400).json({ error: "El enlace de recuperaciÃƒÂ³n ya no es valido o ha expirado." })
   }
 
   return res.json({ ok: true, valid: true })
@@ -1242,11 +1242,11 @@ app.post("/api/password/reset", async (req, res) => {
   const password = String(req.body.password || "")
 
   if (!token || !password.trim()) {
-    return res.status(400).json({ error: "El token y la nueva contraseÃ±a son obligatorios." })
+    return res.status(400).json({ error: "El token y la nueva contraseÃƒÂ±a son obligatorios." })
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ error: "La contraseÃ±a debe tener mÃ­nimo 6 caracteres." })
+    return res.status(400).json({ error: "La contraseÃƒÂ±a debe tener mÃƒÂ­nimo 6 caracteres." })
   }
 
   const store = await readStore()
@@ -1257,7 +1257,7 @@ app.post("/api/password/reset", async (req, res) => {
 
   if (!resetRequest) {
     await writeStore(store)
-    return res.status(400).json({ error: "El enlace de recuperaciÃ³n ya no es valido o ha expirado." })
+    return res.status(400).json({ error: "El enlace de recuperaciÃƒÂ³n ya no es valido o ha expirado." })
   }
 
   const user = store.users.find((item) => item.id === resetRequest.userId)
@@ -1275,7 +1275,7 @@ app.post("/api/password/reset", async (req, res) => {
 
   return res.json({
     ok: true,
-    message: "Tu contraseÃ±a ya fue actualizada. Ahora puedes iniciar sesion con la nueva clave.",
+    message: "Tu contraseÃƒÂ±a ya fue actualizada. Ahora puedes iniciar sesion con la nueva clave.",
   })
 })
 
@@ -1317,8 +1317,8 @@ app.patch("/api/me", async (req, res) => {
   }
 
   auth.user.name = name
-  auth.user.affiliation = affiliation || "Comunidad DivulgarÃƒÂ­a"
-  auth.user.bio = bio || "Perfil cientÃƒÂ­fico en crecimiento dentro de DivulgarÃƒÂ­a."
+  auth.user.affiliation = affiliation || "Comunidad DivulgarÃƒÆ’Ã‚Â­a"
+  auth.user.bio = bio || "Perfil cientÃƒÆ’Ã‚Â­fico en crecimiento dentro de DivulgarÃƒÆ’Ã‚Â­a."
   auth.user.location = location || "LatAm"
   auth.user.role = resolvePublicRole(auth.user)
   auth.user.image =
@@ -1505,7 +1505,7 @@ app.get("/api/community/overview", async (_req, res) => {
       const article = store.posts.find((item) => item.id === review.articleId)
       return {
         id: review.id,
-        reviewer: reviewer.name || "Miembro DivulgarÃƒÂ­a",
+        reviewer: reviewer.name || "Miembro DivulgarÃƒÆ’Ã‚Â­a",
         specialty: reviewer.role || "Comunidad cientifica",
         quote: review.comment || "Revisin enviada sin comentario adicional.",
         about: article.title || "Revisin reciente",
@@ -1521,7 +1521,7 @@ app.get("/api/community/overview", async (_req, res) => {
       const article = store.posts.find((item) => item.id === comment.articleId)
       return {
         id: comment.id,
-        author: commenter.name || "Miembro DivulgarÃƒÂ­a",
+        author: commenter.name || "Miembro DivulgarÃƒÆ’Ã‚Â­a",
         comment: comment.comment,
         articleTitle: article.title || "Conversacion cientifica",
       }
@@ -1544,7 +1544,7 @@ app.get("/api/articles/:id", async (req, res) => {
   const post = store.posts.find((item) => item.id === req.params.id)
 
   if (!post) {
-      return res.status(404).json({ error: "ArtÃƒÂ­culo no encontrado." })
+      return res.status(404).json({ error: "ArtÃƒÆ’Ã‚Â­culo no encontrado." })
   }
 
   const author = store.users.find((item) => item.id === post.authorId)
@@ -1768,3 +1768,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 export default app
+

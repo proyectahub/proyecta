@@ -73,7 +73,7 @@ function TraditionalPrivateRoute({ children }: { children: React.ReactElement })
             Preparando tu sesión científica
           </h2>
           <p className="text-sm leading-7 text-slate-500">
-            Estamos preparando tu sesión para abrir el panel Monero Web dentro del portal.
+            Estamos preparando tu sesión para abrir Monero Web en una pestaña aparte y volver luego con la dirección pública.
           </p>
         </div>
       </div>

@@ -11,9 +11,9 @@
     "preview": "vite preview",
     "cf:login": "wrangler login",
     "cf:whoami": "wrangler whoami",
-    "cf:pages:create": "wrangler pages project create proyecta-mining --production-branch main",
-    "cf:pages:deploy": "npm run build && wrangler pages deploy dist --project-name proyecta-mining --branch main",
-    "cf:pages:preview": "npm run build && wrangler pages deploy dist --project-name proyecta-mining --branch preview-local",
+    "cf:pages:create": "wrangler pages project create proyecta --production-branch main",
+    "cf:pages:deploy": "npm run build && wrangler pages deploy dist --project-name proyecta --branch main",
+    "cf:pages:preview": "npm run build && wrangler pages deploy dist --project-name proyecta --branch preview-local",
     "cf:api:deploy": "wrangler deploy --config cloudflare/api-proxy/wrangler.toml",
     "cf:api:tail": "wrangler tail --config cloudflare/api-proxy/wrangler.toml",
     "cf:api:status": "powershell -ExecutionPolicy Bypass -File ./scripts/check-cloudflare-backend.ps1",
@@ -74,4 +74,3 @@
     "wrangler": "^4.84.1"
   }
 }
-

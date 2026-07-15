@@ -1,0 +1,79 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#FFF1E8"/>
+  <g opacity="0.34">
+    <path d="M0 552C190 488 320 662 512 586C730 500 810 334 1280 378V720H0V552Z" fill="#F8C5D9"/>
+    <path d="M0 592C220 520 370 650 590 602C798 556 1010 448 1280 492V720H0V592Z" fill="#F59E0B" opacity="0.22"/>
+  </g>
+
+  <g opacity="0.24">
+    <circle cx="628" cy="326" r="170" fill="#D8A2EF"/>
+    <circle cx="628" cy="326" r="116" fill="#C026D3" opacity="0.22"/>
+    <path d="M506 292C532 236 592 222 626 274C664 220 732 238 752 300C770 356 710 418 626 474C540 418 482 352 506 292Z" fill="#FFF7FB" opacity="0.82"/>
+  </g>
+
+  <g opacity="0.78">
+    <path d="M174 206l10 25l25 10l-25 10l-10 25l-10-25l-25-10l25-10z" stroke="#E040A8" stroke-width="3"/>
+    <path d="M1046 112l8 20l20 8l-20 8l-8 20l-8-20l-20-8l20-8z" stroke="#E040A8" stroke-width="3"/>
+    <path d="M1100 534l8 20l20 8l-20 8l-8 20l-8-20l-20-8l20-8z" stroke="#C026D3" stroke-width="3"/>
+    <path d="M272 150C300 98 370 102 394 154" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" stroke-dasharray="12 18"/>
+    <path d="M882 154C918 104 996 112 1012 178" stroke="#E040A8" stroke-width="4" stroke-linecap="round" stroke-dasharray="12 18"/>
+    <path d="M810 450C870 506 974 486 1014 410" stroke="#C026D3" stroke-width="4" stroke-linecap="round" stroke-dasharray="12 18"/>
+  </g>
+
+  <g transform="translate(134 146)">
+    <circle cx="118" cy="158" r="66" fill="#F8B4CD"/>
+    <path d="M72 155C102 100 166 106 184 160C202 216 138 252 118 274C98 252 44 210 72 155Z" fill="#E040A8"/>
+    <circle cx="104" cy="92" r="48" fill="#FFD7C9"/>
+    <path d="M62 82C76 38 132 22 164 62C142 54 122 62 108 84C92 72 78 72 62 82Z" fill="#21131F"/>
+    <path d="M72 276C104 238 150 240 178 276V402H72Z" fill="#E040A8"/>
+  </g>
+
+  <g transform="translate(812 150)">
+    <rect x="58" y="54" width="292" height="268" rx="22" fill="#FFE1C9" stroke="#F6BFA6" stroke-width="3"/>
+    <rect x="86" y="28" width="150" height="38" rx="8" fill="#E040A8" opacity="0.75"/>
+    <text x="204" y="142" text-anchor="middle" font-family="Sora, Manrope, Arial, sans-serif" font-size="34" font-weight="900" fill="#21131F">financiamiento</text>
+    <text x="204" y="190" text-anchor="middle" font-family="Sora, Manrope, Arial, sans-serif" font-size="34" font-weight="900" fill="#21131F">colectivo</text>
+    <circle cx="162" cy="248" r="18" fill="#E040A8"/>
+    <circle cx="204" cy="248" r="18" fill="#E040A8"/>
+    <circle cx="246" cy="248" r="18" fill="#E040A8"/>
+    <rect x="138" y="272" width="48" height="34" rx="12" fill="#E040A8"/>
+    <rect x="180" y="272" width="48" height="34" rx="12" fill="#E040A8"/>
+    <rect x="222" y="272" width="48" height="34" rx="12" fill="#E040A8"/>
+  </g>
+
+  <g transform="translate(0 0)">
+    <rect x="188" y="60" width="904" height="150" rx="38" fill="#FFF7FB" opacity="0.76"/>
+    <text x="640" y="124" text-anchor="middle" font-family="Sora, Manrope, Arial, sans-serif" font-size="46" font-weight="900" fill="#21131F">La comunidad junta recursos,</text>
+    <text x="523" y="178" text-anchor="middle" font-family="Sora, Manrope, Arial, sans-serif" font-size="46" font-weight="900" fill="#C026D3">la ciencia</text>
+    <text x="755" y="178" text-anchor="middle" font-family="Sora, Manrope, Arial, sans-serif" font-size="46" font-weight="900" fill="#21131F">avanza.</text>
+  </g>
+
+  <g transform="translate(202 250)">
+    <rect x="0" y="0" width="876" height="190" rx="46" fill="#FFF7FB" opacity="0.9"/>
+    <g transform="translate(32 18)">
+      <rect x="0" y="0" width="154" height="154" rx="40" fill="url(#mark-gradient)"/>
+      <rect x="4" y="4" width="146" height="146" rx="36" fill="url(#mark-highlight)"/>
+      <path d="M77 52C70 45.2 60.2 41.5 49 41.5C37.8 41.5 29.2 50.2 29.2 61.1V105C29.2 107.8 31.6 110.2 34.4 110.2H66.6C70.8 110.2 74.3 111.8 77 115.1" stroke="white" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M77 52C84 45.2 93.8 41.5 105 41.5C116.2 41.5 124.8 50.2 124.8 61.1V105C124.8 107.8 122.4 110.2 119.6 110.2H87.4C83.2 110.2 79.7 111.8 77 115.1" stroke="white" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M77 53V115.8" stroke="white" stroke-width="7.5" stroke-linecap="round"/>
+    </g>
+    <text x="228" y="84" font-family="Sora, Manrope, Arial, sans-serif" font-size="62" font-weight="900" letter-spacing="-3.5">
+      <tspan fill="#0F0A0E">PROYEC</tspan><tspan dx="-8" fill="#E040A8">TA</tspan>
+    </text>
+    <text x="232" y="124" font-family="Manrope, Arial, sans-serif" font-size="19" font-weight="900" letter-spacing="6" fill="#C026D3">APOYO MUTUO Y COMUNITARIO PARA LA CIENCIA</text>
+    <text x="232" y="158" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="800" fill="#21131F" opacity="0.82">Cómputo colectivo para investigación real</text>
+  </g>
+
+  <defs>
+    <linearGradient id="mark-gradient" x1="18" y1="12" x2="142" y2="154" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E040A8"/>
+      <stop offset="0.54" stop-color="#C026D3"/>
+      <stop offset="1" stop-color="#7A1E6E"/>
+    </linearGradient>
+    <radialGradient id="mark-highlight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(38 24) rotate(45) scale(77)">
+      <stop stop-color="white" stop-opacity="0.24"/>
+      <stop offset="0.44" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="0.7" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, BookOpenText, Clock3, ExternalLink, FileText, MessageSquare, PenSquare, ShieldCheck, Star, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -96,6 +96,11 @@ export default function HomeExperience() {
   const openArticles = useMemo(() => articles.filter((article) => Number(article.metrics.peerScore ?? 0) <= 0), [articles])
   const reviewedPreview = useMemo(() => rotateWeeklyTopArticles(reviewedArticles, voteCountOverrides).slice(0, 3), [reviewedArticles, voteCountOverrides])
   const openPreview = useMemo(() => rotateWeeklyTopArticles(openArticles, voteCountOverrides).slice(0, 3), [openArticles, voteCountOverrides])
+  const publicationStats = useMemo(() => [
+    { value: String(articles.length), label: "Total de proyectos" },
+    { value: String(reviewedArticles.length), label: "Financiados" },
+    { value: String(openArticles.length), label: "En desarrollo" },
+  ], [articles.length, reviewedArticles.length, openArticles.length])
   const communityStats = useMemo(() => getCommunityStats(communityOverview, articles), [articles, communityOverview])
 
   const heroRoutes = [

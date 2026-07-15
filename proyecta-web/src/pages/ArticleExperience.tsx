@@ -30,7 +30,7 @@ import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
 import { useCommunityFeedData } from "../hooks/useCommunityFeedData"
 
-type ReviewRecommendation = "Aprobar" | "Solicitar mejoras" | "Abrir discusiÃ³n"
+type ReviewRecommendation = "Aprobar" | "Solicitar mejoras" | "Abrir discusión"
 
 type ReviewCriterionKey = "clarity" | "rigor" | "utility" | "novelty" | "reproducibility"
 
@@ -185,14 +185,14 @@ const peerReviewCriteria: ReviewCriterionDefinition[] = [
   {
     key: "rigor",
     label: "Rigor",
-    description: "Valora si la metodologÃ­a, la evidencia y los lÃ­mites del trabajo estan bien expuestos.",
+    description: "Valora si la metodología, la evidencia y los límites del trabajo estan bien expuestos.",
     accent: "indigo",
     icon: FlaskConical,
   },
   {
     key: "utility",
     label: "Utilidad",
-    description: "Mide cuÃ¡nto ayuda este artÃ­culo a otros investigadores, divulgadores o lectores especializados.",
+    description: "Mide cuánto ayuda este artículo a otros investigadores, divulgadores o lectores especializados.",
     accent: "amber",
     icon: Lightbulb,
   },
@@ -221,19 +221,19 @@ const reviewRecommendations: Array<{
   {
     value: "Aprobar",
     label: "Aprobar",
-    hint: "El artÃ­culo ya aporta con suficiente claridad y solidez.",
+    hint: "El artículo ya aporta con suficiente claridad y solidez.",
     tone: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   {
     value: "Solicitar mejoras",
     label: "Solicitar mejoras",
-    hint: "El trabajo es valioso, pero necesita ajustes o mayor precisiÃ³n.",
+    hint: "El trabajo es valioso, pero necesita ajustes o mayor precisión.",
     tone: "border-amber-200 bg-amber-50 text-amber-700",
   },
   {
-    value: "Abrir discusiÃ³n",
-    label: "Abrir discusiÃ³n",
-    hint: "Hay dudas importantes que ameritan debate abierto antes de destacar el artÃ­culo.",
+    value: "Abrir discusión",
+    label: "Abrir discusión",
+    hint: "Hay dudas importantes que ameritan debate abierto antes de destacar el artículo.",
     tone: "border-rose-200 bg-rose-50 text-rose-700",
   },
 ]
@@ -318,7 +318,7 @@ function getReviewLabel(value: number) {
   if (value >= 2.5) return "Interesante, pero puede crecer"
   if (value >= 1.5) return "Necesita mayor claridad"
   if (value > 0) return "Lectura incipiente"
-  return "Sin valoraciones todavÃ­a"
+  return "Sin valoraciones todavía"
 }
 
 function getRatingPrompt(value: number) {
@@ -326,15 +326,15 @@ function getRatingPrompt(value: number) {
     case 1:
       return "Todav?a no comunica bien el aporte."
     case 2:
-      return "Tiene potencial, pero necesita mÃ¡s claridad."
+      return "Tiene potencial, pero necesita más claridad."
     case 3:
       return "Aporta y se entiende, aunque puede mejorar."
     case 4:
-      return "Muy buen artÃ­culo de divulgaciÃ³n cientÃ­fica."
+      return "Muy buen artículo de divulgación científica."
     case 5:
       return "Excelente: clara, valiosa y lista para destacar."
     default:
-      return "Marca de 1 a 5 estrellas segÃºn quÃ© tan bien comunica y aporta este artÃ­culo."
+      return "Marca de 1 a 5 estrellas según qué tan bien comunica y aporta este artículo."
   }
 }
 
@@ -346,7 +346,7 @@ function mapApiArticleToFeed(article: ApiArticle): FeedArticle {
   return {
     id: article.id ?? "article",
     title: article.title ?? "Publicaci?n Proyecta",
-    excerpt: article.excerpt ?? "Este artÃ­culo a?n no tiene extracto disponible.",
+    excerpt: article.excerpt ?? "Este artículo a?n no tiene extracto disponible.",
     heroKicker: "",
     category: article.category ?? "General",
     timeAgo: "Reciente",
@@ -574,7 +574,7 @@ export default function ArticleExperience() {
         utility: 0,
         novelty: 0,
         reproducibility: 0,
-        dominantRecommendation: "Sin consenso todavÃ­a",
+        dominantRecommendation: "Sin consenso todavía",
       }
     }
 
@@ -624,21 +624,21 @@ export default function ArticleExperience() {
     () => [
       {
         title: "Claridad y contexto",
-        copy: "Valora si el tÃ­tulo, la explicaciÃ³n y la figura ayudan a entender rapido de que trata el aporte y por que importa.",
+        copy: "Valora si el título, la explicación y la figura ayudan a entender rapido de que trata el aporte y por que importa.",
         icon: Target,
       },
       {
         title: "Rigor y sustento",
-        copy: "Aunque sea un artÃ­culo de divulgaciÃ³n, conviene revisar si comunica evidencia, lÃ­mites y fuentes con suficiente seriedad.",
+        copy: "Aunque sea un artículo de divulgación, conviene revisar si comunica evidencia, límites y fuentes con suficiente seriedad.",
         icon: FlaskConical,
       },
       {
         title: "Utilidad para la comunidad",
-        copy: "Pregunta si este artÃ­culo ayuda a aprender, debatir o seguir explorando el tema desde la comunidad cientÃ­fica y lectora.",
+        copy: "Pregunta si este artículo ayuda a aprender, debatir o seguir explorando el tema desde la comunidad científica y lectora.",
         icon: Sparkles,
       },
       {
-        title: "Respeto en la revisiÃ³n",
+        title: "Respeto en la revisión",
         copy: "Comenta ideas, enfoque y comunicacion. Evita descalificaciones personales y busca que tu observacion sea precisa y constructiva.",
         icon: ShieldCheck,
       },
@@ -649,7 +649,7 @@ export default function ArticleExperience() {
   if (isLoadingArticle) {
     return (
       <div className="nova-shell p-8 md:p-10">
-        <p className="nova-eyebrow">Cargando artÃ­culo</p>
+        <p className="nova-eyebrow">Cargando artículo</p>
         <h1 className="nova-title mt-3 text-3xl font-extrabold text-slate-900">
           Estamos preparando esta lectura.
         </h1>
@@ -660,16 +660,16 @@ export default function ArticleExperience() {
   if (!article) {
     return (
       <div className="nova-shell p-8 md:p-10">
-        <p className="nova-eyebrow">{articleNotFound ? "Art?culo no disponible" : "Sin conexiÃ³n"}</p>
+        <p className="nova-eyebrow">{articleNotFound ? "Art?culo no disponible" : "Sin conexión"}</p>
         <h1 className="nova-title mt-3 text-3xl font-extrabold text-slate-900">
           {articleNotFound
-            ? "Este artÃ­culo no est? disponible en Proyecta."
-            : "No pudimos cargar esta publicaciÃ³n en este momento."}
+            ? "Este artículo no est? disponible en Proyecta."
+            : "No pudimos cargar esta publicación en este momento."}
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
           {articleNotFound
             ? "Es posible que haya sido retirada, movida o que el enlace ya no exista."
-            : "Intenta recargar la pÃ¡gina o vuelve al feed mientras restablecemos la conexiÃ³n con el servidor."}
+            : "Intenta recargar la página o vuelve al feed mientras restablecemos la conexión con el servidor."}
         </p>
         <Link to="/" className="nova-button-soft mt-6 inline-flex">
           <ChevronLeft size={16} />
@@ -961,7 +961,7 @@ export default function ArticleExperience() {
                   <div>
                     <p class="eyebrow">Proyecta</p>
                     <p class="brand-title">DIVUL<span>GAR?A</span></p>
-                    <p class="tagline">Divulgaci?n cientÃ­fica con identidad visible, lectura abierta y formato editorial Proyecta</p>
+                    <p class="tagline">Divulgaci?n científica con identidad visible, lectura abierta y formato editorial Proyecta</p>
                   </div>
                 </div>
 
@@ -996,7 +996,7 @@ export default function ArticleExperience() {
                 <footer class="footer">
                   <div>
                     <strong>Proyecta</strong><br />
-                    Formato editorial para divulgaciÃ³n cientÃ­fica y circulaci?n acadÃ©mica.
+                    Formato editorial para divulgación científica y circulaci?n académica.
                   </div>
                   <div>
                     URL publica:<br />
@@ -1060,7 +1060,7 @@ export default function ArticleExperience() {
         newVote === 1
           ? "Guardamos tu voto positivo."
           : newVote === -1
-            ? "Guardamos tu se?al crÃ­tica."
+            ? "Guardamos tu se?al crítica."
             : "Se retir? tu voto.",
       )
     } catch (error) {
@@ -1090,7 +1090,7 @@ export default function ArticleExperience() {
 
   const handleReviewSubmit = async () => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para dejar una revisiÃ³n.")
+      toast.error("Inicia sesi?n para dejar una revisión.")
       return
     }
 
@@ -1116,7 +1116,7 @@ export default function ArticleExperience() {
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error ?? "No fue posible guardar la revisiÃ³n.")
+        throw new Error(data.error ?? "No fue posible guardar la revisión.")
       }
 
       setArticleReviews(Array.isArray(data.reviews) ? data.reviews : [])
@@ -1136,7 +1136,7 @@ export default function ArticleExperience() {
       setShowReviewForm(false)
       toast.success(currentUserReview ? "Revisi?n actualizada." : "Revisi?n guardada.")
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No fue posible guardar la revisiÃ³n."
+      const message = error instanceof Error ? error.message : "No fue posible guardar la revisión."
       toast.error(message)
     } finally {
       setIsSubmittingReview(false)
@@ -1145,7 +1145,7 @@ export default function ArticleExperience() {
 
   const handleDeleteReview = async () => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para gestionar tu revisiÃ³n.")
+      toast.error("Inicia sesi?n para gestionar tu revisión.")
       return
     }
 
@@ -1159,7 +1159,7 @@ export default function ArticleExperience() {
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error ?? "No fue posible eliminar tu revisiÃ³n.")
+        throw new Error(data.error ?? "No fue posible eliminar tu revisión.")
       }
 
       setArticleReviews((current) => current.filter((review) => review.author.id !== user.id))
@@ -1178,9 +1178,9 @@ export default function ArticleExperience() {
       )
       setReviewDraft(emptyReviewDraft)
       setShowReviewForm(false)
-      toast.success("Tu revisiÃ³n fue eliminada.")
+      toast.success("Tu revisión fue eliminada.")
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No fue posible eliminar tu revisiÃ³n."
+      const message = error instanceof Error ? error.message : "No fue posible eliminar tu revisión."
       toast.error(message)
     }
   }
@@ -1398,7 +1398,7 @@ export default function ArticleExperience() {
                       </span>
                     </div>
                     <p className="text-sm text-slate-500">
-                      {article.author.role} Â· {article.author.affiliation}
+                      {article.author.role} · {article.author.affiliation}
                     </p>
                   </div>
                 </div>
@@ -1448,7 +1448,7 @@ export default function ArticleExperience() {
                 <div>
                   <p className="nova-eyebrow">Valoraci?n comunitaria</p>
                   <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">
-                    Una lectura simple, clara y pÃºblica de cada artÃ­culo
+                    Una lectura simple, clara y pública de cada artículo
                   </h2>
                 </div>
                 {!token ? (
@@ -1459,7 +1459,7 @@ export default function ArticleExperience() {
                 ) : (
                   <button onClick={() => setShowReviewForm((value) => !value)} className="nova-button-dark">
                     <ShieldCheck size={16} />
-                    {currentUserReview ? "Editar mi valoraciÃ³n" : "Valorar artÃ­culo"}
+                    {currentUserReview ? "Editar mi valoración" : "Valorar artículo"}
                   </button>
                 )}
               </div>
@@ -1489,7 +1489,7 @@ export default function ArticleExperience() {
                     </div>
 
                     <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-3 text-right">
-                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Lecturas pÃºblicas</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Lecturas públicas</p>
                       <p className="mt-2 text-2xl font-extrabold text-slate-900">{peerReviewSummary.count}</p>
                     </div>
                   </div>
@@ -1497,36 +1497,36 @@ export default function ArticleExperience() {
                   <div className="mt-5 rounded-[24px] border border-white/80 bg-white p-5">
                     <p className="text-sm font-bold text-slate-900">{getReviewLabel(peerReviewSummary.overall)}</p>
                     <p className="mt-2 text-sm leading-7 text-slate-600">
-                      {peerReviewSummary.count ? `La comunidad lo estÃ¡ leyendo como un artÃ­culo de ${formatScore(peerReviewSummary.overall)}/5. AquÃ© importa quÃ© tan bien comunica, quÃ© tan ?til resulta y si invita a seguir la conversaci?n.` : "Todav?a no hay valoraciones. La primera lectura de la comunidad ayudar? a decir si este artÃ­culo se entiende, aporta y merece circular mÃ¡s."}
+                      {peerReviewSummary.count ? `La comunidad lo está leyendo como un artículo de ${formatScore(peerReviewSummary.overall)}/5. Aqué importa qué tan bien comunica, qué tan ?til resulta y si invita a seguir la conversaci?n.` : "Todav?a no hay valoraciones. La primera lectura de la comunidad ayudar? a decir si este artículo se entiende, aporta y merece circular más."}
                     </p>
                   </div>
                 </div>
 
                 <div className="rounded-[32px] border border-fuchsia-100 bg-gradient-to-br from-fuchsia-50 via-white to-rose-50 p-5">
-                  <p className="nova-eyebrow text-fuchsia-600">Criterios de revisiÃ³n abierta</p>
+                  <p className="nova-eyebrow text-fuchsia-600">Criterios de revisión abierta</p>
                   <div className="mt-4 space-y-4">
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">1. Claridad y contexto</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Revisa si el artÃ­culo se entiende, explica por quÃ© importa y da suficiente contexto para lectores cientÃ­ficos y no cientÃ­ficos.
+                        Revisa si el artículo se entiende, explica por qué importa y da suficiente contexto para lectores científicos y no científicos.
                       </p>
                     </div>
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">2. Sustento y honestidad</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Observa si el texto distingue hallazgos, interpretaciones y lÃ­mites. No buscamos arbitraje tÃ©cnico completo, sino lectura crÃ­tica responsable.
+                        Observa si el texto distingue hallazgos, interpretaciones y límites. No buscamos arbitraje técnico completo, sino lectura crítica responsable.
                       </p>
                     </div>
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">3. Utilidad para la comunidad</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Valora si el artÃ­culo aporta algo ?til: una idea clara, una sÃ­ntesis valiosa, una pregunta pertinente o una conexiÃ³n bien explicada.
+                        Valora si el artículo aporta algo ?til: una idea clara, una síntesis valiosa, una pregunta pertinente o una conexión bien explicada.
                       </p>
                     </div>
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">4. Comentario breve y respetuoso</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Si dejas comentario, procura decir quÃ© comunica bien, quÃ© podr?a mejorar o quÃ© aspecto te gustar?a ver ampliado. La revisiÃ³n en Proyecta busca orientar, no descalificar.
+                        Si dejas comentario, procura decir qué comunica bien, qué podr?a mejorar o qué aspecto te gustar?a ver ampliado. La revisión en Proyecta busca orientar, no descalificar.
                       </p>
                     </div>
                   </div>
@@ -1579,9 +1579,9 @@ export default function ArticleExperience() {
                 </div>
               ) : (
                 <div className="rounded-[32px] border border-dashed border-slate-300 bg-slate-50/70 p-6">
-                  <p className="font-bold text-slate-900">AÃºn no hay valoraciones publicadas.</p>
+                  <p className="font-bold text-slate-900">Aún no hay valoraciones publicadas.</p>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    Esta es una buena oportunidad para que la comunidad deje la primera lectura pÃºblica y diga si este artÃ­culo comunica bien y aporta a la divulgaciÃ³n.
+                    Esta es una buena oportunidad para que la comunidad deje la primera lectura pública y diga si este artículo comunica bien y aporta a la divulgación.
                   </p>
                 </div>
               )}
@@ -1590,7 +1590,7 @@ export default function ArticleExperience() {
             <section className="space-y-5 border-t border-slate-100 pt-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="nova-eyebrow">Conversaci?n cientÃ­fica</p>
+                  <p className="nova-eyebrow">Conversaci?n científica</p>
                   <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">Comentarios, preguntas y aportes abiertos</h2>
                 </div>
                 <div className="rounded-full bg-fuchsia-50 px-4 py-2 text-sm font-semibold text-fuchsia-700">
@@ -1625,9 +1625,9 @@ export default function ArticleExperience() {
                   ))
                 ) : (
                   <div className="rounded-[32px] border border-dashed border-slate-300 bg-slate-50/70 p-6">
-                    <p className="font-bold text-slate-900">AÃºn no hay comentarios publicados.</p>
+                    <p className="font-bold text-slate-900">Aún no hay comentarios publicados.</p>
                     <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                      La conversaci?n aparecer? aquÃ© cuando la comunidad deje preguntas, lecturas o aportes reales sobre este artÃ­culo.
+                      La conversaci?n aparecer? aqué cuando la comunidad deje preguntas, lecturas o aportes reales sobre este artículo.
                     </p>
                   </div>
                 )}
@@ -1638,7 +1638,7 @@ export default function ArticleExperience() {
                   <div>
                     <p className="text-sm font-bold text-slate-900">S?mate a la conversaci?n</p>
                     <p className="mt-1 text-sm leading-6 text-slate-500">
-                      Los comentarios sirven para preguntas, lecturas complementarias y debate abierto. La revisiÃ³n comunitaria queda arriba, en su propio espacio.
+                      Los comentarios sirven para preguntas, lecturas complementarias y debate abierto. La revisión comunitaria queda arriba, en su propio espacio.
                     </p>
                   </div>
                   {!token ? (
@@ -1652,7 +1652,7 @@ export default function ArticleExperience() {
                 <textarea
                   value={newComment}
                   onChange={(event) => setNewComment(event.target.value)}
-                  placeholder="Comparte una observaci?n, pregunta o lectura crÃ­tica del artÃ­culo..."
+                  placeholder="Comparte una observaci?n, pregunta o lectura crítica del artículo..."
                   className="nova-field mt-4 min-h-[120px]"
                   disabled={!token}
                 />
@@ -1724,8 +1724,8 @@ export default function ArticleExperience() {
                 <p className="text-sm font-bold text-slate-900">{getReviewLabel(peerReviewSummary.overall)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {peerReviewSummary.count
-                    ? "Esta se?al sirve para saber si la publicaciÃ³n conecta con la comunidad y si vale la pena seguirla moviendo dentro de DivulgarÃ­a."
-                    : "Todav?a no hay valoraciones. La primera opiniÃ³n ayudar? a darle contexto p?blico a esta lectura."}
+                    ? "Esta se?al sirve para saber si la publicación conecta con la comunidad y si vale la pena seguirla moviendo dentro de Divulgaría."
+                    : "Todav?a no hay valoraciones. La primera opinión ayudar? a darle contexto p?blico a esta lectura."}
                 </p>
               </div>
             </div>
@@ -1749,15 +1749,15 @@ export default function ArticleExperience() {
                     <Info size={16} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">Tu lectura ayuda a decidir si este artÃ­culo comunica bien.</p>
+                    <p className="text-sm font-bold text-slate-900">Tu lectura ayuda a decidir si este artículo comunica bien.</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      No es un arbitraje tÃ©cnico pesado. Solo marca estrellas y deja un comentario corto sobre lo que funciona o lo que podria mejorar.
+                      No es un arbitraje técnico pesado. Solo marca estrellas y deja un comentario corto sobre lo que funciona o lo que podria mejorar.
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-5 rounded-[24px] border border-slate-200 bg-white/90 p-5">
-                  <p className="text-sm font-bold text-slate-900">?Que tan buena te parece esta publicaciÃ³n</p>
+                  <p className="text-sm font-bold text-slate-900">?Que tan buena te parece esta publicación</p>
                   <div className="mt-4 flex items-center justify-between gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -1774,7 +1774,7 @@ export default function ArticleExperience() {
                     ))}
                   </div>
                   <div className="mt-4 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-sm font-semibold text-slate-900">{reviewDraft.rating ? `${reviewDraft.rating}/5 estrellas` : "Sin estrellas todavÃ­a"}</p>
+                    <p className="text-sm font-semibold text-slate-900">{reviewDraft.rating ? `${reviewDraft.rating}/5 estrellas` : "Sin estrellas todavía"}</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">{getRatingPrompt(reviewDraft.rating)}</p>
                   </div>
                 </div>
@@ -1784,7 +1784,7 @@ export default function ArticleExperience() {
                   <textarea
                     value={reviewDraft.comment}
                     onChange={(event) => setReviewDraft((current) => ({ ...current, comment: event.target.value }))}
-                    placeholder="Ejemplo: este artÃ­culo explica muy bien el tema, aunque podria aterrizar mejor sus implicaciones o mostrar una fuente adicional."
+                    placeholder="Ejemplo: este artículo explica muy bien el tema, aunque podria aterrizar mejor sus implicaciones o mostrar una fuente adicional."
                     className="nova-field mt-4 min-h-[150px]"
                   />
                   <p className="mt-3 text-xs leading-5 text-slate-400">
@@ -1799,7 +1799,7 @@ export default function ArticleExperience() {
                     disabled={isSubmittingReview}
                   >
                     <ShieldCheck size={16} />
-                    {currentUserReview ? "Actualizar valoraciÃ³n" : "Publicar valoraciÃ³n"}
+                    {currentUserReview ? "Actualizar valoración" : "Publicar valoración"}
                   </button>
 
                   {currentUserReview && (
@@ -1816,7 +1816,7 @@ export default function ArticleExperience() {
 
         <section className="nova-card p-6">
           <div className="space-y-2">
-            <p className="nova-eyebrow">Criterios de revisiÃ³n</p>
+            <p className="nova-eyebrow">Criterios de revisión</p>
             <h3 className="nova-title text-2xl font-extrabold text-slate-900">Que mirar al valorar</h3>
           </div>
 
