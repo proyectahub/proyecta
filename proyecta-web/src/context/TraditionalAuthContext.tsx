@@ -1,6 +1,5 @@
 ﻿import React, { createContext, useEffect, useState, ReactNode } from 'react'
 import { isValidMoneroAddress } from '../utils/moneroAddress'
-import { API_BASE } from '../lib/api'
 
 export interface UserProfile {
   id: string
@@ -17,10 +16,11 @@ export interface UserProfile {
   image?: string
   moneroWallet?: {
     mainAddress: string
-    viewKey: string
     userVitaAddress: string
     linkedAt: number
   }
+  walletMode?: 'external' | 'monero_web'
+  walletWebUrl?: string
   vitaBacked: number
   vitaEarned: number
   vitaPledged: number
@@ -36,7 +36,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>
-  linkWallet: (mainAddress: string, viewKey: string) => Promise<void>
+  linkWallet: (mainAddress: string, walletMode?: 'external' | 'monero_web', walletWebUrl?: string) => Promise<void>
 }
 
 export const TraditionalAuthContext = createContext<AuthContextType | null>(null)
@@ -268,16 +268,12 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const linkWallet = async (mainAddress: string, viewKey: string) => {
+  const linkWallet = async (mainAddress: string, walletMode: 'external' | 'monero_web' = user?.walletMode || 'external', walletWebUrl = user?.walletWebUrl || '') => {
     if (!user) throw new Error('No user')
 
     const normalizedAddress = mainAddress.trim()
-    const normalizedViewKey = viewKey.trim()
     if (!isValidMoneroAddress(normalizedAddress)) {
       throw new Error('Dirección Monero inválida')
-    }
-    if (!/^[a-fA-F0-9]{64}$/.test(normalizedViewKey)) {
-      throw new Error('View key pública inválida')
     }
 
     const token = getStoredSessionToken()
@@ -291,7 +287,11 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ mainAddress: normalizedAddress, viewKey: normalizedViewKey }),
+      body: JSON.stringify({
+        mainAddress: normalizedAddress,
+        walletMode,
+        walletWebUrl,
+      }),
     })
 
     const data = await parseAuthResponse(response)

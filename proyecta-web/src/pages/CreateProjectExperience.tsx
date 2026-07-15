@@ -1,20 +1,21 @@
-import { useState, useMemo, useEffect } from 'react'
+﻿import { useState, useMemo, useEffect } from 'react'
+import { Wand2 } from 'lucide-react'
+import { RichTextEditor } from '../components/RichTextEditor'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useWalletAuth } from '../context/WalletAuthContext'
 import { generateMoneroAddress } from '../utils/moneroAddress'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
-import { RichTextEditor } from '../components/RichTextEditor'
 
 const CATEGORIES: Record<string, string> = {
-  biology: ' Biologa',
-  chemistry: ' Qumica',
-  physics: ' Fsica',
-  mathematics: ' Matemticas',
-  medicine: ' Medicina',
-  'computer-science': ' Informtica',
-  ecology: ' Ecologa',
-  other: ' Otro',
+  biology: 'Biología',
+  chemistry: 'Química',
+  physics: 'Física',
+  mathematics: 'Matemáticas',
+  medicine: 'Medicina',
+  'computer-science': 'Informática',
+  ecology: 'Ecología',
+  other: 'Otro',
 }
 
 export function CreateProjectExperience() {
@@ -33,6 +34,8 @@ export function CreateProjectExperience() {
 
   const linkedWalletAddress =
     traditionalUser?.moneroWallet?.mainAddress || walletUser?.wallet?.mainAddress || ''
+  const walletMode = traditionalUser?.walletMode || 'external'
+  const walletWebUrl = traditionalUser?.walletWebUrl || ''
 
   const generatedAddress = useMemo(
     () => generateMoneroAddress(`proyecto_${Date.now()}_${Math.random()}`),
@@ -55,6 +58,12 @@ export function CreateProjectExperience() {
     }
   }, [initialized, isAuthenticated, navigate])
 
+  useEffect(() => {
+    if (!personalWalletAddress && linkedWalletAddress) {
+      setPersonalWalletAddress(linkedWalletAddress)
+    }
+  }, [linkedWalletAddress, personalWalletAddress])
+
   if (!initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -66,9 +75,32 @@ export function CreateProjectExperience() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-600">Redirigiendo al inicio de sesin...</p>
+        <p className="text-slate-600">Redirigiendo al inicio de sesión...</p>
       </div>
     )
+  }
+
+
+  const applyProjectTemplate = () => {
+    const template = [
+      'Título del proyecto',
+      '',
+      'Resumen',
+      'Explica el problema científico y por qué importa.',
+      '',
+      'Objetivo',
+      'Describe qué quieres lograr con este proyecto.',
+      '',
+      'Metodología',
+      'Resume cómo vas a trabajar, qué herramientas usarás y qué parte se financiará.',
+      '',
+      'Impacto esperado',
+      'Cuenta qué cambia si el proyecto avanza.',
+      '',
+      'Presupuesto',
+      'Detalla cómo se usarán los fondos y por qué es necesario.',
+    ].join('\n')
+    setDescription(template)
   }
 
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +116,7 @@ export function CreateProjectExperience() {
 
   const canProceed = () => {
     if (step === 'info') {
-      return title.trim().length > 0 && description.trim().length > 20 && coverImage
+      return title.trim().length > 0 && description.replace(/<[^>]+>/g, '').trim().length > 20 && coverImage
     }
     if (step === 'funding') {
       if (parseFloat(fundingGoal) <= 0) {
@@ -102,31 +134,31 @@ export function CreateProjectExperience() {
     return (
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900"> Crear proyecto</h1>
-          <p className="text-slate-600">Paso 1 de 3: Detalles e informacin</p>
+          <h1 className="text-4xl font-bold text-slate-900">Crear proyecto</h1>
+          <p className="text-slate-600">Paso 1 de 3: Detalles e información</p>
         </div>
 
         <div className="max-w-4xl mx-auto">
           <div className="nova-card p-8 space-y-8">
-            {/* Ttulo */}
+            {/* Título */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-slate-700">
-                Ttulo del proyecto *
+                Título del proyecto *
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Modelado computacional del cambio climtico"
+                placeholder="Ej: Modelado computacional del cambio climático"
                 className="nova-field text-lg"
               />
-              <p className="text-xs text-slate-500">Mximo 120 caracteres</p>
+              <p className="text-xs text-slate-500">Máximo 120 caracteres</p>
             </div>
 
-            {/* Categora */}
+            {/* Categoría */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-slate-700">
-                Categora *
+                Categoría *
               </label>
               <select
                 value={category}
@@ -184,22 +216,40 @@ export function CreateProjectExperience() {
               </div>
             </div>
 
-            {/* Descripcin con editor profesional */}
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700">
-                Descripcin del proyecto *
-              </label>
-              <RichTextEditor
-                value={description}
-                onChange={setDescription}
-                placeholder="Describe tu proyecto en detalle. Puedes usar el editor para agregar formato, enlaces e imgenes."
-              />
+            {/* Descripción con editor profesional */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700">
+                    Descripción del proyecto *
+                  </label>
+                  <p className="text-xs text-slate-500">
+                    Usa títulos, negritas, cursivas, listas y párrafos. La escritura normal sigue funcionando.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={applyProjectTemplate}
+                  className="nova-button-soft inline-flex items-center gap-2 text-xs"
+                >
+                  <Wand2 size={14} />
+                  Insertar estructura
+                </button>
+              </div>
+
+              <div className="overflow-hidden rounded-[28px] border border-fuchsia-200 bg-gradient-to-br from-white via-fuchsia-50/50 to-orange-50/40 shadow-[0_18px_45px_rgba(192,38,211,0.12)]">
+                <RichTextEditor
+                  value={description}
+                  onChange={setDescription}
+                  placeholder="Describe tu proyecto con una estructura profesional."
+                  showTemplate={false}
+                />
+              </div>
               <p className="text-xs text-slate-500">
-                {description.replace(/<[^>]*>/g, '').length} caracteres (mnimo 20)
+                {description.replace(/<[^>]+>/g, '').trim().length} caracteres (mínimo 20)
               </p>
             </div>
-
-            {/* Botones de accin */}
+            {/* Botones de acción */}
             <div className="flex gap-3 pt-4 border-t">
               <button onClick={() => navigate('/projects')} className="nova-button-soft flex-1">
                 Cancelar
@@ -209,7 +259,7 @@ export function CreateProjectExperience() {
                 disabled={!canProceed()}
                 className="nova-button-solid flex-1 disabled:opacity-40"
               >
-                Continuar 
+                Continuar
               </button>
             </div>
           </div>
@@ -227,13 +277,13 @@ export function CreateProjectExperience() {
     return (
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900"> Meta de Financiamiento</h1>
+          <h1 className="text-4xl font-bold text-slate-900">Meta de financiamiento</h1>
           <p className="text-slate-600">Paso 2 de 3: Define tu objetivo en XMR</p>
         </div>
 
         <div className="max-w-2xl mx-auto">
           <div className="nova-card p-8 space-y-8">
-            {/* Visualizacin del objetivo */}
+            {/* Visualización del objetivo */}
             <div className="text-center space-y-4">
               <div className="text-6xl font-black text-purple-600">
                 {goal.toFixed(2)}
@@ -241,7 +291,7 @@ export function CreateProjectExperience() {
               <div className="space-y-2">
                 <p className="text-2xl font-bold text-slate-900">XMR</p>
                 <p className="text-lg text-slate-600"> ${usdValue} USD</p>
-                <p className="text-xs text-slate-500">(mximo {maxXMR} XMR por ahora)</p>
+                <p className="text-xs text-slate-500">(máximo {maxXMR} XMR por ahora)</p>
               </div>
             </div>
 
@@ -284,7 +334,7 @@ export function CreateProjectExperience() {
 
               <div className="text-xs text-slate-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 <p className="font-bold mb-1"> Rango permitido:</p>
-                <p>0.1 XMR (mnimo) hasta {maxXMR} XMR (mximo por ahora)</p>
+                <p>0.1 XMR (mínimo) hasta {maxXMR} XMR (máximo por ahora)</p>
               </div>
             </div>
 
@@ -309,15 +359,15 @@ export function CreateProjectExperience() {
                 </span>
               </div>
               <p className="text-xs text-slate-600">
-                Este monto es la meta de financiamiento en Monero. Los minadores donarn directamente a tu direccin cuando participen en tu proyecto.
+                Este monto es la meta de financiamiento en Monero. Los minadores donarán directamente a tu dirección cuando participen en tu proyecto.
               </p>
             </div>
 
-            {/* Seleccin de direccin de recaudacin */}
+            {/* Selección de dirección de recaudación */}
             {linkedWalletAddress && (
               <div className="space-y-3">
                 <label className="block text-sm font-bold text-slate-700">
-                  Direccin de recaudacin
+                  Dirección de recaudación
                 </label>
                 <div className="flex flex-col gap-2">
                   <button
@@ -330,7 +380,7 @@ export function CreateProjectExperience() {
                     }`}
                   >
                     <p className="font-bold text-slate-900 text-sm">
-                       Mi wallet vinculado (recomendado)
+                       Mi wallet personal vinculada (recomendado)
                     </p>
                     <code className="text-xs text-slate-500 break-all">
                       {linkedWalletAddress.substring(0, 32)}...
@@ -346,7 +396,7 @@ export function CreateProjectExperience() {
                     }`}
                   >
                     <p className="font-bold text-slate-900 text-sm">
-                       Generar direccin nueva
+                       Generar dirección nueva
                     </p>
                     <code className="text-xs text-slate-500 break-all">
                       {generatedAddress.substring(0, 32)}...
@@ -356,9 +406,21 @@ export function CreateProjectExperience() {
               </div>
             )}
 
+            {walletMode === 'monero_web' ? (
+              <div className="rounded-[18px] border border-fuchsia-200 bg-fuchsia-50/70 p-4 text-sm leading-7 text-fuchsia-800">
+                <p className="font-bold text-fuchsia-900">Monero Web activo</p>
+                <p className="mt-1">El perfil usa el panel aislado guardado para administrar la wallet del investigador.</p>
+                {walletWebUrl ? (
+                  <a href={walletWebUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-full bg-fuchsia-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-700">
+                    Abrir panel
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className="space-y-3">
               <label className="block text-sm font-bold text-slate-700">
-                Wallet personal de Monero
+                Wallet personal del investigador
               </label>
               <input
                 type="text"
@@ -368,20 +430,20 @@ export function CreateProjectExperience() {
                 className="nova-field font-mono text-sm"
               />
               <p className="text-xs text-slate-500">
-                Si la direccin es vlida, se usar como destino del pool para este proyecto. Si la dejas vaca, se usar la wallet vinculada o una direccin generada.
+                Si la dirección es válida, se usará como destino del pool para este proyecto. Si la dejas vacía, se usará la wallet vinculada o una dirección generada.
               </p>
             </div>
 
-            {/* Informacin de la direccin */}
+            {/* Información de la dirección */}
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6 space-y-3">
               <p className="font-bold text-amber-900 flex items-center gap-2">
-                <span></span> Tu direccin de recaudacin
+                <span></span> Tu dirección de recaudación
               </p>
               <code className="text-xs break-all font-mono bg-white p-3 rounded border border-amber-200 block">
                 {projectMoneroAddress}
               </code>
               <p className="text-xs text-amber-800">
-                 Los minadores donarn XMR aqu. PROYECTA nunca toca los fondos.
+                 Los minadores donarán XMR aquí. PROYECTA nunca toca los fondos.
               </p>
             </div>
 
@@ -453,27 +515,25 @@ export function CreateProjectExperience() {
               </div>
             )}
 
-            {/* Informacin */}
+            {/* Información */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-xs font-bold uppercase text-slate-500">Ttulo</p>
+                <p className="text-xs font-bold uppercase text-slate-500">Título</p>
                 <h2 className="text-2xl font-bold">{title}</h2>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase text-slate-500">Categora</p>
+                <p className="text-xs font-bold uppercase text-slate-500">Categoría</p>
                 <p className="text-slate-700 text-lg">{CATEGORIES[category]}</p>
               </div>
             </div>
 
-            {/* Descripcin */}
+            {/* Descripción */}
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Descripcin</p>
-              <div
-                className="text-slate-600 bg-white rounded-lg p-4 border border-slate-200"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
+              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Descripción</p>
+              <div className="text-slate-600 bg-white rounded-lg p-4 border border-slate-200 whitespace-pre-wrap leading-7">
+                <div className="whitespace-pre-wrap leading-7 text-slate-700">{description}</div>
+              </div>
             </div>
-
             {/* Meta */}
             <div>
               <p className="text-xs font-bold uppercase text-slate-500">Meta de financiamiento</p>
@@ -482,9 +542,9 @@ export function CreateProjectExperience() {
               </p>
             </div>
 
-            {/* Direccin */}
+            {/* Dirección */}
             <div>
-              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Direccin de recaudacin</p>
+              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Dirección de recaudación</p>
               <code className="text-xs break-all text-slate-600 bg-slate-50 p-3 rounded block font-mono">
                 {projectMoneroAddress}
               </code>
@@ -508,10 +568,10 @@ export function CreateProjectExperience() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="max-w-lg w-full text-center space-y-6">
-          <div className="text-7xl"></div>
-          <h2 className="text-3xl font-bold text-emerald-900">Â¡Proyecto publicado!</h2>
+          <div className="text-7xl">🎉</div>
+          <h2 className="text-3xl font-bold text-emerald-900">¡Proyecto publicado!</h2>
           <p className="text-slate-600 text-lg">
-            Tu proyecto "{title}" ya est visible para la comunidad. Otros usuarios pueden minar para apoyarlo.
+            Tu proyecto "{title}" ya está visible para la comunidad. Otras personas pueden aportar cómputo para apoyarlo.
           </p>
           <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-4">
             <p className="text-sm font-bold text-emerald-900">
@@ -533,3 +593,7 @@ export function CreateProjectExperience() {
 
   return null
 }
+
+
+
+

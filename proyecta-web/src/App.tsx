@@ -32,6 +32,7 @@ import { ProjectDetailsExperience } from "./pages/ProjectDetailsExperience"
 import { MoneroEducationExperience } from "./pages/MoneroEducationExperience"
 import { UserProfileExperience } from "./pages/UserProfileExperience"
 import { CompleteProfileExperience } from "./pages/CompleteProfileExperience"
+import { WalletWebExperience } from "./pages/WalletWebExperience"
 import OrcidCallback from "./pages/OrcidCallback"
 import PasswordRecovery from "./pages/PasswordRecoveryExperience"
 import PasswordReset from "./pages/PasswordResetExperience"
@@ -69,10 +70,7 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
         <div className="absolute bottom-[-8%] left-1/3 h-72 w-72 rounded-full bg-rose-200/25 blur-3xl" />
       </div>
 
-      {/* Popup de donación (mostrado después de N interacciones) */}
       <ComputeDonationPopupContainer />
-
-      {/* Widget flotante cuando está donando */}
       <ComputeDonationWidget />
 
       <Navbar />
@@ -100,12 +98,10 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Login, Signup, Profile Setup sin layout */}
       <Route path="/login" element={<LoginWithEmailExperience />} />
       <Route path="/signup" element={<SignUpExperience />} />
       <Route path="/complete-profile" element={<CompleteProfileExperience />} />
 
-      {/* Resto con layout */}
       <Route
         path="*"
         element={
@@ -118,6 +114,7 @@ function AppRoutes() {
               <Route path="/sobre-monero" element={<MoneroEducationExperience />} />
               <Route path="/create-project" element={<CreateProjectExperience />} />
               <Route path="/profile" element={<UserProfileExperience />} />
+              <Route path="/wallet-web" element={<WalletWebExperience />} />
               <Route path="/revisadas" element={<ReviewedFeedExperience />} />
               <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
               <Route path="/recuperar-contraseña" element={<PasswordRecovery />} />
@@ -165,7 +162,6 @@ function AppRoutes() {
 
 function App() {
   useEffect(() => {
-    // Seed test projects on app load
     seedTestProjects()
   }, [])
 
