@@ -4,8 +4,46 @@ import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 
 const MONERO_ADDRESS_RE = /^[48][a-zA-Z0-9]{94}$/
 const DEFAULT_MONERO_WEB_URL = ((import.meta as any).env?.VITE_MONERO_WEB_URL || '').trim()
+const MONERO_WEB_BRIDGE_PATH = '/wallet-web?capture=mainAddress&returnTo=/profile'
+const PENDING_MONERO_ADDRESS_KEY = 'proyecta_pending_monero_address'
+const PENDING_MONERO_MODE_KEY = 'proyecta_pending_monero_mode'
+const PENDING_MONERO_WEB_URL_KEY = 'proyecta_pending_monero_web_url'
 
 type WalletMode = 'external' | 'monero_web'
+
+function readPendingMoneroAddress() {
+  try {
+    return window.localStorage.getItem(PENDING_MONERO_ADDRESS_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+function readPendingMoneroMode() {
+  try {
+    return (window.localStorage.getItem(PENDING_MONERO_MODE_KEY) || '') as WalletMode | ''
+  } catch {
+    return ''
+  }
+}
+
+function readPendingMoneroWebUrl() {
+  try {
+    return window.localStorage.getItem(PENDING_MONERO_WEB_URL_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+function clearPendingMoneroDraft() {
+  try {
+    window.localStorage.removeItem(PENDING_MONERO_ADDRESS_KEY)
+    window.localStorage.removeItem(PENDING_MONERO_MODE_KEY)
+    window.localStorage.removeItem(PENDING_MONERO_WEB_URL_KEY)
+  } catch {
+    // ignore storage failures
+  }
+}
 
 export function WalletSetupGuide() {
   const { user, linkWallet, updateProfile } = useTraditionalAuth()
@@ -22,29 +60,74 @@ export function WalletSetupGuide() {
     setWalletWebUrl(user?.walletWebUrl || DEFAULT_MONERO_WEB_URL)
   }, [user])
 
+  useEffect(() => {
+    const pendingAddress = readPendingMoneroAddress()
+    const pendingMode = readPendingMoneroMode()
+    const pendingWebUrl = readPendingMoneroWebUrl()
+
+    if (pendingMode === 'monero_web') {
+      setWalletMode('monero_web')
+      if (pendingWebUrl) {
+        setWalletWebUrl(pendingWebUrl)
+      }
+    }
+
+    if (pendingAddress && MONERO_ADDRESS_RE.test(pendingAddress)) {
+      setMainAddress(pendingAddress)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncFromStorage = () => {
+      const pendingAddress = readPendingMoneroAddress()
+      const pendingMode = readPendingMoneroMode()
+      const pendingWebUrl = readPendingMoneroWebUrl()
+
+      if (pendingMode === 'monero_web') {
+        setWalletMode('monero_web')
+        if (pendingWebUrl) {
+          setWalletWebUrl(pendingWebUrl)
+        }
+      }
+
+      if (pendingAddress && MONERO_ADDRESS_RE.test(pendingAddress)) {
+        setMainAddress(pendingAddress)
+      }
+    }
+
+    window.addEventListener('storage', syncFromStorage)
+    return () => window.removeEventListener('storage', syncFromStorage)
+  }, [])
+
   const linkedWallet = user?.moneroWallet
   const shortAddress = useMemo(() => {
     if (!linkedWallet?.mainAddress) return ''
     return `${linkedWallet.mainAddress.slice(0, 18)}...${linkedWallet.mainAddress.slice(-10)}`
   }, [linkedWallet?.mainAddress])
 
+  const handleGenerateWithMoneroWeb = () => {
+    setError(null)
+    const nextUrl = `${MONERO_WEB_BRIDGE_PATH}&walletWebUrl=${encodeURIComponent(walletWebUrl.trim() || DEFAULT_MONERO_WEB_URL)}`
+    window.open(nextUrl, '_blank', 'noopener,noreferrer')
+  }
+
   const handleSaveWallet = async () => {
     setError(null)
     setSaved(false)
 
     const normalizedAddress = mainAddress.trim()
-    const normalizedWalletWebUrl = walletWebUrl.trim()
+    const normalizedWalletWebUrl = walletWebUrl.trim() || DEFAULT_MONERO_WEB_URL
 
     if (!normalizedAddress) {
-      setError('La dirección principal es obligatoria.')
+      setError(walletMode === 'monero_web' ? 'Primero genera o pega la dirección desde Monero Web.' : 'La dirección principal es obligatoria.')
       return
     }
     if (!MONERO_ADDRESS_RE.test(normalizedAddress)) {
       setError('La dirección Monero no tiene un formato válido.')
       return
     }
-    if (walletMode === 'monero_web' && !normalizedWalletWebUrl) {
-      setError('Agrega la URL del panel Monero Web o vuelve a modo externo.')
+    if (!normalizedWalletWebUrl) {
+      setError('No fue posible determinar la URL del panel Monero Web.')
       return
     }
 
@@ -55,6 +138,7 @@ export function WalletSetupGuide() {
         walletMode,
         walletWebUrl: walletMode === 'monero_web' ? normalizedWalletWebUrl : '',
       })
+      clearPendingMoneroDraft()
       setSaved(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible guardar la wallet.')
@@ -129,7 +213,7 @@ export function WalletSetupGuide() {
               }`}
             >
               <p className="text-sm font-black text-slate-900">Monero Web real</p>
-              <p className="mt-2 text-xs leading-6 text-slate-600">Abre el panel real de Monero Web para crear o restaurar una wallet. PROYECTA solo guarda tu dirección pública y la preferencia de modo.</p>
+              <p className="mt-2 text-xs leading-6 text-slate-600">Genera la dirección dentro del panel aislado y deja aquí la dirección pública que quieras asociar al proyecto.</p>
             </button>
           </div>
 
@@ -139,7 +223,7 @@ export function WalletSetupGuide() {
               type="text"
               value={mainAddress}
               onChange={(e) => setMainAddress(e.target.value)}
-              placeholder="4AWcSZ..."
+              placeholder={walletMode === 'monero_web' ? 'Pulsa Generar dirección con Monero Web' : '4AWcSZ...'}
               className="nova-field font-mono text-sm"
               autoComplete="off"
               spellCheck={false}
@@ -148,18 +232,19 @@ export function WalletSetupGuide() {
           </div>
 
           {walletMode === 'monero_web' ? (
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-slate-700">URL del panel Monero Web</label>
-              <input
-                type="url"
-                value={walletWebUrl}
-                onChange={(e) => setWalletWebUrl(e.target.value)}
-                placeholder="https://..."
-                className="nova-field text-sm"
-                autoComplete="off"
-                spellCheck={false}
-              />
-              <p className="text-xs text-slate-500">Se guarda en tu perfil para abrir el panel aislado cuando quieras administrar la wallet real.</p>
+            <div className="space-y-3 rounded-[18px] border border-fuchsia-200 bg-fuchsia-50/70 p-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700">Panel Monero Web</label>
+                <p className="mt-1 text-xs leading-6 text-slate-500">Abre la wallet real en una ruta aislada, genera la dirección y luego vuelve para guardarla en este campo.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button type="button" onClick={handleGenerateWithMoneroWeb} className="nova-button-solid px-4 py-2 text-sm">
+                  Generar dirección con Monero Web
+                </button>
+                <button type="button" onClick={() => setMainAddress(readPendingMoneroAddress())} className="nova-button-soft px-4 py-2 text-sm">
+                  Cargar dirección pendiente
+                </button>
+              </div>
             </div>
           ) : null}
 
@@ -179,7 +264,7 @@ export function WalletSetupGuide() {
             <button onClick={handleSaveWallet} disabled={loading} className="nova-button-solid w-full py-3 disabled:opacity-60">
               {loading ? 'Guardando...' : 'Guardar wallet'}
             </button>
-            <button type="button" onClick={() => window.location.assign('/wallet-web')} className="nova-button-soft w-full py-3">
+            <button type="button" onClick={() => window.open(MONERO_WEB_BRIDGE_PATH, '_blank', 'noopener,noreferrer')} className="nova-button-soft w-full py-3">
               Abrir panel real
             </button>
           </div>
@@ -193,10 +278,10 @@ export function WalletSetupGuide() {
           <ul className="space-y-3 text-sm leading-7 text-slate-700">
             <li>Se guarda en tu perfil como wallet personal del investigador.</li>
             <li>Al crear un proyecto, esa dirección puede usarse como recaudación principal.</li>
-            <li>Si activas Monero Web, queda guardada la URL del panel para acceder luego desde el perfil.</li>
+            <li>Si eliges Monero Web, la dirección generada puede volver al perfil mediante el puente aislado.</li>
           </ul>
           <div className="rounded-[18px] border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
-            Si prefieres administrar la wallet dentro del portal, usa Monero Web. Si ya tienes una dirección externa, pégala aquí para dejarla asociada al proyecto.
+            El modo Monero Web sirve para generar y administrar la wallet en un panel aparte. La dirección final sigue siendo la que queda asociada al proyecto.
           </div>
           <div className="rounded-[18px] border border-fuchsia-200 bg-fuchsia-50/70 p-4 text-sm leading-7 text-fuchsia-800">
             Monero Web queda aparte, con aislamiento y consentimiento explícito, para quienes prefieren administrar su wallet real dentro del portal.
@@ -206,5 +291,4 @@ export function WalletSetupGuide() {
     </section>
   )
 }
-
 
