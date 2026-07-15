@@ -45,6 +45,11 @@ function clearPendingMoneroDraft() {
   }
 }
 
+function buildMoneroWebBridgeUrl(walletWebUrl: string) {
+  const normalized = walletWebUrl.trim() || DEFAULT_MONERO_WEB_URL
+  return `${MONERO_WEB_BRIDGE_PATH}&walletWebUrl=${encodeURIComponent(normalized)}`
+}
+
 export function WalletSetupGuide() {
   const { user, linkWallet, updateProfile } = useTraditionalAuth()
   const [mainAddress, setMainAddress] = useState(user?.moneroWallet?.mainAddress || '')
@@ -107,7 +112,7 @@ export function WalletSetupGuide() {
 
   const handleGenerateWithMoneroWeb = () => {
     setError(null)
-    const nextUrl = `${MONERO_WEB_BRIDGE_PATH}&walletWebUrl=${encodeURIComponent(walletWebUrl.trim() || DEFAULT_MONERO_WEB_URL)}`
+    const nextUrl = buildMoneroWebBridgeUrl(walletWebUrl)
     window.open(nextUrl, '_blank', 'noopener,noreferrer')
   }
 
@@ -264,7 +269,7 @@ export function WalletSetupGuide() {
             <button onClick={handleSaveWallet} disabled={loading} className="nova-button-solid w-full py-3 disabled:opacity-60">
               {loading ? 'Guardando...' : 'Guardar wallet'}
             </button>
-            <button type="button" onClick={() => window.open(MONERO_WEB_BRIDGE_PATH, '_blank', 'noopener,noreferrer')} className="nova-button-soft w-full py-3">
+            <button type="button" onClick={() => window.open(buildMoneroWebBridgeUrl(walletWebUrl), '_blank', 'noopener,noreferrer')} className="nova-button-soft w-full py-3">
               Abrir panel real
             </button>
           </div>
@@ -291,4 +296,5 @@ export function WalletSetupGuide() {
     </section>
   )
 }
+
 

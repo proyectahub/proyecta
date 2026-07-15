@@ -60,8 +60,9 @@ export function WalletWebExperience() {
   const search = useMemo(() => new URLSearchParams(window.location.search), [])
   const captureTarget = (search.get('capture') || '') as CaptureTarget
   const returnTo = search.get('returnTo') || '/profile'
+  const walletWebUrlParam = search.get('walletWebUrl') || ''
 
-  const configuredUrl = user?.walletMode === 'monero_web' ? user.walletWebUrl || '' : ''
+  const configuredUrl = walletWebUrlParam || (user?.walletMode === 'monero_web' ? user.walletWebUrl || '' : '')
   const fallbackUrl = ((import.meta as any).env?.VITE_MONERO_WEB_URL || '').trim() || DEFAULT_MONERO_WEB_URL
 
   const safeUrl = useMemo(() => normalizeUrl(configuredUrl || fallbackUrl), [configuredUrl, fallbackUrl])
@@ -253,3 +254,4 @@ export function WalletWebExperience() {
     </div>
   )
 }
+

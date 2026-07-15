@@ -411,8 +411,8 @@ export function CreateProjectExperience() {
                 <p className="font-bold text-fuchsia-900">Monero Web activo</p>
                 <p className="mt-1">El perfil usa el panel aislado guardado para administrar la wallet del investigador.</p>
                 {walletWebUrl ? (
-                  <a href={walletWebUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-full bg-fuchsia-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-700">
-                    Abrir panel
+                  <a href={`/wallet-web?walletWebUrl=${encodeURIComponent(walletWebUrl)}&capture=mainAddress&returnTo=/create-project`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-full bg-fuchsia-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-700">
+                    Abrir panel aislado
                   </a>
                 ) : null}
               </div>
@@ -593,6 +593,7 @@ export function CreateProjectExperience() {
 
   return null
 }
+
 
 
 

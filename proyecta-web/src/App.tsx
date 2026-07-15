@@ -13,7 +13,7 @@ import { LocalNetworkBanner } from "./components/LocalNetworkBanner"
 import Navbar from "./components/layout/Navbar"
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { WalletAuthProvider } from "./context/WalletAuthContext"
-import { TraditionalAuthProvider } from "./context/TraditionalAuthContext"
+import { TraditionalAuthProvider, useTraditionalAuth } from "./context/TraditionalAuthContext"
 import { seedTestProjects } from "./utils/testProjects"
 import ArticleView from "./pages/ArticleExperience"
 import {
@@ -61,6 +61,27 @@ function PrivateRoute({ children }: { children: React.ReactElement }) {
   return user ? children : <Navigate to="/login" />
 }
 
+function TraditionalPrivateRoute({ children }: { children: React.ReactElement }) {
+  const { user, initialized } = useTraditionalAuth()
+
+  if (!initialized) {
+    return (
+      <div className="nova-card mx-auto flex min-h-[40vh] max-w-xl items-center justify-center px-8 text-center">
+        <div className="space-y-3">
+          <p className="nova-eyebrow">Sincronizando identidad</p>
+          <h2 className="nova-title text-2xl font-extrabold text-slate-900">
+            Preparando tu sesión científica
+          </h2>
+          <p className="text-sm leading-7 text-slate-500">
+            Estamos preparando tu sesión para abrir el panel Monero Web dentro del portal.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return user ? children : <Navigate to="/login" />
+}
 function LayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent font-sans text-slate-900">
@@ -153,9 +174,9 @@ function AppRoutes() {
               <Route
                 path="/wallet-web"
                 element={
-                  <PrivateRoute>
+                  <TraditionalPrivateRoute>
                     <WalletWebExperience />
-                  </PrivateRoute>
+                  </TraditionalPrivateRoute>
                 }
               />
 
@@ -187,3 +208,7 @@ function App() {
 }
 
 export default App
+
+
+
+
