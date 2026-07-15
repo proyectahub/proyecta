@@ -128,8 +128,8 @@ export function WalletSetupGuide() {
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
-              <p className="text-sm font-black text-slate-900">Monero Web</p>
-              <p className="mt-2 text-xs leading-6 text-slate-600">Administra la wallet desde un panel aislado, con consentimiento explícito y control del usuario.</p>
+              <p className="text-sm font-black text-slate-900">Monero Web real</p>
+              <p className="mt-2 text-xs leading-6 text-slate-600">Abre el panel real de Monero Web para crear o restaurar una wallet. PROYECTA solo guarda tu dirección pública y la preferencia de modo.</p>
             </button>
           </div>
 
@@ -159,7 +159,7 @@ export function WalletSetupGuide() {
                 autoComplete="off"
                 spellCheck={false}
               />
-              <p className="text-xs text-slate-500">Se guarda en tu perfil para abrir el panel aislado cuando quieras administrar la wallet.</p>
+              <p className="text-xs text-slate-500">Se guarda en tu perfil para abrir el panel aislado cuando quieras administrar la wallet real.</p>
             </div>
           ) : null}
 
@@ -180,7 +180,7 @@ export function WalletSetupGuide() {
               {loading ? 'Guardando...' : 'Guardar wallet'}
             </button>
             <button type="button" onClick={() => window.location.assign('/wallet-web')} className="nova-button-soft w-full py-3">
-              Abrir Monero Web
+              Abrir panel real
             </button>
           </div>
         </div>
@@ -193,16 +193,18 @@ export function WalletSetupGuide() {
           <ul className="space-y-3 text-sm leading-7 text-slate-700">
             <li>Se guarda en tu perfil como wallet personal del investigador.</li>
             <li>Al crear un proyecto, esa dirección puede usarse como recaudación principal.</li>
-            <li>Si activas Monero Web, también queda guardada la URL del panel para acceder luego desde el perfil.</li>
+            <li>Si activas Monero Web, queda guardada la URL del panel para acceder luego desde el perfil.</li>
           </ul>
           <div className="rounded-[18px] border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
-            Si todavía no tienes wallet, crea una con Feather Wallet o MyMonero y vuelve aquí para registrar solo la dirección.
+            Si prefieres administrar la wallet dentro del portal, usa Monero Web. Si ya tienes una dirección externa, pégala aquí para dejarla asociada al proyecto.
           </div>
           <div className="rounded-[18px] border border-fuchsia-200 bg-fuchsia-50/70 p-4 text-sm leading-7 text-fuchsia-800">
-            Monero Web queda aparte, con aislamiento y consentimiento explícito, para quienes prefieren administrar su wallet dentro del portal.
+            Monero Web queda aparte, con aislamiento y consentimiento explícito, para quienes prefieren administrar su wallet real dentro del portal.
           </div>
         </div>
       </div>
     </section>
   )
 }
+
+

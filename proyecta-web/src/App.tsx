@@ -114,7 +114,6 @@ function AppRoutes() {
               <Route path="/sobre-monero" element={<MoneroEducationExperience />} />
               <Route path="/create-project" element={<CreateProjectExperience />} />
               <Route path="/profile" element={<UserProfileExperience />} />
-              <Route path="/wallet-web" element={<WalletWebExperience />} />
               <Route path="/revisadas" element={<ReviewedFeedExperience />} />
               <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
               <Route path="/recuperar-contraseña" element={<PasswordRecovery />} />
@@ -147,6 +146,15 @@ function AppRoutes() {
                 element={
                   <PrivateRoute>
                     <Profile />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/wallet-web"
+                element={
+                  <PrivateRoute>
+                    <WalletWebExperience />
                   </PrivateRoute>
                 }
               />
