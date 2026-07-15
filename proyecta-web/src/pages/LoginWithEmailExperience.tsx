@@ -1,7 +1,6 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
-import { API_BASE } from '../lib/api'
 
 export function LoginWithEmailExperience() {
   const navigate = useNavigate()
@@ -96,14 +95,6 @@ export function LoginWithEmailExperience() {
             {loading ? 'Iniciando sesion...' : 'Inicia sesion'}
           </button>
 
-          <button
-            type="button"
-            onClick={() => (window.location.href = `${API_BASE}/api/oauth/orcid`)}
-            className="nova-button-soft w-full py-3 text-slate-700"
-          >
-            Acceder con ORCID
-          </button>
-
           <p className="text-sm text-slate-600 text-center">
             No tienes cuenta?{' '}
             <button
@@ -129,3 +120,4 @@ export function LoginWithEmailExperience() {
     </div>
   )
 }
+
