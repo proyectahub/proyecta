@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import { resolveMiningWebSocketUrl } from "../lib/api"
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { resolveMiningWebSocketUrl } from '../lib/api'
 
 export interface RandomXStats {
   hashRate: number
@@ -12,7 +12,6 @@ export interface RandomXStats {
   status: string
 }
 
-const BACKEND_URL = import.meta.env.VITE_MINING_API_URL ?? import.meta.env.VITE_API_URL ?? "/api/mining"
 const WS_URL = resolveMiningWebSocketUrl()
 
 export function useRandomXMining(
@@ -28,7 +27,7 @@ export function useRandomXMining(
     rejectedShares: 0,
     elapsedSeconds: 0,
     jobHeight: null,
-    status: "Inactivo",
+    status: 'Inactivo',
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -51,7 +50,7 @@ export function useRandomXMining(
     isClosingRef.current = false
     setStats((current) => ({
       ...current,
-      status: "Conectando al puente de minería...",
+      status: 'Conectando al puente de minería...',
       poolConnected: false,
     }))
     startTimeRef.current = Date.now()
@@ -60,13 +59,13 @@ export function useRandomXMining(
 
     const workers: Worker[] = []
     for (let index = 0; index < threads; index += 1) {
-      const worker = new Worker(new URL("../workers/randomx.worker.ts", import.meta.url), {
-        type: "module",
+      const worker = new Worker(new URL('../workers/randomx.worker.ts', import.meta.url), {
+        type: 'module',
       })
 
       worker.onmessage = (event: MessageEvent) => {
         const message = event.data
-        if (message.type === "hashrate") {
+        if (message.type === 'hashrate') {
           perWorkerRef.current[index] = { rate: message.hashRate, hashes: message.totalHashes }
           const totalRate = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.rate, 0)
           const totalHashes = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.hashes, 0)
@@ -75,14 +74,14 @@ export function useRandomXMining(
             hashRate: Math.round(totalRate * 10) / 10,
             totalHashes,
             elapsedSeconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
-            status: "Minando RandomX real",
+            status: 'Minando RandomX',
           }))
         }
 
-        if (message.type === "share" && wsRef.current?.readyState === WebSocket.OPEN) {
+        if (message.type === 'share' && wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(
             JSON.stringify({
-              type: "share",
+              type: 'share',
               job_id: message.job_id,
               nonce: message.nonce,
               result: message.result,
@@ -90,16 +89,16 @@ export function useRandomXMining(
           )
         }
 
-        if (message.type === "log") {
+        if (message.type === 'log') {
           setStats((current) => ({ ...current, status: message.message }))
         }
 
-        if (message.type === "error") {
+        if (message.type === 'error') {
           setError(message.error)
         }
       }
 
-      worker.postMessage({ type: "start" })
+      worker.postMessage({ type: 'start' })
       workers.push(worker)
     }
 
@@ -109,8 +108,12 @@ export function useRandomXMining(
     wsRef.current = ws
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "subscribe", wallet: walletAddress }))
-      setStats((current) => ({ ...current, status: "Suscrito, esperando job del pool..." }))
+      ws.send(JSON.stringify({ type: 'subscribe', wallet: walletAddress }))
+      setStats((current) => ({
+        ...current,
+        status: 'Puente conectado, esperando job del pool...',
+        poolConnected: true,
+      }))
     }
 
     ws.onmessage = (event) => {
@@ -121,24 +124,24 @@ export function useRandomXMining(
         return
       }
 
-      if (message.type === "job") {
+      if (message.type === 'job') {
         hasPoolJobRef.current = true
         for (const worker of workersRef.current) {
-          worker.postMessage({ type: "job", job: message.job })
+          worker.postMessage({ type: 'job', job: message.job })
         }
         setStats((current) => ({
           ...current,
           poolConnected: true,
           jobHeight: message.job?.height ?? current.jobHeight,
-          status: "Minando RandomX real",
+          status: 'Minando RandomX',
         }))
       }
 
-      if (message.type === "status") {
+      if (message.type === 'status') {
         setStats((current) => ({ ...current, poolConnected: !!message.connected }))
       }
 
-      if (message.type === "share_result") {
+      if (message.type === 'share_result') {
         if (message.accepted) {
           setStats((current) => ({
             ...current,
@@ -155,7 +158,7 @@ export function useRandomXMining(
         }
       }
 
-      if (message.type === "error") {
+      if (message.type === 'error') {
         setError(message.error)
       }
     }
@@ -164,7 +167,7 @@ export function useRandomXMining(
       setStats((current) => ({
         ...current,
         poolConnected: false,
-        status: "Sin puente activo: el navegador sigue calculando hashes locales.",
+        status: 'Esperando reconexión del puente; la prueba local sigue activa.',
       }))
     }
 
@@ -176,14 +179,14 @@ export function useRandomXMining(
         ...current,
         poolConnected: false,
         status: hasPoolJobRef.current
-          ? "Puente cerrado: el navegador detuvo la coordinación con el pool."
-          : "Sin puente activo: el navegador sigue calculando hashes locales.",
+          ? 'Puente cerrado: el navegador detuvo la coordinación con el pool.'
+          : 'Esperando reconexión del puente; la prueba local sigue activa.',
       }))
     }
 
     return () => {
       for (const worker of workersRef.current) {
-        worker.postMessage({ type: "stop" })
+        worker.postMessage({ type: 'stop' })
         worker.terminate()
       }
       workersRef.current = []
@@ -196,7 +199,7 @@ export function useRandomXMining(
         ...current,
         hashRate: 0,
         poolConnected: false,
-        status: "Detenido",
+        status: 'Detenido',
       }))
       setError(null)
     }
@@ -209,12 +212,12 @@ export function useRandomXMining(
       wsRef.current = null
     }
     for (const worker of workersRef.current) {
-      worker.postMessage({ type: "stop" })
+      worker.postMessage({ type: 'stop' })
       worker.terminate()
     }
     workersRef.current = []
-    setStats((current) => ({ ...current, poolConnected: false, status: "Detenido" }))
+    setStats((current) => ({ ...current, poolConnected: false, status: 'Detenido' }))
   }, [])
 
-  return { stats, error, stop, poolUrl: "pool.supportxmr.com:3333 (Stratum/TCP)" }
+  return { stats, error, stop, poolUrl: 'pool.supportxmr.com:3333 (Stratum/TCP)' }
 }

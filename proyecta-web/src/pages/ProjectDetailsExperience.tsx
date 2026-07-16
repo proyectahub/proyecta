@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+﻿import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
@@ -54,15 +54,15 @@ export function ProjectDetailsExperience() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-flex animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600"></div>
+      <div className="py-12 text-center">
+        <div className="inline-flex h-12 w-12 animate-spin rounded-full border-b-2 border-fuchsia-600" />
       </div>
     )
   }
 
   if (!project) {
     return (
-      <div className="nova-card p-12 text-center space-y-4">
+      <div className="nova-card space-y-4 p-12 text-center">
         <p className="text-xl font-bold text-slate-900">Proyecto no encontrado</p>
         <button onClick={() => navigate('/projects')} className="nova-button-solid">
           Volver
@@ -73,27 +73,24 @@ export function ProjectDetailsExperience() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-4xl font-bold text-slate-900">{project.title}</h1>
-          <p className="text-slate-600 mt-2">
+          <p className="mt-2 text-slate-600">
             Publicado hace {Math.round((Date.now() - project.createdAt) / 1000 / 60)} minutos
           </p>
         </div>
-        <button
-          onClick={() => navigate('/projects')}
-          className="nova-button-soft"
-        >
+        <button onClick={() => navigate('/projects')} className="nova-button-soft">
           Volver
         </button>
       </div>
 
-      <div className="nova-card p-6 space-y-3 border-2 border-slate-200 bg-white">
+      <div className="nova-card space-y-3 border-2 border-slate-200 bg-white p-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Wallet personal del investigador</p>
         <p className="text-sm text-slate-600">
           Esta es la dirección pública a la que el pool envía los XMR del proyecto.
         </p>
-        <code className="block break-all rounded-lg bg-slate-50 p-4 font-mono text-xs text-slate-800 border border-slate-200">
+        <code className="block break-all rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-800">
           {normalizeProjectWalletAddress(project.fundraisingAddress)}
         </code>
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
@@ -102,7 +99,7 @@ export function ProjectDetailsExperience() {
             href={`https://supportxmr.com/miner/${normalizeProjectWalletAddress(project.fundraisingAddress)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline font-bold"
+            className="font-bold text-blue-600 hover:underline"
           >
             Ver en SupportXMR
           </a>
@@ -125,10 +122,10 @@ export function ProjectDetailsExperience() {
         projectTitle={project.title}
       />
 
-      <div className="nova-card p-6 space-y-4">
-        <h2 className="text-2xl font-bold">Descripci�n</h2>
+      <div className="nova-card space-y-4 p-6">
+        <h2 className="text-2xl font-bold">Descripción</h2>
         <div
-          className="text-slate-700 space-y-4"
+          className="space-y-4 text-slate-700"
           dangerouslySetInnerHTML={{ __html: project.description }}
         />
       </div>
