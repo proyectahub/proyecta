@@ -1,4 +1,4 @@
-import app from "./index.js"
+﻿import app from "./index.js"
 import express from "express"
 import http from "http"
 import net from "net"
@@ -6,7 +6,8 @@ import { WebSocketServer } from "ws"
 import orcidRoutes from "./orcid.js"
 import moneroRoutes from "./moneroRoutes.js"
 import { initializeMoneroConnection } from "./monero.js"
-import { readStore as readMiningStore } from "./moneroStore.js"
+import { readStore as readMiningStore, recordMiningTelemetry, buildUnifiedMiningSummary } from "./moneroStore.js"
+
 function parseDecimalLike(value) {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0
@@ -65,6 +66,36 @@ function normalizeSupportXMRStats(data) {
   }
 }
 
+async function fetchConfirmedPoolStats(wallet) {
+  try {
+    const response = await fetch(`https://supportxmr.com/api/miner/${wallet}/stats`, {
+      headers: { "User-Agent": "PROYECTA/1.0" },
+    })
+
+    if (!response.ok) {
+      throw new Error(`SupportXMR API ${response.status}`)
+    }
+
+    const data = await response.json()
+    return normalizeSupportXMRStats(data)
+  } catch (error) {
+    return {
+      wallet,
+      hashrate: 0,
+      totalHashes: 0,
+      balance: 0,
+      totalPaid: 0,
+      lastHash: Date.now(),
+      minPayout: 0.3,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+async function buildWalletSummary(wallet) {
+  const confirmedStats = await fetchConfirmedPoolStats(wallet)
+  return buildUnifiedMiningSummary(wallet, confirmedStats)
+}
 
 function createMiningCompatibilityRouter() {
   const router = express.Router()
@@ -74,47 +105,63 @@ function createMiningCompatibilityRouter() {
   })
 
   router.post("/submit", (req, res) => {
+    const wallet = String(req.body?.walletAddress || req.body?.wallet || "").trim()
     const hashes = Number(req.body?.hashes || 0)
-    res.json({ ok: true, poolConnected: true, accepted: true, submittedHashes: hashes })
+    const hashRate = Number(req.body?.hashRate || req.body?.localHashRate || 0)
+    const elapsedSeconds = Number(req.body?.elapsedSeconds || 0)
+    const acceptedShares = Number(req.body?.acceptedShares || 0)
+    const rejectedShares = Number(req.body?.rejectedShares || 0)
+    const sessionId = typeof req.body?.sessionId === "string" ? req.body.sessionId : null
+    const poolConnected = Boolean(req.body?.poolConnected)
+
+    if (wallet) {
+      recordMiningTelemetry(wallet, {
+        totalHashes: hashes,
+        hashRate,
+        elapsedSeconds,
+        acceptedShares,
+        rejectedShares,
+        sessionId,
+        poolConnected,
+        source: req.body?.source || "browser",
+      })
+    }
+
+    res.json({
+      ok: true,
+      poolConnected: poolConnected || hashes > 0 || hashRate > 0,
+      accepted: true,
+      submittedHashes: hashes,
+      summary: wallet ? buildUnifiedMiningSummary(wallet, null) : null,
+    })
   })
 
-  router.get("/status/:wallet", (req, res) => {
+  router.get("/status/:wallet", async (req, res) => {
+    const wallet = req.params.wallet
+    const summary = await buildWalletSummary(wallet)
+    const lastSeenAt = summary.lastSeenAt ? new Date(summary.lastSeenAt).getTime() : Date.now()
     res.json({
-      isConnected: true,
-      wallet: req.params.wallet,
-      acceptedShares: 0,
+      isConnected: summary.isPoolConfirmed || summary.isLocalActive,
+      wallet,
+      acceptedShares: summary.confirmedTotalHashes > 0 ? summary.confirmedTotalHashes : 0,
       rejectedShares: 0,
-      miners: 1,
-      uptime: 0,
+      miners: summary.isLocalActive ? 1 : 0,
+      uptime: summary.isLocalActive ? Math.max(1, Math.trunc((Date.now() - lastSeenAt) / 1000)) : 0,
+      visibleBalance: summary.visibleBalance,
+      status: summary.status,
     })
+  })
+
+  router.get("/summary/:wallet", async (req, res) => {
+    const wallet = req.params.wallet
+    const summary = await buildWalletSummary(wallet)
+    res.json(summary)
   })
 
   router.get("/pool-stats/:wallet", async (req, res) => {
     const wallet = req.params.wallet
-    try {
-      const response = await fetch(`https://supportxmr.com/api/miner/${wallet}/stats`, {
-        headers: { "User-Agent": "PROYECTA/1.0" },
-      })
-
-      if (!response.ok) {
-        throw new Error(`SupportXMR API ${response.status}`)
-      }
-
-      const data = await response.json()
-      const stats = normalizeSupportXMRStats(data)
-      res.json({ wallet, ...stats })
-    } catch (error) {
-      res.json({
-        wallet,
-        totalHashes: 0,
-        totalPaid: 0,
-        balance: 0,
-        hashrate: 0,
-        lastHash: Date.now(),
-        minPayout: 0.3,
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
+    const summary = await buildWalletSummary(wallet)
+    res.json(summary)
   })
 
   router.get("/payments/:wallet", async (req, res) => {
@@ -128,7 +175,7 @@ function createMiningCompatibilityRouter() {
   })
 
   router.get("/addresses", (_req, res) => {
-    const store = readStore()
+    const store = readMiningStore()
     res.json(Object.values(store.addresses || {}))
   })
 
@@ -329,7 +376,6 @@ function getOrCreatePool(wallet) {
 
 const PORT = Number(process.env.PORT || 3000)
 
-
 app.use("/api/orcid", orcidRoutes)
 app.use("/api/monero", moneroRoutes)
 app.use("/api/mining", createMiningCompatibilityRouter())
@@ -384,6 +430,3 @@ void initializeMoneroConnection()
 server.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`)
 })
-
-
-

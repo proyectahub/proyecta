@@ -10,6 +10,16 @@ interface MiningStats {
   totalPaid: number
   lastHash: number
   minPayout: number
+  confirmedBalance?: number
+  localBalance?: number
+  visibleBalance?: number
+  localHashrate?: number
+  localTotalHashes?: number
+  visibleHashrate?: number
+  visibleTotalHashes?: number
+  isLocalActive?: boolean
+  isPoolConfirmed?: boolean
+  status?: string
 }
 
 interface MiningStatsWidgetProps {
@@ -18,9 +28,13 @@ interface MiningStatsWidgetProps {
   projectTitle: string
 }
 
-function hasConfirmedPoolData(stats: MiningStats | null) {
+function hasVisibleMiningData(stats: MiningStats | null) {
   if (!stats) return false
-  return stats.hashrate > 0 || stats.totalHashes > 0 || stats.balance > 0 || stats.totalPaid > 0
+  return Boolean(stats.visibleBalance || stats.confirmedBalance || stats.localBalance || stats.hashrate || stats.totalHashes)
+}
+
+function formatXmr(value: number, decimals = 4) {
+  return value.toFixed(decimals)
 }
 
 export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProps) {
@@ -35,6 +49,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       setError(null)
 
       const apiUrls = [
+        `${API_BASE}/api/mining/summary/${wallet}`,
         `${API_BASE}/api/mining/pool-stats/${wallet}`,
         `https://supportxmr.com/api/miner/${wallet}/stats`,
       ]
@@ -83,15 +98,21 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </h3>
           <div className="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
         </div>
-        <p className="text-sm text-slate-600">Consultando confirmación del pool...</p>
+        <p className="text-sm text-slate-600">Consultando el resumen unificado del pool y la actividad local...</p>
       </div>
     )
   }
 
-  const confirmed = hasConfirmedPoolData(stats)
-  const progressPercent = confirmed ? Math.min((stats!.balance / fundingGoal) * 100, 100) : 0
-  const remaining = confirmed ? Math.max(fundingGoal - stats!.balance, 0) : fundingGoal
-  const usdValue = confirmed ? (stats!.balance * 316.12).toFixed(2) : '0.00'
+  const confirmedBalance = Number(stats?.confirmedBalance ?? (stats?.isPoolConfirmed ? stats?.balance ?? 0 : 0))
+  const localBalance = Number(stats?.localBalance ?? 0)
+  const visibleBalance = Number(stats?.visibleBalance ?? stats?.balance ?? confirmedBalance + localBalance)
+  const visibleHashrate = Number(stats?.visibleHashrate ?? stats?.hashrate ?? 0)
+  const visibleTotalHashes = Number(stats?.visibleTotalHashes ?? stats?.totalHashes ?? 0)
+  const confirmed = Boolean(stats?.isPoolConfirmed)
+  const localActive = Boolean(stats?.isLocalActive)
+  const progressPercent = hasVisibleMiningData(stats) ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
+  const remaining = Math.max(fundingGoal - visibleBalance, 0)
+  const usdValue = (visibleBalance * 316.12).toFixed(2)
 
   if (!stats) {
     return (
@@ -108,10 +129,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         <div className="space-y-2 rounded-lg border border-amber-200 bg-white p-4 text-sm text-amber-900">
           <p className="font-bold">Esperando confirmación del pool</p>
           <p>
-            No pudimos leer SupportXMR todavía. Si la minería local está activa, el navegador puede seguir generando hashes mientras el pool confirma los datos.
-          </p>
-          <p className="text-xs text-amber-700">
-            Verifica manualmente en SupportXMR con la dirección del proyecto.
+            No pudimos leer el resumen de minería todavía. Si la prueba local está activa, el navegador puede seguir aportando mientras el pool confirma los datos.
           </p>
         </div>
       </div>
@@ -127,9 +145,13 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
             Minería comunitaria en progreso
           </h3>
           <p className="mt-1 text-sm text-slate-600">
-            {confirmed
-              ? 'SupportXMR ya confirmó actividad para esta dirección.'
-              : 'El navegador puede estar aportando localmente mientras SupportXMR confirma.'}
+            {confirmed && localActive
+              ? 'Pool confirmado y prueba local activa en la misma vista.'
+              : confirmed
+                ? 'SupportXMR ya confirmó actividad para esta dirección.'
+                : localActive
+                  ? 'Prueba local activa del navegador; el estado visible suma el aporte local mientras llega la confirmación.'
+                  : 'Esperando confirmación del pool.'}
           </p>
         </div>
         <button
@@ -141,13 +163,13 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         </button>
       </div>
 
-      <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${confirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
-        {confirmed ? 'Pool confirmado' : 'Esperando confirmación del pool'}
+      <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${confirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : localActive ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+        {confirmed && localActive ? 'Pool confirmado + prueba local' : confirmed ? 'Pool confirmado' : localActive ? 'Prueba local activa' : 'Esperando confirmación del pool'}
       </div>
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
-          <span className="font-bold text-slate-900">{confirmed ? stats.balance.toFixed(4) : '0.0000'} XMR</span>
+          <span className="font-bold text-slate-900">{formatXmr(visibleBalance, 4)} XMR</span>
           <span className="text-sm text-slate-600">
             de {fundingGoal.toFixed(2)} XMR ({progressPercent.toFixed(1)}%)
           </span>
@@ -166,34 +188,34 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Hashrate actual</p>
-          <p className="font-bold text-slate-900">{confirmed ? stats.hashrate.toFixed(2) : '0.00'} H/s</p>
-          <p className="mt-1 text-xs text-slate-500">en tiempo real</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Hashrate visible</p>
+          <p className="font-bold text-slate-900">{visibleHashrate.toFixed(2)} H/s</p>
+          <p className="mt-1 text-xs text-slate-500">pool + local</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Total de hashes</p>
-          <p className="font-bold text-slate-900">{confirmed ? (stats.totalHashes / 1e6).toFixed(2) : '0.00'}M</p>
+          <p className="font-bold text-slate-900">{(visibleTotalHashes / 1e6).toFixed(2)}M</p>
           <p className="mt-1 text-xs text-slate-500">acumulados</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Saldo pendiente</p>
-          <p className="font-bold text-slate-900">{confirmed ? stats.balance.toFixed(4) : '0.0000'} XMR</p>
-          <p className="mt-1 text-xs text-slate-500">listo para pagar</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Saldo confirmado</p>
+          <p className="font-bold text-slate-900">{confirmedBalance.toFixed(4)} XMR</p>
+          <p className="mt-1 text-xs text-slate-500">SupportXMR</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Total pagado</p>
-          <p className="font-bold text-slate-900">{confirmed ? stats.totalPaid.toFixed(4) : '0.0000'} XMR</p>
-          <p className="mt-1 text-xs text-slate-500">confirmado</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Aporte local</p>
+          <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
+          <p className="mt-1 text-xs text-slate-500">navegador</p>
         </div>
       </div>
 
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Pool: SupportXMR (0.6% fee)</p>
+          <p className="text-sm font-bold text-slate-900">Fuente visible: SupportXMR + aporte local</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
@@ -214,22 +236,13 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         )}
       </div>
 
-      {!confirmed ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-bold">Esperando confirmación del pool</p>
-          <p className="mt-1">
-            El navegador puede estar minando o enviando shares, pero este bloque solo sube cuando SupportXMR publica datos verificables para esta dirección.
-          </p>
-        </div>
-      ) : null}
-
       <div className="rounded-lg border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-cyan-50 p-4">
         <p className="mb-2 text-xs font-bold text-emerald-900">Cómo funciona la minería comunitaria</p>
         <ul className="space-y-1 text-xs text-emerald-800">
           <li>Comunidad elige iniciar minería para este proyecto</li>
           <li>Cada participante aporta poder de cómputo (App o Navegador)</li>
           <li>SupportXMR acumula hashes y paga en XMR automáticamente</li>
-          <li>XMR va directamente a dirección del investigador</li>
+          <li>XMR va directamente a la dirección del investigador</li>
           <li>PROYECTA solo registra, nunca custodia fondos</li>
         </ul>
       </div>

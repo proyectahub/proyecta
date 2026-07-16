@@ -11,9 +11,14 @@ interface ProjectMiningWidgetProps {
   projectId?: string
 }
 
-function hasPoolConfirmation(poolStats: any) {
+function hasVisibleCommunityState(poolStats: any) {
   if (!poolStats) return false
-  return Number(poolStats.hashrate || 0) > 0 || Number(poolStats.totalHashes || 0) > 0 || Number(poolStats.balance || 0) > 0 || Number(poolStats.totalPaid || 0) > 0
+  return Boolean(poolStats.visibleBalance || poolStats.confirmedBalance || poolStats.localBalance || poolStats.isLocalActive || poolStats.isPoolConfirmed)
+}
+
+function formatAmount(value: unknown) {
+  const numeric = Number(value || 0)
+  return Number.isFinite(numeric) ? numeric.toFixed(4) : '0.0000'
 }
 
 export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: ProjectMiningWidgetProps) {
@@ -31,7 +36,13 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
   )
 
   const { poolStats } = useSupportXMRStats(projectMoneroAddress)
-  const confirmedPool = hasPoolConfirmation(poolStats)
+  const localActive = Boolean(poolStats?.isLocalActive)
+  const poolConfirmed = Boolean(poolStats?.isPoolConfirmed)
+  const visibleBalance = Number(poolStats?.visibleBalance ?? poolStats?.balance ?? 0)
+  const confirmedBalance = Number(poolStats?.confirmedBalance ?? 0)
+  const localBalance = Number(poolStats?.localBalance ?? 0)
+  const visibleHashrate = Number(poolStats?.visibleHashrate ?? poolStats?.hashrate ?? 0)
+  const visibleHashes = Number(poolStats?.visibleTotalHashes ?? poolStats?.totalHashes ?? 0)
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -55,6 +66,14 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
       </div>
     )
   }
+
+  const communityLabel = poolConfirmed && localActive
+    ? 'Pool confirmado + prueba local activa'
+    : poolConfirmed
+      ? 'Pool confirmado'
+      : localActive
+        ? 'Prueba local activa'
+        : 'Esperando confirmación del pool'
 
   return (
     <>
@@ -116,17 +135,19 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                   </div>
                 </div>
 
-                <div className={`rounded-lg border p-3 text-sm ${stats.poolConnected ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+                <div className={`rounded-lg border p-3 text-sm ${poolConfirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : localActive ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
-                    <p className="font-bold">
-                      {stats.poolConnected ? 'Conexión activa con el pool' : 'Prueba local del navegador en curso'}
-                    </p>
+                    <p className="font-bold">{communityLabel}</p>
                   </div>
                   <p className="mt-1 text-xs leading-6">
-                    {stats.poolConnected
-                      ? 'SupportXMR ya recibió la coordinación del navegador. Si aún no ves balances, espera la próxima confirmación.'
-                      : 'El navegador sigue calculando RandomX. La confirmación del pool puede tardar unos minutos.'}
+                    {poolConfirmed && localActive
+                      ? 'SupportXMR ya confirmó la dirección y el navegador sigue sumando actividad local visible.'
+                      : poolConfirmed
+                        ? 'SupportXMR ya confirmó actividad para esta dirección.'
+                        : localActive
+                          ? 'El navegador sigue calculando RandomX. El estado visible del proyecto suma el aporte local mientras llega la confirmación.'
+                          : 'El navegador puede iniciar una prueba local mientras llega la confirmación del pool.'}
                   </p>
                 </div>
 
@@ -182,25 +203,18 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
 
             <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
               <p className="font-bold text-slate-700">
-                {stats.poolConnected ? 'Pool conectado' : miningEnabled ? 'Esperando confirmación del pool' : `Estado: ${stats.status}`}
+                {stats.poolConnected ? 'Puente conectado' : miningEnabled ? 'Esperando reconexión del puente' : `Estado: ${stats.status}`}
               </p>
               <p className="mt-1 font-mono">{poolUrl}</p>
             </div>
 
-            {!confirmedPool && miningEnabled ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                <p className="font-bold">Prueba local del navegador</p>
-                <p className="mt-1">
-                  Este bloque no significa error. El navegador calcula hashes locales, pero el widget comunitario solo cambia cuando SupportXMR confirma la dirección.
-                </p>
-              </div>
-            ) : null}
-
-            {poolStats ? (
+            {hasVisibleCommunityState(poolStats) ? (
               <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
                 <p>
-                  <strong>Stats:</strong> {(Number(poolStats.totalHashes || 0)).toLocaleString()} hashes ·{' '}
-                  {Number(poolStats.balance || 0) > 0 ? Number(poolStats.balance).toFixed(12) : '0'} XMR
+                  <strong>Resumen visible:</strong> {formatAmount(visibleHashes / 1e6)}M hashes · {formatAmount(visibleBalance)} XMR
+                </p>
+                <p className="mt-1">
+                  Confirmado: {formatAmount(confirmedBalance)} XMR · Local: {formatAmount(localBalance)} XMR · {communityLabel}
                 </p>
               </div>
             ) : null}

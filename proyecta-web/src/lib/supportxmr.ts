@@ -5,6 +5,16 @@
   totalPaid: number
   lastHash: number
   minPayout: number
+  confirmedBalance?: number
+  localBalance?: number
+  visibleBalance?: number
+  localHashrate?: number
+  localTotalHashes?: number
+  visibleHashrate?: number
+  visibleTotalHashes?: number
+  isLocalActive?: boolean
+  isPoolConfirmed?: boolean
+  status?: string
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -55,12 +65,38 @@ function parseHashCount(value: unknown): number {
 }
 
 export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
+  const visibleBalance = data?.visibleBalance ?? data?.balance
+  const localBalance = data?.localBalance ?? data?.localVisibleBalance ?? 0
+  const confirmedBalance = data?.confirmedBalance ?? data?.confirmed?.balance ?? 0
+  const localHashrate = data?.localHashrate ?? 0
+  const visibleHashrate = data?.visibleHashrate ?? data?.hashrate
+  const localTotalHashes = data?.localTotalHashes ?? 0
+  const visibleTotalHashes = data?.visibleTotalHashes ?? data?.totalHashes
+  const isUnified =
+    data?.visibleBalance !== undefined ||
+    data?.confirmedBalance !== undefined ||
+    data?.localBalance !== undefined ||
+    data?.isLocalActive !== undefined ||
+    data?.isPoolConfirmed !== undefined ||
+    typeof data?.status === 'string'
+
   return {
-    hashrate: parseDecimalLike(data?.hashrate ?? data?.hash ?? 0),
-    totalHashes: parseHashCount(data?.totalHashes ?? data?.total_hashes ?? data?.hashes ?? 0),
-    balance: parseAtomicXmr(data?.balance ?? data?.amtDue ?? data?.due ?? 0),
+    hashrate: parseDecimalLike(visibleHashrate ?? data?.hashrate ?? data?.hash ?? 0),
+    totalHashes: parseHashCount(visibleTotalHashes ?? data?.totalHashes ?? data?.total_hashes ?? data?.hashes ?? 0),
+    balance: parseAtomicXmr(visibleBalance ?? data?.balance ?? data?.amtDue ?? data?.due ?? 0),
     totalPaid: parseAtomicXmr(data?.totalPaid ?? data?.paid ?? 0),
     lastHash: parseHashCount(data?.lastHash ?? Date.now()),
     minPayout: parseAtomicXmr(data?.minPayout ?? 0.3) || 0.3,
+    confirmedBalance: isUnified ? parseAtomicXmr(confirmedBalance) : undefined,
+    localBalance: isUnified ? parseAtomicXmr(localBalance) : undefined,
+    visibleBalance: isUnified ? parseAtomicXmr(visibleBalance ?? data?.balance ?? 0) : undefined,
+    localHashrate: isUnified ? parseDecimalLike(localHashrate) : undefined,
+    localTotalHashes: isUnified ? parseHashCount(localTotalHashes) : undefined,
+    visibleHashrate: isUnified ? parseDecimalLike(visibleHashrate ?? data?.hashrate ?? 0) : undefined,
+    visibleTotalHashes: isUnified ? parseHashCount(visibleTotalHashes ?? data?.totalHashes ?? 0) : undefined,
+    isLocalActive: isUnified ? Boolean(data?.isLocalActive) : undefined,
+    isPoolConfirmed: isUnified ? Boolean(data?.isPoolConfirmed) : undefined,
+    status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }
+

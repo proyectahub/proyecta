@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from 'react'
-import { resolveMiningWebSocketUrl } from '../lib/api'
+import { API_BASE, resolveMiningWebSocketUrl } from '../lib/api'
 
 export interface RandomXStats {
   hashRate: number
@@ -13,6 +13,7 @@ export interface RandomXStats {
 }
 
 const WS_URL = resolveMiningWebSocketUrl()
+const TELEMETRY_INTERVAL_MS = 10000
 
 export function useRandomXMining(
   walletAddress: string,
@@ -37,6 +38,37 @@ export function useRandomXMining(
   const perWorkerRef = useRef<{ rate: number; hashes: number }[]>([])
   const hasPoolJobRef = useRef(false)
   const isClosingRef = useRef(false)
+  const sessionIdRef = useRef(Math.random().toString(36).slice(2))
+  const lastTelemetryAtRef = useRef(0)
+
+  const sendTelemetry = useCallback(
+    (payload: {
+      totalHashes: number
+      hashRate: number
+      elapsedSeconds: number
+      acceptedShares: number
+      rejectedShares: number
+      poolConnected: boolean
+    }) => {
+      const now = Date.now()
+      if (now - lastTelemetryAtRef.current < TELEMETRY_INTERVAL_MS) {
+        return
+      }
+
+      lastTelemetryAtRef.current = now
+      void fetch(`${API_BASE}/api/mining/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress,
+          sessionId: sessionIdRef.current,
+          source: 'browser',
+          ...payload,
+        }),
+      }).catch(() => undefined)
+    },
+    [walletAddress],
+  )
 
   useEffect(() => {
     if (!enabled || !walletAddress) {
@@ -69,13 +101,22 @@ export function useRandomXMining(
           perWorkerRef.current[index] = { rate: message.hashRate, hashes: message.totalHashes }
           const totalRate = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.rate, 0)
           const totalHashes = perWorkerRef.current.reduce((sum, workerStats) => sum + workerStats.hashes, 0)
+          const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000)
           setStats((current) => ({
             ...current,
             hashRate: Math.round(totalRate * 10) / 10,
             totalHashes,
-            elapsedSeconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+            elapsedSeconds,
             status: 'Minando RandomX',
           }))
+          sendTelemetry({
+            totalHashes,
+            hashRate: Math.round(totalRate * 10) / 10,
+            elapsedSeconds,
+            acceptedShares: stats.acceptedShares,
+            rejectedShares: stats.rejectedShares,
+            poolConnected: Boolean(wsRef.current && wsRef.current.readyState === WebSocket.OPEN),
+          })
         }
 
         if (message.type === 'share' && wsRef.current?.readyState === WebSocket.OPEN) {
@@ -203,7 +244,7 @@ export function useRandomXMining(
       }))
       setError(null)
     }
-  }, [enabled, walletAddress, cpuPercentage])
+  }, [enabled, walletAddress, cpuPercentage, sendTelemetry])
 
   const stop = useCallback(() => {
     if (wsRef.current) {
