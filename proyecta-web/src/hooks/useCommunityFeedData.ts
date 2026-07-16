@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react"
-import type { ArticleSource, FeedArticle } from "../data/mockData"
-import { API_BASE } from "../lib/api"
+import { feedArticles, type ArticleSource, type FeedArticle } from "../data/mockData"
+import { API_BASE, isDemoFallbackEnabled } from "../lib/api"
 
 export type ApiArticle = {
   id: string
@@ -75,7 +75,7 @@ function formatRelativeLabel(value: string) {
   if (diffInHours < 24) return `Hace ${Math.max(1, diffInHours)} horas`
 
   const diffInDays = Math.round(diffInHours / 24)
-  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} dÃ­as`
+  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} días`
 }
 
 function formatPublishedLabel(value: string) {
@@ -96,8 +96,8 @@ function formatPublishedLabel(value: string) {
 function mapApiArticle(article: ApiArticle, index: number): FeedArticle {
   return {
     id: article.id || `article-${index + 1}`,
-    title: article.title || "PublicaciÃ³n Proyecta",
-    excerpt: article.excerpt || "Esta publicaciÃ³n aÃºn no tiene extracto disponible.",
+    title: article.title || "Publicación Proyecta",
+    excerpt: article.excerpt || "Esta publicación aún no tiene extracto disponible.",
     heroKicker: "",
     category: article.category || "General",
     timeAgo: formatRelativeLabel(article.createdAt),
@@ -155,7 +155,7 @@ const defaultOverview: CommunityOverview = {
 
 export function useCommunityFeedData() {
   const apiBaseUrl = API_BASE
-  const [articles, setArticles] = useState<FeedArticle[]>([])
+  const [articles, setArticles] = useState<FeedArticle[]>(feedArticles)
   const [isSyncing, setIsSyncing] = useState(true)
   const [communityOverview, setCommunityOverview] = useState<CommunityOverview>(defaultOverview)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -167,6 +167,13 @@ export function useCommunityFeedData() {
 
     async function syncArticles() {
       setIsSyncing(true)
+
+      if (isDemoFallbackEnabled()) {
+        setArticles(feedArticles)
+        setIsSyncing(false)
+        return
+      }
+
       try {
         const token = window.localStorage.getItem("proyecta-session-token")
         const response = await fetch(`${apiBaseUrl}/api/articles`, {
@@ -188,8 +195,8 @@ export function useCommunityFeedData() {
         }
       } catch (error) {
         if (!controller.signal.aborted) {
-          console.error("Article sync error:", error)
-          setArticles([])
+          console.warn("Article sync unavailable, using local feed:", error)
+          setArticles(feedArticles)
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -239,6 +246,3 @@ export function useCommunityFeedData() {
     refetch,
   }
 }
-
-
-

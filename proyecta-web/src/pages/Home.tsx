@@ -1,28 +1,13 @@
 ﻿import React, { useEffect, useState } from "react"
+import { feedArticles } from "../data/mockData"
 import { API_BASE } from "../lib/api"
 
-type Article = {
-  id: string
-  title: string
-  excerpt: string
-  author: {
-    name: string
-  }
-  createdAt: string
-}
-
 export default function Home() {
-  const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/articles`)
-      .then((res) => res.json())
-      .then((data) => {
-        setArticles(data || [])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    const timer = window.setTimeout(() => setLoading(false), 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   return (
@@ -59,15 +44,16 @@ export default function Home() {
 
         {loading && <p>Cargando artículos...</p>}
 
-        {!loading && articles.length === 0 && <p className="text-gray-500">No hay artículos aún</p>}
+        {!loading && feedArticles.length === 0 && <p className="text-gray-500">No hay artículos aún</p>}
 
-        {articles.map((article) => (
-          <div key={article.id} className="rounded-xl border bg-white p-5">
-            <div className="mb-2 text-sm text-gray-500">{article.author.name}</div>
-            <h2 className="mb-2 text-lg font-semibold">{article.title}</h2>
-            <p className="text-sm text-gray-600">{article.excerpt}</p>
-          </div>
-        ))}
+        {!loading &&
+          feedArticles.map((article) => (
+            <div key={article.id} className="rounded-xl border bg-white p-5">
+              <div className="mb-2 text-sm text-gray-500">{article.author.name}</div>
+              <h2 className="mb-2 text-lg font-semibold">{article.title}</h2>
+              <p className="text-sm text-gray-600">{article.excerpt}</p>
+            </div>
+          ))}
       </div>
 
       <div className="col-span-3 space-y-6">

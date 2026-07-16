@@ -29,7 +29,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import mammoth from "mammoth"
 import * as pdfjsLib from "pdfjs-dist"
-import { categoryLabels, submissionChecklist, type ArticleSource } from "../data/mockData"
+import { categoryLabels, feedArticles, submissionChecklist, type ArticleSource } from "../data/mockData"
 import { useAuth } from "../context/AuthContext"
 import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
@@ -217,30 +217,23 @@ export default function EditorExperience() {
 
     async function loadArticle() {
       setIsLoadingArticle(true)
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/articles/${id}`, {
-          signal: controller.signal,
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : undefined,
-        })
 
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data.error ?? "No fue posible cargar la publicación.")
+      try {
+        const localArticle = feedArticles.find((article) => article.id === id)
+
+        if (!localArticle) {
+          throw new Error("No fue posible cargar la publicaci?n.")
         }
 
-        setTitle(data.title ?? "")
-        setCategory(data.category ?? "")
-        setFigureImage(data.figureImage ?? "")
-        setFigureCaption(data.figureCaption ?? "")
-        setSources(normalizeEditorSources(data.sources).length ? normalizeEditorSources(data.sources) : [createEmptySource()])
-        editor.commands.setContent(data.contentHtml ?? "")
+        setTitle(localArticle.title ?? "")
+        setCategory(localArticle.category ?? "")
+        setFigureImage(localArticle.figureImage ?? "")
+        setFigureCaption(localArticle.figureCaption ?? "")
+        setSources(normalizeEditorSources(localArticle.sources).length ? normalizeEditorSources(localArticle.sources) : [createEmptySource()])
+        editor.commands.setContent(localArticle.contentHtml ?? "")
       } catch (error) {
         if (!controller.signal.aborted) {
-          const message = error instanceof Error ? error.message : "No fue posible cargar la publicación."
+          const message = error instanceof Error ? error.message : "No fue posible cargar la publicaci?n."
           toast.error(message)
           navigate(-1)
         }

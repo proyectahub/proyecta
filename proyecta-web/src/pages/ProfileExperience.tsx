@@ -25,6 +25,8 @@ import { toast } from "react-hot-toast"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { API_BASE } from "../lib/api"
+import { feedArticles } from "../data/mockData"
+import { feedArticles } from "../data/mockData"
 import { ProyectaMark, ProyectaTokenSeal } from "../components/brand/ProyectaBrand"
 
 type ProfileUser = {
@@ -357,7 +359,7 @@ export default function ProfileExperience() {
             }
           : undefined
 
-        const [profileResponse, postsResponse, activityResponse, communityResponse] = await Promise.all([
+        const [profileResponse, postsResponse, activityResponse] = await Promise.all([
           fetch(`${apiBaseUrl}/api/users/${profileId}`, {
             signal: controller.signal,
             headers: requestHeaders,
@@ -370,11 +372,9 @@ export default function ProfileExperience() {
             signal: controller.signal,
             headers: requestHeaders,
           }),
-          fetch(`${apiBaseUrl}/api/articles`, {
-            signal: controller.signal,
-            headers: requestHeaders,
-          }),
         ])
+
+        const communityData = feedArticles
 
         if (!profileResponse.ok) {
           throw new Error("No encontramos el perfil del investigador.")
@@ -383,7 +383,6 @@ export default function ProfileExperience() {
         const profileData = await profileResponse.json()
         const postsData = postsResponse.ok ? await postsResponse.json() : []
         const activityData = activityResponse.ok ? await activityResponse.json() : {}
-        const communityData = communityResponse.ok ? await communityResponse.json() : []
 
         setProfile(profileData.user)
         setStats(profileData.stats ?? { posts: 0, comments: 0, votes: 0 })

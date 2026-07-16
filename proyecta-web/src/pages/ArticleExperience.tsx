@@ -24,7 +24,7 @@ import {
   UserPlus,
 } from "lucide-react"
 import { toast } from "react-hot-toast"
-import type { ArticleSource, FeedArticle } from "../data/mockData"
+import { feedArticles, type ArticleSource, type FeedArticle } from "../data/mockData"
 import { useAuth } from "../context/AuthContext"
 import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
@@ -486,52 +486,26 @@ export default function ArticleExperience() {
       setArticleNotFound(false)
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/articles/${id}`, {
-          signal: controller.signal,
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : undefined,
-        })
+        const localArticle = feedArticles.find((article) => article.id === id)
 
-        if (!response.ok) {
+        if (!localArticle) {
           if (!controller.signal.aborted) {
             setRemoteArticle(null)
             setArticleDoi("")
             setArticleReviews([])
             setArticleComments([])
-            setArticleNotFound(response.status === 404)
+            setArticleNotFound(true)
           }
           return
         }
 
-        const data = (await response.json()) as ApiArticle
-        const viewerReview = data.viewerState.review
-        setRemoteArticle(mapApiArticleToFeed(data))
-        setArticleDoi(String(data.doi ?? "").trim())
-        setHasVoted((data.viewerState.vote as 0 | 1 | -1 | undefined) ?? 0)
-        setReviewDraft(
-          viewerReview
-            ? {
-                rating: Number(viewerReview.rating ?? 0),
-                clarity: Number(viewerReview.clarity ?? viewerReview.rating ?? 0),
-                rigor: Number(viewerReview.rigor ?? viewerReview.rating ?? 0),
-                utility: Number(viewerReview.utility ?? viewerReview.rating ?? 0),
-                novelty: Number(viewerReview.novelty ?? viewerReview.rating ?? 0),
-                reproducibility: Number(viewerReview.reproducibility ?? viewerReview.rating ?? 0),
-                recommendation:
-                  (viewerReview.recommendation as ReviewRecommendation | undefined) ?? "Solicitar mejoras",
-                strengths: viewerReview.strengths ?? "",
-                improvements: viewerReview.improvements ?? "",
-                openQuestions: viewerReview.openQuestions ?? "",
-                comment: viewerReview.comment ?? "",
-              }
-            : emptyReviewDraft,
-        )
-        setArticleReviews(Array.isArray(data.reviews) ? data.reviews : [])
-        setArticleComments(Array.isArray(data.comments) ? data.comments : [])
-        setIsFollowingAuthor(Boolean(data.viewerState.followingAuthor))
+        setRemoteArticle(localArticle)
+        setArticleDoi("")
+        setHasVoted(0)
+        setReviewDraft(emptyReviewDraft)
+        setArticleReviews([])
+        setArticleComments([])
+        setIsFollowingAuthor(false)
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Article load error:", error)
