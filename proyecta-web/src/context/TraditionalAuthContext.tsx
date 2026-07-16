@@ -47,23 +47,40 @@ const LEGACY_USER_CACHE_KEY = 'proyecta_user'
 const LEGACY_ALL_USERS_KEY = 'proyecta_all_profiles'
 
 function getStoredSessionToken() {
-  return window.localStorage.getItem(SESSION_STORAGE_KEY)
+  try {
+    return window.localStorage.getItem(SESSION_STORAGE_KEY)
+  } catch {
+    return null
+  }
 }
 
 function storeSessionToken(token: string) {
-  window.localStorage.setItem(SESSION_STORAGE_KEY, token)
+  try {
+    window.localStorage.setItem(SESSION_STORAGE_KEY, token)
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
 function clearSessionToken() {
-  window.localStorage.removeItem(SESSION_STORAGE_KEY)
+  try {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY)
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
 function cacheUser(user: UserProfile) {
-  window.localStorage.setItem(LEGACY_USER_CACHE_KEY, JSON.stringify(user))
+  try {
+    window.localStorage.setItem(LEGACY_USER_CACHE_KEY, JSON.stringify(user))
 
-  const allProfiles = JSON.parse(window.localStorage.getItem(LEGACY_ALL_USERS_KEY) || '{}')
-  allProfiles[user.email] = user
-  window.localStorage.setItem(LEGACY_ALL_USERS_KEY, JSON.stringify(allProfiles))
+    const allProfilesRaw = window.localStorage.getItem(LEGACY_ALL_USERS_KEY) || '{}'
+    const allProfiles = JSON.parse(allProfilesRaw)
+    allProfiles[user.email] = user
+    window.localStorage.setItem(LEGACY_ALL_USERS_KEY, JSON.stringify(allProfiles))
+  } catch {
+    // Ignore cache failures.
+  }
 }
 
 function removeCachedUser() {
@@ -71,13 +88,15 @@ function removeCachedUser() {
 }
 
 function readLegacyUser(): UserProfile | null {
-  const saved = window.localStorage.getItem(LEGACY_USER_CACHE_KEY)
-  if (!saved) return null
-
   try {
+    const saved = window.localStorage.getItem(LEGACY_USER_CACHE_KEY)
+    if (!saved) return null
+
     return JSON.parse(saved) as UserProfile
   } catch {
-    window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
+    try {
+      window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
+    } catch {}
     return null
   }
 }

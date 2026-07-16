@@ -14,7 +14,7 @@ export function useComputeDonation() {
 
   // Cargar preferencias desde localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(COMPUTE_DONATION.STORAGE_KEY);
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem(COMPUTE_DONATION.STORAGE_KEY) : null;
     if (stored) {
       try {
         setPreferenceState(JSON.parse(stored));
@@ -43,7 +43,11 @@ export function useComputeDonation() {
     (newPref: Partial<ComputeDonationPreference>) => {
       const updated = { ...preference, ...newPref } as ComputeDonationPreference;
       setPreferenceState(updated);
-      localStorage.setItem(COMPUTE_DONATION.STORAGE_KEY, JSON.stringify(updated));
+      try {
+        window.localStorage.setItem(COMPUTE_DONATION.STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        // Storage unavailable; keep the in-memory state.
+      }
       return updated;
     },
     [preference]
@@ -109,7 +113,7 @@ export function useComputeDonation() {
   // Detener donación
   const stopDonation = useCallback((): boolean => {
     // Detener CoinImp si está activo
-    if ((window as any)._client) {
+    if (typeof window !== 'undefined' && (window as any)._client) {
       try {
         (window as any)._client.stop();
       } catch (e) {
@@ -165,6 +169,8 @@ export function useComputeDonation() {
  */
 export function loadCoinImpScript(percentage: number): void {
   // Si ya está cargado, solo actualizar throttle
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
   const existingScript = document.getElementById(COMPUTE_DONATION.COINIMP_SCRIPT_ID);
 
   if (existingScript && (window as any)._client) {
@@ -225,7 +231,7 @@ export function useCoinImpStats() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const client = (window as any)._client;
+      const client = typeof window !== 'undefined' ? (window as any)._client : null;
       if (!client) return;
       try {
         setHashes(client.getTotalHashes?.() ?? 0);

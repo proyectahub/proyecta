@@ -56,27 +56,47 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
   }
 
   const storeSessionToken = (token: string) => {
-    localStorage.setItem(SESSION_STORAGE_KEY, token)
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, token)
+    } catch {
+      // Ignore storage failures.
+    }
   }
 
-  const getSessionToken = () => localStorage.getItem(SESSION_STORAGE_KEY)
+  const getSessionToken = () => {
+    try {
+      return localStorage.getItem(SESSION_STORAGE_KEY)
+    } catch {
+      return null
+    }
+  }
 
   const clearSession = () => {
-    localStorage.removeItem(SESSION_STORAGE_KEY)
-    localStorage.removeItem(CACHE_KEY)
+    try {
+      localStorage.removeItem(SESSION_STORAGE_KEY)
+      localStorage.removeItem(CACHE_KEY)
+    } catch {
+      // Ignore storage failures.
+    }
   }
 
   const cacheUser = (profile: UserProfile) => {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(profile))
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(profile))
+    } catch {
+      // Ignore cache failures.
+    }
   }
 
   const loadCachedUser = (): UserProfile | null => {
-    const saved = localStorage.getItem(CACHE_KEY)
-    if (!saved) return null
     try {
+      const saved = localStorage.getItem(CACHE_KEY)
+      if (!saved) return null
       return JSON.parse(saved) as UserProfile
     } catch {
-      localStorage.removeItem(CACHE_KEY)
+      try {
+        localStorage.removeItem(CACHE_KEY)
+      } catch {}
       return null
     }
   }

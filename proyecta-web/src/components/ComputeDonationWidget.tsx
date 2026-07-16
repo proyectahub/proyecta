@@ -10,7 +10,7 @@ interface ComputeDonationWidgetProps {
 
 function readPreference(): ComputeDonationPreference {
   try {
-    const raw = localStorage.getItem(COMPUTE_DONATION.STORAGE_KEY);
+    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(COMPUTE_DONATION.STORAGE_KEY) : null;
     if (raw) {
       return JSON.parse(raw) as ComputeDonationPreference;
     }
@@ -28,7 +28,11 @@ function readPreference(): ComputeDonationPreference {
 function writePreference(pref: Partial<ComputeDonationPreference>) {
   const current = readPreference();
   const next = { ...current, ...pref };
-  localStorage.setItem(COMPUTE_DONATION.STORAGE_KEY, JSON.stringify(next));
+  try {
+    window.localStorage.setItem(COMPUTE_DONATION.STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Storage unavailable; keep the current state in memory.
+  }
   return next;
 }
 
