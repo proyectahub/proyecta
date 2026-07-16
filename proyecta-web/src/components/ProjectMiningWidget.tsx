@@ -179,6 +179,17 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               </div>
             </div>
 
+            {miningMode === 'browser' && !stats.poolConnected && miningEnabled ? (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                <p className="font-bold">Aporte local en curso</p>
+                <p className="mt-1">
+                  El navegador sigue calculando RandomX aunque el puente no esté activo. La
+                  confirmación del pool se actualizará cuando SupportXMR reciba y verifique los
+                  datos.
+                </p>
+              </div>
+            ) : null}
+
             {poolStats && (
               <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-800">
                 <p>
@@ -188,11 +199,12 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
               </div>
             )}
 
-            {miningError && (
-              <div className="bg-red-100 border border-red-300 rounded-lg p-3 text-red-800 text-sm">
-                ⚠️ {miningError}
+            {miningError ? (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                <p className="font-bold">Estado de minería</p>
+                <p className="mt-1">{miningError}</p>
               </div>
-            )}
+            ) : null}
           </>
         )}
 

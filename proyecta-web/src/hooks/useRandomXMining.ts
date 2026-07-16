@@ -36,6 +36,8 @@ export function useRandomXMining(
   const workersRef = useRef<Worker[]>([])
   const startTimeRef = useRef<number>(0)
   const perWorkerRef = useRef<{ rate: number; hashes: number }[]>([])
+  const hasPoolJobRef = useRef(false)
+  const isClosingRef = useRef(false)
 
   useEffect(() => {
     if (!enabled || !walletAddress) {
@@ -46,13 +48,15 @@ export function useRandomXMining(
     const threads = Math.max(1, Math.min(6, Math.round(cores * (cpuPercentage / 100))))
 
     setError(null)
+    isClosingRef.current = false
     setStats((current) => ({
       ...current,
-      status: "Conectando al pool...",
+      status: "Conectando al puente de minería...",
       poolConnected: false,
     }))
     startTimeRef.current = Date.now()
     perWorkerRef.current = Array.from({ length: threads }, () => ({ rate: 0, hashes: 0 }))
+    hasPoolJobRef.current = false
 
     const workers: Worker[] = []
     for (let index = 0; index < threads; index += 1) {
@@ -118,6 +122,7 @@ export function useRandomXMining(
       }
 
       if (message.type === "job") {
+        hasPoolJobRef.current = true
         for (const worker of workersRef.current) {
           worker.postMessage({ type: "job", job: message.job })
         }
@@ -156,12 +161,24 @@ export function useRandomXMining(
     }
 
     ws.onerror = () => {
-      setError(`No se pudo conectar al proxy de mineria (${WS_URL}).`)
-      setStats((current) => ({ ...current, poolConnected: false }))
+      setStats((current) => ({
+        ...current,
+        poolConnected: false,
+        status: "Sin puente activo: el navegador sigue calculando hashes locales.",
+      }))
     }
 
     ws.onclose = () => {
-      setStats((current) => ({ ...current, poolConnected: false }))
+      if (isClosingRef.current) {
+        return
+      }
+      setStats((current) => ({
+        ...current,
+        poolConnected: false,
+        status: hasPoolJobRef.current
+          ? "Puente cerrado: el navegador detuvo la coordinación con el pool."
+          : "Sin puente activo: el navegador sigue calculando hashes locales.",
+      }))
     }
 
     return () => {
@@ -171,6 +188,7 @@ export function useRandomXMining(
       }
       workersRef.current = []
       if (wsRef.current) {
+        isClosingRef.current = true
         wsRef.current.close()
         wsRef.current = null
       }
@@ -180,11 +198,13 @@ export function useRandomXMining(
         poolConnected: false,
         status: "Detenido",
       }))
+      setError(null)
     }
   }, [enabled, walletAddress, cpuPercentage])
 
   const stop = useCallback(() => {
     if (wsRef.current) {
+      isClosingRef.current = true
       wsRef.current.close()
       wsRef.current = null
     }
@@ -196,5 +216,5 @@ export function useRandomXMining(
     setStats((current) => ({ ...current, poolConnected: false, status: "Detenido" }))
   }, [])
 
-  return { stats, error, stop, poolUrl: "pool.supportxmr.com:3333 (Stratum/TCP via proxy)" }
+  return { stats, error, stop, poolUrl: "pool.supportxmr.com:3333 (Stratum/TCP)" }
 }

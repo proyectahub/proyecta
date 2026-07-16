@@ -40,10 +40,7 @@ export function DonateToProject({
   if (selectedMiningOption) {
     return (
       <div className="space-y-4">
-        <button
-          onClick={() => setSelectedMiningOption(null)}
-          className="nova-button-soft text-sm"
-        >
+        <button onClick={() => setSelectedMiningOption(null)} className="nova-button-soft text-sm">
           ← Cambiar opción de minería
         </button>
         <ProjectMiningWidget
@@ -57,65 +54,73 @@ export function DonateToProject({
 
   return (
     <>
-      <div className="nova-card p-8 max-w-2xl bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 space-y-6">
+      <div className="nova-card max-w-2xl space-y-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 p-8">
         <div className="space-y-2">
-          <h3 className="font-bold text-xl text-slate-900">⛏️ Aporta tu poder de cómputo</h3>
+          <h3 className="text-xl font-bold text-slate-900">⛏️ Aporta tu poder de cómputo</h3>
           <p className="text-slate-700">
-            Financia esta investigación donando potencia de CPU. Tu computadora genera XMR real que va directamente al investigador.
+            Financia esta investigación donando potencia de CPU. Tu computadora calcula hashes
+            RandomX y el aporte se asigna al proyecto según la opción que elijas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <button
             onClick={handleStartMining}
-            className="p-6 rounded-lg border-2 border-blue-300 bg-white hover:border-blue-500 hover:bg-blue-50 transition text-left space-y-3"
+            className="space-y-3 rounded-lg border-2 border-blue-300 bg-white p-6 text-left transition hover:border-blue-500 hover:bg-blue-50"
           >
             <div>
-              <p className="font-bold text-lg text-slate-900">🌐 Desde el navegador</p>
-              <p className="text-sm text-slate-600 mt-1">Empieza a minar en segundos</p>
+              <p className="text-lg font-bold text-slate-900">🌐 Desde el navegador</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Aporte rápido y controlado dentro de esta página
+              </p>
             </div>
-            <ul className="text-sm space-y-1 text-slate-600">
+            <ul className="space-y-1 text-sm text-slate-600">
               <li>✓ Sin instalar nada</li>
               <li>✓ Funciona aquí mismo</li>
-              <li>⚠️ Aporte simbólico (20-60 H/s)</li>
+              <li>⚠ Aporte simbólico (20-60 H/s)</li>
             </ul>
-            <p className="text-xs text-blue-600 font-bold mt-3">Ver opciones →</p>
+            <p className="mt-3 text-xs font-bold text-blue-600">Ver opciones →</p>
           </button>
 
           <button
             onClick={handleStartMining}
-            className="p-6 rounded-lg border-2 border-purple-300 bg-white hover:border-purple-500 hover:bg-purple-50 transition text-left space-y-3 relative"
+            className="relative space-y-3 rounded-lg border-2 border-purple-300 bg-white p-6 text-left transition hover:border-purple-500 hover:bg-purple-50"
           >
-            <div className="absolute top-3 right-3 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-bold">
+            <div className="absolute right-3 top-3 rounded-full bg-purple-600 px-2 py-1 text-xs font-bold text-white">
               RECOMENDADO
             </div>
             <div>
-              <p className="font-bold text-lg text-slate-900">⚡ App profesional</p>
-              <p className="text-sm text-slate-600 mt-1">Recauda 50-500× más</p>
+              <p className="text-lg font-bold text-slate-900">⚡ App profesional</p>
+              <p className="mt-1 text-sm text-slate-600">Recauda 50-500× más</p>
             </div>
-            <ul className="text-sm space-y-1 text-slate-600">
+            <ul className="space-y-1 text-sm text-slate-600">
               <li>✓ Minería nativa real</li>
               <li>✓ Funciona en segundo plano</li>
               <li>✓ Máxima potencia (2.000-10.000+ H/s)</li>
             </ul>
-            <p className="text-xs text-purple-600 font-bold mt-3">Descargar →</p>
+            <p className="mt-3 text-xs font-bold text-purple-600">Descargar →</p>
           </button>
         </div>
 
-        <div className="bg-white rounded-lg p-4 border border-slate-200 space-y-2">
-          <p className="font-bold text-slate-900 text-sm">💡 ¿Cómo funciona?</p>
-          <ol className="text-sm text-slate-700 space-y-1">
-            <li><strong>1.</strong> Elige navegador o app</li>
-            <li><strong>2.</strong> Tu CPU calcula hashes RandomX (minería real)</li>
-            <li><strong>3.</strong> XMR se acumula en la dirección del investigador</li>
-            <li><strong>4.</strong> Verificable en la blockchain de Monero (sin intermediarios)</li>
+        <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-sm font-bold text-slate-900">💡 ¿Cómo funciona?</p>
+          <ol className="space-y-1 text-sm text-slate-700">
+            <li>
+              <strong>1.</strong> Elige navegador o app
+            </li>
+            <li>
+              <strong>2.</strong> Tu CPU calcula hashes RandomX y se registran para el proyecto
+            </li>
+            <li>
+              <strong>3.</strong> El pool acredita XMR en la dirección pública vinculada
+            </li>
+            <li>
+              <strong>4.</strong> Todo puede verificarse en la blockchain de Monero
+            </li>
           </ol>
         </div>
 
-        <button
-          onClick={handleStartMining}
-          className="w-full nova-button-solid py-4 text-lg font-bold"
-        >
+        <button onClick={handleStartMining} className="w-full nova-button-solid py-4 text-lg font-bold">
           Seleccionar opción de minería
         </button>
       </div>
