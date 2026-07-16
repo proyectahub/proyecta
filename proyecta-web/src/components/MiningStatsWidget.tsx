@@ -221,14 +221,14 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
         </p>
         <p className="text-xs text-slate-600">
-          Verificable en:{' '}
+          Verifica en SupportXMR:{' '}
           <a
-            href={`https://supportxmr.com/miner/${wallet}`}
+            href="https://supportxmr.com/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold text-blue-600 hover:underline"
           >
-            SupportXMR Stats
+            Abrir SupportXMR
           </a>
         </p>
         {lastUpdate && (
@@ -249,4 +249,5 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
     </div>
   )
 }
+
 

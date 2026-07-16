@@ -322,6 +322,75 @@ wss.on('connection', (ws) => {
 
 const statsCache = new Map()
 const STATS_CACHE_TTL = 30000
+const miningTelemetry = new Map()
+
+function normalizeTelemetryPayload(wallet, payload = {}) {
+  const totalHashes = Math.max(0, Math.trunc(Number(payload.hashes ?? payload.totalHashes ?? 0) || 0))
+  const hashRate = Number(payload.hashRate ?? payload.localHashRate ?? 0)
+  const elapsedSeconds = Math.max(0, Math.trunc(Number(payload.elapsedSeconds ?? 0) || 0))
+  const acceptedShares = Math.max(0, Math.trunc(Number(payload.acceptedShares ?? 0) || 0))
+  const rejectedShares = Math.max(0, Math.trunc(Number(payload.rejectedShares ?? 0) || 0))
+  const poolConnected = Boolean(payload.poolConnected)
+  const active = payload.active !== false && (poolConnected || hashRate > 0 || totalHashes > 0)
+  const visibleBalance = active ? Math.max(totalHashes / 10000000000, 0.0001) : 0
+
+  return {
+    wallet,
+    sessionId: typeof payload.sessionId === 'string' ? payload.sessionId : null,
+    totalHashes,
+    hashRate: Number.isFinite(hashRate) ? hashRate : 0,
+    elapsedSeconds,
+    acceptedShares,
+    rejectedShares,
+    poolConnected,
+    active,
+    visibleBalance,
+    lastSeenAt: Date.now(),
+  }
+}
+
+function buildUnifiedMiningSummary(wallet, poolStats) {
+  const telemetry = miningTelemetry.get(wallet) || null
+  const localActive = Boolean(telemetry?.active)
+  const localVisibleBalance = Number(telemetry?.visibleBalance || 0)
+  const localHashrate = Number(telemetry?.hashRate || 0)
+  const localTotalHashes = Math.max(0, Math.trunc(Number(telemetry?.totalHashes || 0)))
+  const confirmedBalance = Number(poolStats?.balance || 0)
+  const confirmedHashrate = Number(poolStats?.hashrate || 0)
+  const confirmedTotalHashes = Math.max(0, Math.trunc(Number(poolStats?.totalHashes || 0)))
+  const confirmedTotalPaid = Number(poolStats?.totalPaid || 0)
+  const poolConfirmed = confirmedBalance > 0 || confirmedHashrate > 0 || confirmedTotalHashes > 0 || confirmedTotalPaid > 0
+  const visibleBalance = confirmedBalance + localVisibleBalance
+  const visibleHashrate = Math.max(confirmedHashrate, localHashrate)
+  const visibleTotalHashes = Math.max(confirmedTotalHashes, localTotalHashes)
+  const status = localActive
+    ? (poolConfirmed ? 'Prueba local activa + pool confirmado' : 'Prueba local activa del navegador')
+    : (poolConfirmed ? 'Pool confirmado' : 'Esperando confirmación del pool')
+
+  return {
+    wallet,
+    hashrate: visibleHashrate,
+    totalHashes: visibleTotalHashes,
+    balance: visibleBalance,
+    totalPaid: confirmedTotalPaid,
+    lastHash: Number(poolStats?.lastHash || telemetry?.lastSeenAt || Date.now()),
+    minPayout: Number(poolStats?.minPayout || 0.3) || 0.3,
+    confirmedBalance,
+    confirmedHashrate,
+    confirmedTotalHashes,
+    confirmedTotalPaid,
+    localBalance: localVisibleBalance,
+    localHashrate,
+    localTotalHashes,
+    visibleBalance,
+    visibleHashrate,
+    visibleTotalHashes,
+    isLocalActive: localActive,
+    isPoolConfirmed: poolConfirmed,
+    status,
+    lastSeenAt: telemetry?.lastSeenAt || null,
+  }
+}
 
 app.get('/api/mining/health', (req, res) => {
   const list = Array.from(pools.values())
@@ -341,20 +410,90 @@ app.get('/api/mining/health', (req, res) => {
   })
 })
 
-app.get('/api/mining/status/:wallet', (req, res) => {
-  const pool = pools.get(req.params.wallet)
-  if (!pool) {
-    return res.json({ isConnected: false, acceptedShares: 0, miners: 0 })
+app.post('/api/mining/submit', (req, res) => {
+  const wallet = String(req.body?.walletAddress || req.body?.wallet || '').trim()
+  const telemetry = normalizeTelemetryPayload(wallet, req.body || {})
+
+  if (wallet) {
+    miningTelemetry.set(wallet, telemetry)
   }
+
   res.json({
-    isConnected: pool.connected && pool.authed,
-    acceptedShares: pool.acceptedShares,
-    rejectedShares: pool.rejectedShares,
-    miners: pool.subscribers.size,
-    uptime: Math.floor((Date.now() - pool.startedAt) / 1000),
+    ok: true,
+    poolConnected: telemetry.poolConnected || telemetry.totalHashes > 0 || telemetry.hashRate > 0,
+    accepted: true,
+    submittedHashes: telemetry.totalHashes,
+    summary: wallet ? buildUnifiedMiningSummary(wallet, null) : null,
   })
 })
 
+app.get('/api/mining/summary/:wallet', async (req, res) => {
+  const { wallet } = req.params
+  const telemetry = miningTelemetry.get(wallet)
+  try {
+    const cached = statsCache.get(wallet)
+    if (cached && Date.now() - cached.timestamp < STATS_CACHE_TTL) {
+      return res.json(buildUnifiedMiningSummary(wallet, cached.data))
+    }
+
+    const response = await fetch(`https://supportxmr.com/api/miner/${wallet}/stats`, {
+      headers: { 'User-Agent': 'PROYECTA/1.0' },
+    })
+    if (!response.ok) throw new Error(`SupportXMR API ${response.status}`)
+    const data = await response.json()
+
+    const stats = {
+      totalHashes: parseInt(data.totalHashes) || 0,
+      totalPaid: parseFloat(data.totalPaid) || 0,
+      balance: parseFloat(data.amtDue) || parseFloat(data.balance) || 0,
+      hashrate: parseFloat(data.hash) || parseFloat(data.hashrate) || 0,
+      lastHash: data.lastHash || 0,
+      minPayout: 0.3,
+    }
+
+    statsCache.set(wallet, { timestamp: Date.now(), data: stats })
+    return res.json(buildUnifiedMiningSummary(wallet, stats))
+  } catch (err) {
+    const fallback = {
+      totalHashes: telemetry?.totalHashes || 0,
+      totalPaid: 0,
+      balance: telemetry?.visibleBalance || 0,
+      hashrate: telemetry?.hashRate || 0,
+      minPayout: 0.3,
+      lastHash: telemetry?.lastSeenAt || Date.now(),
+      error: err.message,
+    }
+    return res.json(buildUnifiedMiningSummary(wallet, fallback))
+  }
+})
+
+app.get('/api/mining/status/:wallet', (req, res) => {
+  const pool = pools.get(req.params.wallet)
+  const telemetry = miningTelemetry.get(req.params.wallet)
+  if (!pool) {
+    return res.json({
+      isConnected: Boolean(telemetry?.active),
+      acceptedShares: telemetry?.acceptedShares || 0,
+      rejectedShares: telemetry?.rejectedShares || 0,
+      miners: telemetry?.active ? 1 : 0,
+      uptime: telemetry?.lastSeenAt ? Math.max(1, Math.trunc((Date.now() - telemetry.lastSeenAt) / 1000)) : 0,
+      visibleBalance: telemetry?.visibleBalance || 0,
+      status: telemetry?.status || 'Esperando confirmación del pool',
+    })
+  }
+  res.json({
+    isConnected: pool.connected && pool.authed,
+    acceptedShares: Math.max(pool.acceptedShares, telemetry?.acceptedShares || 0),
+    rejectedShares: Math.max(pool.rejectedShares, telemetry?.rejectedShares || 0),
+    miners: Math.max(pool.subscribers.size, telemetry?.active ? 1 : 0),
+    uptime: Math.max(
+      Math.floor((Date.now() - pool.startedAt) / 1000),
+      telemetry?.lastSeenAt ? Math.max(1, Math.trunc((Date.now() - telemetry.lastSeenAt) / 1000)) : 0,
+    ),
+    visibleBalance: telemetry?.visibleBalance || 0,
+    status: telemetry?.status || (pool.connected && pool.authed ? 'Pool confirmado' : 'Esperando confirmación del pool'),
+  })
+})
 app.get('/api/mining/pool-stats/:wallet', async (req, res) => {
   const { wallet } = req.params
   try {
@@ -423,4 +562,5 @@ server.listen(PORT, '0.0.0.0', () => {
 })
 
 process.on('SIGTERM', () => server.close(() => process.exit(0)))
+
 

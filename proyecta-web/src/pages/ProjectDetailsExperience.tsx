@@ -96,7 +96,7 @@ export function ProjectDetailsExperience() {
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
           <span>{isValidProjectWalletAddress(project.fundraisingAddress) ? 'Dirección válida' : 'Dirección pendiente de validar'}</span>
           <a
-            href={`https://supportxmr.com/miner/${normalizeProjectWalletAddress(project.fundraisingAddress)}`}
+            href="https://supportxmr.com/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold text-blue-600 hover:underline"
@@ -136,3 +136,4 @@ export function ProjectDetailsExperience() {
     </div>
   )
 }
+
