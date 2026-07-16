@@ -149,15 +149,6 @@ export function useSupportXMRStats(walletAddress: string) {
     const fetchStats = async () => {
       setLoading(true)
       try {
-        const summaryRes = await fetch(`${BACKEND_URL}/summary/${walletAddress}`)
-
-        if (summaryRes.ok) {
-          const data = await summaryRes.json()
-          setPoolStats(normalizeSupportXMRStats(data))
-          setError(null)
-          return
-        }
-
         const backendRes = await fetch(`${BACKEND_URL}/pool-stats/${walletAddress}`)
         if (backendRes.ok) {
           const data = await backendRes.json()
@@ -201,4 +192,5 @@ export function useSupportXMRStats(walletAddress: string) {
 
   return { poolStats, loading, error }
 }
+
 

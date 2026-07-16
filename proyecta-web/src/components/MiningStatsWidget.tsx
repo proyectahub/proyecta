@@ -49,7 +49,6 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       setError(null)
 
       const apiUrls = [
-        `${API_BASE}/api/mining/summary/${wallet}`,
         `${API_BASE}/api/mining/pool-stats/${wallet}`,
         `https://supportxmr.com/api/miner/${wallet}/stats`,
       ]
@@ -249,5 +248,6 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
     </div>
   )
 }
+
 
 
