@@ -1,0 +1,32 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="42" fill="#FFF7FB"/>
+  <rect x="58" y="56" width="1084" height="648" rx="34" fill="#FFFFFF" stroke="#E7D7E8"/>
+  <rect x="58" y="56" width="1084" height="86" rx="34" fill="#21131F"/>
+  <circle cx="102" cy="99" r="10" fill="#E040A8"/>
+  <circle cx="130" cy="99" r="10" fill="#C026D3"/>
+  <circle cx="158" cy="99" r="10" fill="#F59E0B"/>
+  <rect x="238" y="86" width="286" height="26" rx="13" fill="#3A2437"/>
+  <text x="254" y="104" fill="#FCE7F3" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">monero-web.com/verify</text>
+  <text x="110" y="206" fill="#21131F" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">Guía de verificación</text>
+  <text x="110" y="246" fill="#6B7280" font-family="Inter, Arial, sans-serif" font-size="18">Revisa el panel y confirma que la ruta, la interfaz y el flujo correspondan al sitio esperado.</text>
+  <rect x="110" y="292" width="440" height="240" rx="28" fill="#FFF7FB" stroke="#F0C5DD"/>
+  <rect x="146" y="328" width="366" height="26" rx="13" fill="#21131F"/>
+  <rect x="146" y="372" width="320" height="18" rx="9" fill="#F5D0E9"/>
+  <rect x="146" y="404" width="284" height="18" rx="9" fill="#F5D0E9"/>
+  <rect x="146" y="436" width="252" height="18" rx="9" fill="#F5D0E9"/>
+  <rect x="110" y="572" width="176" height="52" rx="16" fill="#C026D3"/>
+  <text x="138" y="605" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Abrir guía</text>
+  <rect x="304" y="572" width="246" height="52" rx="16" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <text x="329" y="605" fill="#4B5563" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Seguir verificación</text>
+  <rect x="638" y="300" width="464" height="332" rx="28" fill="#FFF" stroke="#E7D7E8"/>
+  <circle cx="682" cy="346" r="28" fill="#FCE7F3"/>
+  <path d="M682 330C689.18 330 695 335.82 695 343V349H669V343C669 335.82 674.82 330 682 330Z" fill="#C026D3"/>
+  <rect x="728" y="332" width="240" height="18" rx="9" fill="#E5E7EB"/>
+  <rect x="682" y="398" width="338" height="16" rx="8" fill="#F3E8FF"/>
+  <rect x="682" y="430" width="314" height="16" rx="8" fill="#F3E8FF"/>
+  <rect x="682" y="462" width="286" height="16" rx="8" fill="#F3E8FF"/>
+  <rect x="682" y="516" width="164" height="44" rx="14" fill="#E040A8"/>
+  <rect x="862" y="516" width="158" height="44" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <text x="706" y="544" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Continuar</text>
+  <text x="888" y="544" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Cancelar</text>
+</svg>

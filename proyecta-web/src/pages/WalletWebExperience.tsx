@@ -1,8 +1,10 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { ExternalLink, Globe2, Lock, ShieldCheck, Copy, ClipboardPaste } from 'lucide-react'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
+import { MoneroWebVisualGuide } from '../components/MoneroWebVisualGuide'
 
 const DEFAULT_MONERO_WEB_URL = 'https://monero-web.com'
+const MONERO_WEB_VERIFY_URL = 'https://monero-web.com/verify'
 const PENDING_MONERO_ADDRESS_KEY = 'proyecta_pending_monero_address'
 const PENDING_MONERO_MODE_KEY = 'proyecta_pending_monero_mode'
 const PENDING_MONERO_WEB_URL_KEY = 'proyecta_pending_monero_web_url'
@@ -61,6 +63,7 @@ export function WalletWebExperience() {
   const captureTarget = (search.get('capture') || '') as CaptureTarget
   const returnTo = search.get('returnTo') || '/profile'
   const walletWebUrlParam = search.get('walletWebUrl') || ''
+  const captureRef = useRef<HTMLDivElement | null>(null)
 
   const configuredUrl = walletWebUrlParam || (user?.walletMode === 'monero_web' ? user.walletWebUrl || '' : '')
   const fallbackUrl = ((import.meta as any).env?.VITE_MONERO_WEB_URL || '').trim() || DEFAULT_MONERO_WEB_URL
@@ -77,6 +80,14 @@ export function WalletWebExperience() {
       setAddressDraft(readPendingAddress())
     }
   }, [addressDraft])
+
+  useEffect(() => {
+    if (window.location.hash === '#guia-visual') {
+      window.requestAnimationFrame(() => {
+        document.getElementById('guia-visual')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }, [])
 
   const handleSaveAddress = () => {
     setError(null)
@@ -128,15 +139,23 @@ export function WalletWebExperience() {
     window.open(safeUrl, '_blank', 'noopener,noreferrer')
   }
 
+  const openVerification = () => {
+    window.open(MONERO_WEB_VERIFY_URL, '_blank', 'noopener,noreferrer')
+  }
+
+  const scrollToCapture = () => {
+    captureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="space-y-8">
       <div className="nova-card space-y-4 p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Wallet aislada</p>
-            <h1 className="mt-2 text-3xl font-black text-slate-900">Monero Web real</h1>
+            <h1 className="mt-2 text-3xl font-black text-slate-900">Monero Web</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-              Abre el panel real de Monero Web, genera o restaura tu wallet y copia la dirección pública para asociarla al perfil.
+              Abre la guía visual, revisa la verificación y copia la dirección pública para asociarla al perfil.
             </p>
           </div>
           <div className="rounded-2xl bg-fuchsia-50 p-3 text-fuchsia-700">
@@ -159,86 +178,30 @@ export function WalletWebExperience() {
           </div>
           <div className="rounded-[18px] border border-fuchsia-200 bg-fuchsia-50 p-4 text-sm leading-7 text-fuchsia-800">
             <div className="mb-2 flex items-center gap-2 font-bold text-fuchsia-900">
-              <ExternalLink className="h-4 w-4" /> Fuente real
+              <ExternalLink className="h-4 w-4" /> Verificación
             </div>
-            No inventamos wallets ni seeds. El panel abre una instancia real de Monero Web y luego puedes registrar la dirección en el perfil.
+            No inventamos wallets ni seeds. El panel abre Monero Web y luego puedes registrar la dirección en el perfil.
           </div>
         </div>
       </div>
 
-      {!safeUrl ? (
+      {safeUrl ? (
+        <MoneroWebVisualGuide
+          onOpenMoneroWeb={openMoneroWeb}
+          onOpenVerification={openVerification}
+          onScrollToCapture={scrollToCapture}
+        />
+      ) : (
         <div className="nova-card space-y-4 p-8">
           <h2 className="text-xl font-bold text-slate-900">Monero Web no está configurado</h2>
           <p className="text-sm leading-7 text-slate-600">
             Activa el modo <strong>Monero Web</strong> en tu perfil y guarda la URL del panel. Si no tienes una personalizada, usa la instancia pública o define <code>VITE_MONERO_WEB_URL</code>.
           </p>
         </div>
-      ) : (
-        <div className="space-y-5 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 text-sm text-slate-600">
-            <span>{usingMoneroWebMode ? 'Puente aislado de Monero Web vinculado a tu perfil' : 'Puente aislado de Monero Web con URL de respaldo'}</span>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="break-all text-xs text-slate-500">{safeUrl}</span>
-              <button type="button" onClick={handleCopyMoneroWeb} className="inline-flex items-center gap-2 font-semibold text-fuchsia-700 hover:underline">
-                <Copy className="h-4 w-4" />
-                {copied ? 'URL copiada' : 'Copiar URL'}
-              </button>
-              <button type="button" onClick={openMoneroWeb} className="inline-flex items-center gap-2 font-semibold text-fuchsia-700 hover:underline">
-                Abrir Monero Web
-                <ExternalLink className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-4">
-              <div className="rounded-[20px] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">
-                El navegador puede bloquear paneles externos dentro de un `iframe`. Por eso este flujo abre Monero Web en una pestaña aparte y luego regresas con la dirección pública.
-              </div>
-
-              <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                <p className="font-bold text-slate-900">Flujo recomendado</p>
-                <ol className="mt-2 list-decimal space-y-2 pl-5">
-                  <li>Abre Monero Web en pestaña aparte.</li>
-                  <li>Genera o restaura tu wallet dentro de ese panel.</li>
-                  <li>Copia la dirección pública de recepción.</li>
-                  <li>Pega la dirección aquí para guardarla en el perfil.</li>
-                </ol>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button type="button" onClick={openMoneroWeb} className="nova-button-solid px-4 py-2 text-sm">
-                  Abrir Monero Web
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddressDraft(readPendingAddress())
-                    setError(null)
-                    setSaved(false)
-                  }}
-                  className="nova-button-soft px-4 py-2 text-sm"
-                >
-                  Cargar dirección pendiente
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-fuchsia-200 bg-fuchsia-50/70 p-4">
-              <p className="text-sm font-bold text-fuchsia-900">Seguridad de la wallet</p>
-              <ul className="space-y-2 text-sm leading-7 text-fuchsia-900/90">
-                <li>No compartas la seed phrase ni la clave privada.</li>
-                <li>Guarda la frase de recuperación fuera del navegador.</li>
-                <li>La dirección pública sí puede copiarse al perfil.</li>
-                <li>Si usas una wallet nueva, verifica bien antes de guardar.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       )}
 
       {captureTarget === 'mainAddress' ? (
-        <div className="nova-card space-y-4 p-8">
+        <div ref={captureRef} className="nova-card space-y-5 p-8">
           <div className="flex items-center gap-2 text-fuchsia-700">
             <ClipboardPaste className="h-4 w-4" />
             <p className="text-sm font-bold">Registrar dirección generada</p>
@@ -261,7 +224,7 @@ export function WalletWebExperience() {
               Pegar del portapapeles
             </button>
             <button type="button" onClick={handleSaveAddress} className="nova-button-solid px-4 py-2 text-sm">
-              Guardar dirección y volver
+              Guardar dirección y regresar al perfil
             </button>
             <button
               type="button"
@@ -289,7 +252,76 @@ export function WalletWebExperience() {
           </p>
         </div>
       ) : null}
+
+      {safeUrl ? (
+        <div className="space-y-5 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 text-sm text-slate-600">
+            <span>{usingMoneroWebMode ? 'Puente aislado de Monero Web vinculado a tu perfil' : 'Puente aislado de Monero Web con URL de respaldo'}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="break-all text-xs text-slate-500">{safeUrl}</span>
+              <button type="button" onClick={openVerification} className="inline-flex items-center gap-2 font-semibold text-fuchsia-700 hover:underline">
+                Verificación
+                <ExternalLink className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={handleCopyMoneroWeb} className="inline-flex items-center gap-2 font-semibold text-fuchsia-700 hover:underline">
+                <Copy className="h-4 w-4" />
+                {copied ? 'URL copiada' : 'Copiar URL'}
+              </button>
+              <button type="button" onClick={openMoneroWeb} className="inline-flex items-center gap-2 font-semibold text-fuchsia-700 hover:underline">
+                Abrir panel
+                <ExternalLink className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4">
+              <div className="rounded-[20px] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">
+                El navegador puede bloquear paneles externos dentro de un iframe. Por eso este flujo abre Monero Web en una pestaña aparte y luego regresas con la dirección pública.
+              </div>
+
+              <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                <p className="font-bold text-slate-900">Flujo recomendado</p>
+                <ol className="mt-2 list-decimal space-y-2 pl-5">
+                  <li>Abre Monero Web en pestaña aparte.</li>
+                  <li>Genera, restaura o importa tu wallet dentro de ese panel.</li>
+                  <li>Copia la dirección pública de recepción.</li>
+                  <li>Pega la dirección aquí para guardarla en el perfil.</li>
+                </ol>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button type="button" onClick={openMoneroWeb} className="nova-button-solid px-4 py-2 text-sm">
+                  Abrir panel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddressDraft(readPendingAddress())
+                    setError(null)
+                    setSaved(false)
+                  }}
+                  className="nova-button-soft px-4 py-2 text-sm"
+                >
+                  Cargar dirección pendiente
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-fuchsia-200 bg-fuchsia-50/70 p-4">
+              <p className="text-sm font-bold text-fuchsia-900">Seguridad de la wallet</p>
+              <ul className="space-y-2 text-sm leading-7 text-fuchsia-900/90">
+                <li>No compartas la seed phrase ni la clave privada.</li>
+                <li>Guarda la frase de recuperación fuera del navegador.</li>
+                <li>La dirección pública sí puede copiarse al perfil.</li>
+                <li>Si usas una wallet nueva, verifica bien antes de guardar.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
+
 

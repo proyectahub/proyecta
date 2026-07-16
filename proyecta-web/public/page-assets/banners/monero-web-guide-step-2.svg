@@ -1,0 +1,33 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="42" fill="#FFF7FB"/>
+  <rect x="58" y="56" width="1084" height="648" rx="34" fill="#FFFFFF" stroke="#E7D7E8"/>
+  <rect x="58" y="56" width="1084" height="86" rx="34" fill="#21131F"/>
+  <circle cx="102" cy="99" r="10" fill="#E040A8"/>
+  <circle cx="130" cy="99" r="10" fill="#C026D3"/>
+  <circle cx="158" cy="99" r="10" fill="#F59E0B"/>
+  <rect x="238" y="86" width="286" height="26" rx="13" fill="#3A2437"/>
+  <text x="254" y="104" fill="#FCE7F3" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">monero-web.com</text>
+  <text x="110" y="206" fill="#21131F" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">Crear o restaurar wallet</text>
+  <text x="110" y="246" fill="#6B7280" font-family="Inter, Arial, sans-serif" font-size="18">Elige el modo que mejor encaje con tu caso y continúa dentro del panel aislado.</text>
+  <rect x="110" y="292" width="312" height="328" rx="28" fill="#FFF7FB" stroke="#F0C5DD"/>
+  <rect x="146" y="326" width="180" height="18" rx="9" fill="#21131F"/>
+  <rect x="146" y="366" width="232" height="42" rx="14" fill="#C026D3"/>
+  <rect x="146" y="420" width="232" height="42" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <rect x="146" y="474" width="232" height="42" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <rect x="146" y="540" width="232" height="42" rx="14" fill="#E040A8"/>
+  <text x="188" y="393" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Crear wallet</text>
+  <text x="178" y="447" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Restaurar seed</text>
+  <text x="174" y="501" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Importar clave</text>
+  <text x="196" y="567" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Avanzar</text>
+  <rect x="468" y="292" width="594" height="328" rx="28" fill="#FFFFFF" stroke="#E7D7E8"/>
+  <rect x="516" y="338" width="360" height="18" rx="9" fill="#E5E7EB"/>
+  <rect x="516" y="378" width="486" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="516" y="410" width="448" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="516" y="442" width="402" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="516" y="488" width="192" height="48" rx="14" fill="#C026D3"/>
+  <rect x="724" y="488" width="192" height="48" rx="14" fill="#FFF7FB" stroke="#E5E7EB"/>
+  <text x="556" y="519" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Guardar seed</text>
+  <text x="766" y="519" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Más tarde</text>
+  <circle cx="960" cy="370" r="54" fill="#FCE7F3"/>
+  <path d="M960 338L990 370L960 402L930 370L960 338Z" fill="#E040A8"/>
+</svg>

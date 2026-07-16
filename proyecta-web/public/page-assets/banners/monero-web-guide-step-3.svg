@@ -1,0 +1,29 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="42" fill="#FFF7FB"/>
+  <rect x="58" y="56" width="1084" height="648" rx="34" fill="#FFFFFF" stroke="#E7D7E8"/>
+  <rect x="58" y="56" width="1084" height="86" rx="34" fill="#21131F"/>
+  <circle cx="102" cy="99" r="10" fill="#E040A8"/>
+  <circle cx="130" cy="99" r="10" fill="#C026D3"/>
+  <circle cx="158" cy="99" r="10" fill="#F59E0B"/>
+  <rect x="238" y="86" width="286" height="26" rx="13" fill="#3A2437"/>
+  <text x="254" y="104" fill="#FCE7F3" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">perfil de PROYECTA</text>
+  <text x="110" y="206" fill="#21131F" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">Copiar y guardar la dirección</text>
+  <text x="110" y="246" fill="#6B7280" font-family="Inter, Arial, sans-serif" font-size="18">La dirección pública vuelve al perfil y queda lista para usar en proyectos nuevos.</text>
+  <rect x="110" y="292" width="464" height="300" rx="28" fill="#FFF7FB" stroke="#F0C5DD"/>
+  <rect x="146" y="332" width="220" height="18" rx="9" fill="#21131F"/>
+  <rect x="146" y="372" width="392" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="146" y="404" width="350" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="146" y="436" width="328" height="18" rx="9" fill="#F3E8FF"/>
+  <rect x="146" y="484" width="186" height="46" rx="14" fill="#C026D3"/>
+  <rect x="344" y="484" width="186" height="46" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <text x="188" y="514" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Guardar dirección</text>
+  <text x="393" y="514" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Volver</text>
+  <rect x="622" y="292" width="412" height="300" rx="28" fill="#FFFFFF" stroke="#E7D7E8"/>
+  <rect x="662" y="330" width="220" height="18" rx="9" fill="#E5E7EB"/>
+  <rect x="662" y="374" width="324" height="48" rx="14" fill="#FCE7F3"/>
+  <rect x="662" y="434" width="324" height="48" rx="14" fill="#F9A8D4"/>
+  <rect x="662" y="494" width="324" height="48" rx="14" fill="#E040A8"/>
+  <text x="710" y="404" fill="#9D174D" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Dirección pública</text>
+  <text x="728" y="464" fill="#831843" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Volver al perfil</text>
+  <text x="745" y="524" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Listo para proyectos</text>
+</svg>
