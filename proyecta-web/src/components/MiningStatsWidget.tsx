@@ -98,7 +98,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </h3>
           <div className="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
         </div>
-        <p className="text-sm text-slate-600">Consultando el resumen unificado del pool y la actividad local...</p>
+        <p className="text-sm text-slate-600">Consultando el saldo visible del portal y la confirmación del pool...</p>
       </div>
     )
   }
@@ -146,12 +146,12 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive
-              ? 'Pool confirmado y prueba local activa en la misma vista.'
+              ? 'Saldo confirmado por SupportXMR y aporte local activo en la misma vista.'
               : confirmed
-                ? 'SupportXMR ya confirmó actividad para esta dirección.'
+                ? 'SupportXMR confirmó la dirección; el saldo visible sigue sumando el aporte local.'
                 : localActive
-                  ? 'Prueba local activa del navegador; el estado visible suma el aporte local mientras llega la confirmación.'
-                  : 'Esperando confirmación del pool.'}
+                  ? 'Aporte local visible activo del navegador; el saldo visible del portal suma ese aporte mientras llega la confirmación.'
+                  : 'Esperando confirmación del pool. El saldo visible puede incluir prueba local.'}
           </p>
         </div>
         <button
@@ -164,7 +164,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       </div>
 
       <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${confirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : localActive ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
-        {confirmed && localActive ? 'Pool confirmado + prueba local' : confirmed ? 'Pool confirmado' : localActive ? 'Prueba local activa' : 'Esperando confirmación del pool'}
+        {confirmed && localActive ? 'Pool + aporte local' : confirmed ? 'Saldo confirmado por SupportXMR' : localActive ? 'Aporte local visible activo' : 'Esperando confirmación del pool'}
       </div>
 
       <div className="space-y-2">
@@ -200,13 +200,13 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Saldo confirmado</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Saldo confirmado por SupportXMR</p>
           <p className="font-bold text-slate-900">{confirmedBalance.toFixed(4)} XMR</p>
           <p className="mt-1 text-xs text-slate-500">SupportXMR</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Aporte local</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Aporte local visible</p>
           <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
           <p className="mt-1 text-xs text-slate-500">navegador</p>
         </div>
@@ -215,7 +215,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Fuente visible: SupportXMR + aporte local</p>
+          <p className="text-sm font-bold text-slate-900">Saldo visible del portal: SupportXMR + aporte local</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
@@ -249,3 +249,4 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
     </div>
   )
 }
+
