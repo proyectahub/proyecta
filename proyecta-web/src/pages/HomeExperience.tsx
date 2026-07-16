@@ -63,8 +63,8 @@ function rotateWeeklyTopArticles(articles: FeedArticle[], voteOverrides: Record<
 
 function getCommunityStats(communityOverview: CommunityOverview, articles: FeedArticle[]) {
   const fallbackAuthors = new Set(articles.map((article) => article.author.id)).size
-  const fallbackReviews = communityOverview.recentReviews.length ?? 0
-  const fallbackComments = communityOverview.recentComments.length ?? 0
+  const fallbackReviews = (communityOverview.recentReviews ?? []).length
+  const fallbackComments = (communityOverview.recentComments ?? []).length
   return [
     { value: String(fallbackAuthors), label: 'Investigadores' },
     { value: String(fallbackReviews), label: 'Validaciones' },
@@ -168,10 +168,12 @@ export default function HomeExperience() {
 
   const renderHomeFeedCard = (article: FeedArticle, status: 'reviewed' | 'open') => {
     const isReviewed = status === 'reviewed'
-    const currentVote = voteOverrides[article.id] ?? Number(article.viewerState.vote ?? 0)
+    const currentVote = voteOverrides[article.id] ?? Number(article.viewerState?.vote ?? 0)
     const currentVotes = voteCountOverrides[article.id] ?? article.metrics.votes
-    const isFollowingAuthor = followOverrides[article.author.id] ?? Boolean(article.viewerState.followingAuthor)
+    const isFollowingAuthor = followOverrides[article.author.id] ?? Boolean(article.viewerState?.followingAuthor)
     const canFollowAuthor = !user || user.id !== article.author.id
+    const sources = article.sources ?? []
+    const tags = article.tags ?? []
 
     return (
       <article key={article.id} className="rounded-[30px] border border-slate-200 bg-white/85 p-5 shadow-[0_18px_48px_-30px_rgba(15,23,42,0.35)]">
@@ -200,11 +202,11 @@ export default function HomeExperience() {
             {article.figureImage ? <Link to={`/article/${article.id}`} className="group overflow-hidden rounded-[26px] border border-slate-200 bg-slate-50/80 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)]"><img src={article.figureImage} alt={article.figureCaption || article.title} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.03]" /></Link> : null}
           </div>
 
-          {article.sources.length > 0 ? (
+          {sources.length > 0 ? (
             <div className="rounded-[26px] border border-fuchsia-100 bg-fuchsia-50/45 p-5">
               <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-fuchsia-700"><FileText size={15} />Fuentes consultables</div>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {article.sources.slice(0, 2).map((source) => (
+                {sources.slice(0, 2).map((source) => (
                   <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="group rounded-[22px] border border-fuchsia-100 bg-white/90 p-4 transition hover:-translate-y-0.5 hover:border-fuchsia-200">
                     <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{source.title}</p><p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{source.publisher}</p></div><ExternalLink size={16} className="mt-0.5 text-fuchsia-500 transition group-hover:text-fuchsia-700" /></div>
                   </a>
@@ -221,7 +223,7 @@ export default function HomeExperience() {
                   <div className="min-w-0"><p className="truncate font-bold text-slate-900">{article.author.name}</p><p className="text-sm text-slate-500">{article.author.role} · {article.author.affiliation}</p></div>
                 </Link>
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                  {article.tags.slice(0, 3).map((tag) => (<span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-500">{tag}</span>))}
+                  {tags.slice(0, 3).map((tag) => (<span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-500">{tag}</span>))}
                   {canFollowAuthor ? (<button type="button" onClick={() => void handleToggleFollow(article.author.id, isFollowingAuthor)} disabled={busyActionId === `follow-${article.author.id}`} className={`nova-button-soft min-w-[132px] justify-center ${isFollowingAuthor ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : ''}`}>{isFollowingAuthor ? <UserCheck size={16} /> : <UserPlus size={16} />}{isFollowingAuthor ? 'Siguiendo' : 'Seguir'}</button>) : null}
                 </div>
               </div>

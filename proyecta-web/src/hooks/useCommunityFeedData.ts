@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { feedArticles, type ArticleSource, type FeedArticle } from "../data/mockData"
 import { API_BASE, isDemoFallbackEnabled } from "../lib/api"
 
@@ -75,7 +75,7 @@ function formatRelativeLabel(value: string) {
   if (diffInHours < 24) return `Hace ${Math.max(1, diffInHours)} horas`
 
   const diffInDays = Math.round(diffInHours / 24)
-  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} dÃ­as`
+  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} días`
 }
 
 function formatPublishedLabel(value: string) {
@@ -96,8 +96,8 @@ function formatPublishedLabel(value: string) {
 function mapApiArticle(article: ApiArticle, index: number): FeedArticle {
   return {
     id: article.id || `article-${index + 1}`,
-    title: article.title || "PublicaciÃ³n Proyecta",
-    excerpt: article.excerpt || "Esta publicaciÃ³n aÃºn no tiene extracto disponible.",
+    title: article.title || "Publicación Proyecta",
+    excerpt: article.excerpt || "Esta publicación aún no tiene extracto disponible.",
     heroKicker: "",
     category: article.category || "General",
     timeAgo: formatRelativeLabel(article.createdAt),
@@ -206,20 +206,7 @@ export function useCommunityFeedData() {
     }
 
     async function loadCommunityOverview() {
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/community/overview`, {
-          signal: controller.signal,
-        })
-
-        if (!response.ok) return
-
-        const data = (await response.json()) as CommunityOverview
-        setCommunityOverview(data)
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error("Community overview error:", error)
-        }
-      }
+      setCommunityOverview(defaultOverview)
     }
 
     void Promise.all([syncArticles(), loadCommunityOverview()])

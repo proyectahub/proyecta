@@ -1,7 +1,8 @@
-锘縤mport React, { useEffect } from "react"
+import React, { useEffect } from "react"
 import {
   BrowserRouter as Router,
   Navigate,
+  Outlet,
   Route,
   Routes,
 } from "react-router-dom"
@@ -48,10 +49,10 @@ function PrivateRoute({ children }: { children: React.ReactElement }) {
         <div className="space-y-3">
           <p className="nova-eyebrow">Sincronizando identidad</p>
           <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-            Preparando tu sesi贸n cient铆fica
+            Preparando tu sesi髇 cient韋ica
           </h2>
           <p className="text-sm leading-7 text-slate-500">
-            Estamos preparando tu sesi贸n para mostrarte el editor, tu perfil y tu actividad dentro de la comunidad.
+            Estamos preparando tu sesi髇 para mostrarte el editor, tu perfil y tu actividad dentro de la comunidad.
           </p>
         </div>
       </div>
@@ -70,10 +71,10 @@ function TraditionalPrivateRoute({ children }: { children: React.ReactElement })
         <div className="space-y-3">
           <p className="nova-eyebrow">Sincronizando identidad</p>
           <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-            Preparando tu sesi贸n cient铆fica
+            Preparando tu sesi髇 cient韋ica
           </h2>
           <p className="text-sm leading-7 text-slate-500">
-            Estamos preparando tu sesi贸n para abrir Monero Web en una pesta帽a aparte y volver luego con la direcci贸n p煤blica.
+            Estamos preparando tu sesi髇 para abrir Monero Web en una pesta馻 aparte y volver luego con la direcci髇 p鷅lica.
           </p>
         </div>
       </div>
@@ -82,7 +83,7 @@ function TraditionalPrivateRoute({ children }: { children: React.ReactElement })
 
   return user ? children : <Navigate to="/login" />
 }
-function LayoutWrapper({ children }: { children: React.ReactNode }) {
+function LayoutWrapper() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent font-sans text-slate-900">
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -97,7 +98,7 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
       <Navbar />
 
       <main className="relative mx-auto max-w-[1440px] px-4 pb-14 pt-28 sm:px-6 md:pt-32 lg:px-8 lg:pt-32">
-        {children}
+        <Outlet />
       </main>
 
       <Toaster
@@ -123,68 +124,61 @@ function AppRoutes() {
       <Route path="/signup" element={<SignUpExperience />} />
       <Route path="/complete-profile" element={<CompleteProfileExperience />} />
 
-      <Route
-        path="*"
-        element={
-          <LayoutWrapper>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/projects" element={<ProjectsExperience />} />
-              <Route path="/projects/:id" element={<ProjectDetailsExperience />} />
-              <Route path="/create" element={<CreateProjectExperience />} />
-              <Route path="/sobre-monero" element={<MoneroEducationExperience />} />
-              <Route path="/create-project" element={<CreateProjectExperience />} />
-              <Route path="/profile" element={<UserProfileExperience />} />
-              <Route path="/revisadas" element={<ReviewedFeedExperience />} />
-              <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
-              <Route path="/recuperar-contrase帽a" element={<PasswordRecovery />} />
-              <Route path="/restablecer-contrase帽a" element={<PasswordReset />} />
-              <Route path="/aviso-de-privacidad" element={<PrivacyNotice />} />
-              <Route path="/computacion-donada" element={<ComputeDonationExperience />} />
-              <Route path="/orcid/callback" element={<OrcidCallback />} />
-              <Route path="/article/:id" element={<ArticleView />} />
+      <Route element={<LayoutWrapper />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/projects" element={<ProjectsExperience />} />
+        <Route path="/projects/:id" element={<ProjectDetailsExperience />} />
+        <Route path="/create" element={<CreateProjectExperience />} />
+        <Route path="/sobre-monero" element={<MoneroEducationExperience />} />
+        <Route path="/create-project" element={<CreateProjectExperience />} />
+        <Route path="/profile" element={<UserProfileExperience />} />
+        <Route path="/revisadas" element={<ReviewedFeedExperience />} />
+        <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
+        <Route path="/recuperar-contrase馻" element={<PasswordRecovery />} />
+        <Route path="/restablecer-contrase馻" element={<PasswordReset />} />
+        <Route path="/aviso-de-privacidad" element={<PrivacyNotice />} />
+        <Route path="/computacion-donada" element={<ComputeDonationExperience />} />
+        <Route path="/orcid/callback" element={<OrcidCallback />} />
+        <Route path="/article/:id" element={<ArticleView />} />
 
-              <Route
-                path="/editor"
-                element={
-                  <PrivateRoute>
-                    <Editor />
-                  </PrivateRoute>
-                }
-              />
+        <Route
+          path="/editor"
+          element={
+            <PrivateRoute>
+              <Editor />
+            </PrivateRoute>
+          }
+        />
 
-              <Route
-                path="/editor/:id"
-                element={
-                  <PrivateRoute>
-                    <Editor />
-                  </PrivateRoute>
-                }
-              />
+        <Route
+          path="/editor/:id"
+          element={
+            <PrivateRoute>
+              <Editor />
+            </PrivateRoute>
+          }
+        />
 
-              <Route
-                path="/profile/:id"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
+        <Route
+          path="/profile/:id"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
 
-              <Route
-                path="/wallet-web"
-                element={
-                  <TraditionalPrivateRoute>
-                    <WalletWebExperience />
-                  </TraditionalPrivateRoute>
-                }
-              />
+        <Route
+          path="/wallet-web"
+          element={
+            <TraditionalPrivateRoute>
+              <WalletWebExperience />
+            </TraditionalPrivateRoute>
+          }
+        />
 
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </LayoutWrapper>
-        }
-      />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Route>
     </Routes>
   )
 }
