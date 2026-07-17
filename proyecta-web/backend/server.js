@@ -418,7 +418,7 @@ wss.on("connection", (ws) => {
 
     if (msg.type === "subscribe" && msg.wallet) {
       if (!/^[48][0-9A-Za-z]{94}$/.test(msg.wallet)) {
-        ws.send(JSON.stringify({ type: "error", error: "DirecciÛn Monero inv·lida" }))
+        ws.send(JSON.stringify({ type: "error", error: "Direcci√≥n Monero inv√°lida" }))
         return
       }
 
