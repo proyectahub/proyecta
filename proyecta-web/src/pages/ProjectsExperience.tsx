@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { normalizeProjects } from '../utils/projectWallet'
+import { API_BASE } from '../lib/api'
 
 interface Project {
   id: string
@@ -35,25 +36,46 @@ export function ProjectsExperience() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadProjects = () => {
+    const loadLocalProjects = () => {
+      const saved = localStorage.getItem('proyecta_projects')
+      if (!saved) return []
+      const allProjects = JSON.parse(saved) as Project[]
+      const normalizedProjects = normalizeProjects(allProjects)
+      localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
+      return normalizedProjects
+    }
+
+    const loadProjects = async () => {
       setLoading(true)
       try {
-        const saved = localStorage.getItem('proyecta_projects')
-        if (saved) {
-          const allProjects = JSON.parse(saved) as Project[]
-          const normalizedProjects = normalizeProjects(allProjects)
-          localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
-          setProjects(normalizedProjects)
+        const response = await fetch(`${API_BASE}/api/projects`, { headers: { Accept: 'application/json' } })
+        if (response.ok) {
+          const remoteProjects = normalizeProjects(await response.json())
+          const localProjects = loadLocalProjects()
+          const merged = [
+            ...remoteProjects,
+            ...localProjects.filter((local) => !remoteProjects.some((remote) => remote.id === local.id)),
+          ].sort((left, right) => right.createdAt - left.createdAt)
+          setProjects(merged)
+          localStorage.setItem('proyecta_projects', JSON.stringify(merged))
+          return
         }
+
+        setProjects(loadLocalProjects())
       } catch (err) {
         console.error('Error loading projects:', err)
+        try {
+          setProjects(loadLocalProjects())
+        } catch {
+          setProjects([])
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    loadProjects()
-    const interval = setInterval(loadProjects, 5000)
+    void loadProjects()
+    const interval = setInterval(() => void loadProjects(), 10000)
     return () => clearInterval(interval)
   }, [])
 

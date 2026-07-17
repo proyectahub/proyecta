@@ -1,10 +1,11 @@
-﻿import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 import { ProjectComments } from '../components/ProjectComments'
 import { MiningStatsWidget } from '../components/MiningStatsWidget'
 import { normalizeProjectWallet, normalizeProjectWalletAddress, isValidProjectWalletAddress } from '../utils/projectWallet'
+import { API_BASE } from '../lib/api'
 
 interface Project {
   id: string
@@ -33,23 +34,39 @@ export function ProjectDetailsExperience() {
       return
     }
 
-    setLoading(true)
-    try {
+    const loadLocalProject = () => {
       const saved = localStorage.getItem('proyecta_projects')
-      if (saved) {
-        const projects = JSON.parse(saved)
-        const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
-        localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
-        const found = normalizedProjects.find((p: Project) => p.id === id)
-        if (found) {
-          setProject(found)
-        }
-      }
-    } catch (err) {
-      console.error('Error loading project:', err)
-    } finally {
-      setLoading(false)
+      if (!saved) return null
+      const projects = JSON.parse(saved)
+      const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
+      localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
+      return normalizedProjects.find((p: Project) => p.id === id) || null
     }
+
+    const loadProject = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch(`${API_BASE}/api/projects/${id}`, { headers: { Accept: 'application/json' } })
+        if (response.ok) {
+          const remoteProject = normalizeProjectWallet(await response.json())
+          setProject(remoteProject)
+          return
+        }
+
+        setProject(loadLocalProject())
+      } catch (err) {
+        console.error('Error loading project:', err)
+        try {
+          setProject(loadLocalProject())
+        } catch {
+          setProject(null)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadProject()
   }, [id, navigate])
 
   if (loading) {

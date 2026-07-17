@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Wand2 } from 'lucide-react'
 import { RichTextEditor } from '../components/RichTextEditor'
 import { useNavigate } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useWalletAuth } from '../context/WalletAuthContext'
 import { generateMoneroAddress } from '../utils/moneroAddress'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
+import { API_BASE } from '../lib/api'
 
 const CATEGORIES: Record<string, string> = {
   biology: 'Biología',
@@ -466,7 +467,7 @@ export function CreateProjectExperience() {
   }
 
   if (step === 'review') {
-    const handlePublish = () => {
+    const handlePublish = async () => {
       const authorId =
         traditionalUser?.id ||
         walletUser?.wallet?.userVitaAddress ||
@@ -494,6 +495,21 @@ export function CreateProjectExperience() {
       )
       existingProjects.unshift(projectData)
       localStorage.setItem('proyecta_projects', JSON.stringify(existingProjects))
+
+      try {
+        const response = await fetch(`${API_BASE}/api/projects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(projectData),
+        })
+        if (response.ok) {
+          const savedProject = await response.json()
+          const syncedProjects = [savedProject, ...existingProjects.filter((item: Project) => item.id !== savedProject.id)]
+          localStorage.setItem('proyecta_projects', JSON.stringify(syncedProjects))
+        }
+      } catch (error) {
+        console.warn('No se pudo sincronizar el proyecto con el backend:', error)
+      }
 
       setStep('success')
     }
