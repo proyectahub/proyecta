@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { normalizeProjects } from '../utils/projectWallet'
-import { API_BASE } from '../lib/api'
+import { PROJECTS_API_BASE } from '../lib/api'
 
 interface Project {
   id: string
@@ -48,7 +48,7 @@ export function ProjectsExperience() {
     const loadProjects = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`${API_BASE}/api/projects`, { headers: { Accept: 'application/json' } })
+        const response = await fetch(`${PROJECTS_API_BASE}/projects`, { headers: { Accept: 'application/json' } })
         if (response.ok) {
           const remoteProjects = normalizeProjects(await response.json())
           const localProjects = loadLocalProjects()
@@ -57,7 +57,7 @@ export function ProjectsExperience() {
             await Promise.all(
               localOnlyProjects.map(async (project) => {
                 try {
-                  const saveResponse = await fetch(`${API_BASE}/api/projects`, {
+                  const saveResponse = await fetch(`${PROJECTS_API_BASE}/projects`, {
                     method: 'POST',
                     headers: {
                       Accept: 'application/json',

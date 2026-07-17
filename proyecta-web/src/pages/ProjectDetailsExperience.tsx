@@ -5,7 +5,7 @@ import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
 import { ProjectComments } from '../components/ProjectComments'
 import { MiningStatsWidget } from '../components/MiningStatsWidget'
 import { normalizeProjectWallet, normalizeProjectWalletAddress, isValidProjectWalletAddress } from '../utils/projectWallet'
-import { API_BASE } from '../lib/api'
+import { PROJECTS_API_BASE } from '../lib/api'
 
 interface Project {
   id: string
@@ -46,7 +46,7 @@ export function ProjectDetailsExperience() {
     const loadProject = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`${API_BASE}/api/projects/${id}`, { headers: { Accept: 'application/json' } })
+        const response = await fetch(`${PROJECTS_API_BASE}/projects/${id}`, { headers: { Accept: 'application/json' } })
         if (response.ok) {
           const remoteProject = normalizeProjectWallet(await response.json())
           setProject(remoteProject)

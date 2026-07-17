@@ -1,4 +1,5 @@
 export const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "https://proyecta-production-c6d6.up.railway.app")
+export const PROJECTS_API_BASE = import.meta.env.VITE_PROJECTS_API_URL ?? "/cf-api"
 const DEMO_FALLBACK_ENV = import.meta.env.VITE_ALLOW_DEMO_FALLBACK !== "false"
 
 const BACKEND_UNAVAILABLE_MESSAGE =

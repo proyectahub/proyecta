@@ -6,7 +6,7 @@ import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useWalletAuth } from '../context/WalletAuthContext'
 import { generateMoneroAddress } from '../utils/moneroAddress'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
-import { API_BASE } from '../lib/api'
+import { PROJECTS_API_BASE } from '../lib/api'
 
 const CATEGORIES: Record<string, string> = {
   biology: 'Biología',
@@ -497,7 +497,7 @@ export function CreateProjectExperience() {
       localStorage.setItem('proyecta_projects', JSON.stringify(existingProjects))
 
       try {
-        const response = await fetch(`${API_BASE}/api/projects`, {
+        const response = await fetch(`${PROJECTS_API_BASE}/projects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(projectData),
