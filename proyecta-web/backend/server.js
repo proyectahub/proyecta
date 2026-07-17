@@ -1,4 +1,4 @@
-Ôªøimport app from "./index.js"
+import app from "./index.js"
 import express from "express"
 import http from "http"
 import net from "net"
@@ -380,8 +380,30 @@ app.use("/api/orcid", orcidRoutes)
 app.use("/api/monero", moneroRoutes)
 app.use("/api/mining", createMiningCompatibilityRouter())
 
+app.get("/ws/mining", (_req, res) => {
+  res.status(426).json({
+    ok: false,
+    error: "Este endpoint requiere WebSocket.",
+    expected: "wss://<host>/ws/mining",
+  })
+})
+
 const server = http.createServer(app)
-const wss = new WebSocketServer({ server, path: "/ws/mining" })
+const wss = new WebSocketServer({ noServer: true })
+
+server.on("upgrade", (request, socket, head) => {
+  const { pathname } = new URL(request.url || "/", "http://localhost")
+
+  if (pathname !== "/ws/mining") {
+    socket.write("HTTP/1.1 404 Not Found\r\n\r\n")
+    socket.destroy()
+    return
+  }
+
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit("connection", ws, request)
+  })
+})
 
 wss.on("connection", (ws) => {
   let pool = null
@@ -396,7 +418,7 @@ wss.on("connection", (ws) => {
 
     if (msg.type === "subscribe" && msg.wallet) {
       if (!/^[48][0-9A-Za-z]{94}$/.test(msg.wallet)) {
-        ws.send(JSON.stringify({ type: "error", error: "Direcci√≥n Monero inv√°lida" }))
+        ws.send(JSON.stringify({ type: "error", error: "DirecciÛn Monero inv·lida" }))
         return
       }
 
