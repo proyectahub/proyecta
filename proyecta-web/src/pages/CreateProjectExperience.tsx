@@ -32,6 +32,9 @@ export function CreateProjectExperience() {
   const [fundingGoal, setFundingGoal] = useState('')
   const [useOwnWallet, setUseOwnWallet] = useState(true)
   const [personalWalletAddress, setPersonalWalletAddress] = useState('')
+  const [publishing, setPublishing] = useState(false)
+  const [publishError, setPublishError] = useState('')
+  const [publishedProjectId, setPublishedProjectId] = useState('')
 
   const linkedWalletAddress =
     traditionalUser?.moneroWallet?.mainAddress || walletUser?.wallet?.mainAddress || ''
@@ -468,13 +471,18 @@ export function CreateProjectExperience() {
 
   if (step === 'review') {
     const handlePublish = async () => {
+      if (publishing) return
+      setPublishing(true)
+      setPublishError('')
+
       const authorId =
         traditionalUser?.id ||
         walletUser?.wallet?.userVitaAddress ||
         'anonymous'
 
+      const projectId = `proj_${Date.now()}`
       const projectData = {
-        id: `proj_${Date.now()}`,
+        id: projectId,
         title,
         description,
         coverImage,
@@ -490,28 +498,59 @@ export function CreateProjectExperience() {
         createdAt: Date.now(),
       }
 
-      const existingProjects = JSON.parse(
-        localStorage.getItem('proyecta_projects') || '[]'
-      )
-      existingProjects.unshift(projectData)
-      localStorage.setItem('proyecta_projects', JSON.stringify(existingProjects))
-
       try {
         const response = await fetch(`${PROJECTS_API_BASE}/projects`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(projectData),
         })
-        if (response.ok) {
-          const savedProject = await response.json()
-          const syncedProjects = [savedProject, ...existingProjects.filter((item: Project) => item.id !== savedProject.id)]
-          localStorage.setItem('proyecta_projects', JSON.stringify(syncedProjects))
-        }
-      } catch (error) {
-        console.warn('No se pudo sincronizar el proyecto con el backend:', error)
-      }
 
-      setStep('success')
+        if (!response.ok) {
+          let message = 'No se pudo publicar el proyecto en la base compartida.'
+          try {
+            const payload = await response.json()
+            if (payload?.error) message = payload.error
+          } catch {
+            // Keep the generic message when the server does not return JSON.
+          }
+          throw new Error(message)
+        }
+
+        const savedProject = await response.json()
+        const existingProjects = JSON.parse(
+          localStorage.getItem('proyecta_projects') || '[]'
+        )
+        const syncedProjects = [
+          savedProject,
+          ...existingProjects.filter((item: { id?: string }) => item.id !== savedProject.id),
+        ]
+        localStorage.setItem('proyecta_projects', JSON.stringify(syncedProjects))
+        setPublishedProjectId(savedProject.id || projectId)
+        setStep('success')
+      } catch (error) {
+        console.warn('No se pudo publicar el proyecto en D1:', error)
+        const pendingProjects = JSON.parse(
+          localStorage.getItem('proyecta_projects_pending') || '[]'
+        )
+        const pendingProject = { ...projectData, syncStatus: 'pending' }
+        localStorage.setItem(
+          'proyecta_projects_pending',
+          JSON.stringify([
+            pendingProject,
+            ...pendingProjects.filter((item: { id?: string }) => item.id !== pendingProject.id),
+          ]),
+        )
+        setPublishError(
+          error instanceof Error
+            ? error.message
+            : 'No se pudo publicar el proyecto. Revisa la conexion e intenta de nuevo.',
+        )
+      } finally {
+        setPublishing(false)
+      }
     }
 
     return (
@@ -570,10 +609,23 @@ export function CreateProjectExperience() {
               <button onClick={() => setStep('funding')} className="nova-button-soft flex-1">
                  Volver
               </button>
-              <button onClick={handlePublish} className="nova-button-solid flex-1">
-                 Publicar proyecto
+              <button
+                onClick={handlePublish}
+                disabled={publishing}
+                className="nova-button-solid flex-1 disabled:opacity-50"
+              >
+                {publishing ? 'Publicando...' : 'Publicar proyecto'}
               </button>
             </div>
+            {publishError ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                <p className="font-bold">El proyecto no quedo publicado para otros equipos.</p>
+                <p>{publishError}</p>
+                <p className="mt-2">
+                  Deje una copia pendiente en este navegador. Cuando el servidor responda, intenta publicar de nuevo para que aparezca en todas las computadoras.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -591,7 +643,7 @@ export function CreateProjectExperience() {
           </p>
           <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-4">
             <p className="text-sm font-bold text-emerald-900">
-               ID del proyecto: <code className="text-xs font-mono">{`proj_${Date.now()}`}</code>
+               ID del proyecto: <code className="text-xs font-mono">{publishedProjectId}</code>
             </p>
           </div>
           <div className="flex gap-3 justify-center">
