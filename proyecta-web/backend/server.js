@@ -60,16 +60,20 @@ function normalizeSupportXMRStats(data) {
     hashrate: parseDecimalLike(data?.hashrate ?? data?.hash ?? 0),
     totalHashes: parseHashCount(data?.totalHashes ?? data?.total_hashes ?? data?.hashes ?? 0),
     balance: parseAtomicXmr(data?.balance ?? data?.amtDue ?? data?.due ?? 0),
-    totalPaid: parseAtomicXmr(data?.totalPaid ?? data?.paid ?? 0),
-    lastHash: parseHashCount(data?.lastHash ?? Date.now()),
+    totalPaid: parseAtomicXmr(data?.totalPaid ?? data?.amtPaid ?? data?.paid ?? 0),
+    lastHash: parseHashCount(data?.lastHash ?? 0),
     minPayout: parseAtomicXmr(data?.minPayout ?? 0.3) || 0.3,
+    validShares: parseHashCount(data?.validShares ?? data?.valid_shares ?? 0),
+    invalidShares: parseHashCount(data?.invalidShares ?? data?.invalid_shares ?? 0),
+    identifier: typeof data?.identifier === "string" ? data.identifier : null,
+    expiry: Number(data?.expiry || 0) || null,
   }
 }
 
 async function fetchConfirmedPoolStats(wallet) {
   try {
-    const response = await fetch(`https://supportxmr.com/api/miner/${wallet}/stats`, {
-      headers: { "User-Agent": "PROYECTA/1.0" },
+    const response = await fetch(`https://www.supportxmr.com/api/miner/${wallet}/stats`, {
+      headers: { "User-Agent": "PROYECTA/1.0", "Cache-Control": "no-cache", "Accept": "application/json" },
     })
 
     if (!response.ok) {
@@ -85,8 +89,10 @@ async function fetchConfirmedPoolStats(wallet) {
       totalHashes: 0,
       balance: 0,
       totalPaid: 0,
-      lastHash: Date.now(),
+      lastHash: 0,
       minPayout: 0.3,
+      validShares: 0,
+      invalidShares: 0,
       error: error instanceof Error ? error.message : String(error),
     }
   }
@@ -166,7 +172,7 @@ function createMiningCompatibilityRouter() {
 
   router.get("/payments/:wallet", async (req, res) => {
     try {
-      const response = await fetch(`https://supportxmr.com/api/miner/${req.params.wallet}/payments`)
+      const response = await fetch(`https://www.supportxmr.com/api/miner/${req.params.wallet}/payments`)
       const data = response.ok ? await response.json() : []
       res.json({ payments: Array.isArray(data) ? data : [] })
     } catch (error) {

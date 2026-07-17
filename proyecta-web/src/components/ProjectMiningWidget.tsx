@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Square, Zap, AlertCircle, CheckCircle2, Download } from 'lucide-react'
 import { useValidateMoneroAddress } from '../hooks/useMoneroMining'
 import { useRandomXMining } from '../hooks/useRandomXMining'
@@ -43,6 +43,8 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
   const localBalance = Number(poolStats?.localBalance ?? 0)
   const visibleHashrate = Number(poolStats?.visibleHashrate ?? poolStats?.hashrate ?? 0)
   const visibleHashes = Number(poolStats?.visibleTotalHashes ?? poolStats?.totalHashes ?? 0)
+  const confirmedValidShares = Number(poolStats?.confirmedValidShares ?? poolStats?.validShares ?? 0)
+  const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares)
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -131,7 +133,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
                       <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                       <span className="font-bold text-slate-700">Shares aceptados por el pool</span>
                     </div>
-                    <span className="text-2xl font-black text-emerald-600">{stats.acceptedShares}</span>
+                    <span className="text-2xl font-black text-emerald-600">{displayedAcceptedShares.toLocaleString('es-ES')}</span>
                   </div>
                 </div>
 

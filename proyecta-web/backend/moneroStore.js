@@ -132,7 +132,7 @@ function getMiningTelemetry(wallet) {
 
 function isConfirmedPoolStats(stats) {
   if (!stats) return false
-  return Number(stats.hashrate || 0) > 0 || Number(stats.totalHashes || 0) > 0 || Number(stats.balance || 0) > 0 || Number(stats.totalPaid || 0) > 0
+  return Number(stats.hashrate || 0) > 0 || Number(stats.totalHashes || 0) > 0 || Number(stats.balance || 0) > 0 || Number(stats.totalPaid || 0) > 0 || Number(stats.validShares || 0) > 0
 }
 
 function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
@@ -145,13 +145,17 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const confirmedHashrate = Number(confirmedStats?.hashrate || 0)
   const confirmedTotalHashes = Math.max(0, Math.trunc(Number(confirmedStats?.totalHashes || 0)))
   const confirmedTotalPaid = Number(confirmedStats?.totalPaid || 0)
+  const confirmedValidShares = Math.max(0, Math.trunc(Number(confirmedStats?.validShares || 0)))
+  const confirmedInvalidShares = Math.max(0, Math.trunc(Number(confirmedStats?.invalidShares || 0)))
+  const poolIdentifier = typeof confirmedStats?.identifier === "string" ? confirmedStats.identifier : null
+  const poolExpiry = Number(confirmedStats?.expiry || 0) || null
   const isPoolConfirmed = isConfirmedPoolStats(confirmedStats)
   const visibleBalance = confirmedBalance + localVisibleBalance
   const visibleHashrate = Math.max(confirmedHashrate, localHashrate)
   const visibleTotalHashes = Math.max(confirmedTotalHashes, localTotalHashes)
   const status = isLocalActive
     ? (isPoolConfirmed ? "Prueba local activa + pool confirmado" : "Prueba local activa del navegador")
-    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmaci?n del pool")
+    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmación del pool")
 
   return {
     wallet,
@@ -165,6 +169,10 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     confirmedHashrate,
     confirmedTotalHashes,
     confirmedTotalPaid,
+    confirmedValidShares,
+    confirmedInvalidShares,
+    poolIdentifier,
+    poolExpiry,
     localBalance: localVisibleBalance,
     localHashrate,
     localTotalHashes,
@@ -174,6 +182,7 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     isLocalActive,
     isPoolConfirmed,
     status,
+    externalMiningActive: isPoolConfirmed,
     lastSeenAt: telemetry?.lastSeenAt || null,
   }
 }

@@ -1,4 +1,4 @@
-﻿export interface SupportXMRNormalizedStats {
+export interface SupportXMRNormalizedStats {
   hashrate: number
   totalHashes: number
   balance: number
@@ -15,6 +15,10 @@
   isLocalActive?: boolean
   isPoolConfirmed?: boolean
   status?: string
+  confirmedValidShares?: number
+  confirmedInvalidShares?: number
+  externalMiningActive?: boolean
+  poolIdentifier?: string | null
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -72,6 +76,8 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
   const visibleHashrate = data?.visibleHashrate ?? data?.hashrate
   const localTotalHashes = data?.localTotalHashes ?? 0
   const visibleTotalHashes = data?.visibleTotalHashes ?? data?.totalHashes
+  const confirmedValidShares = data?.confirmedValidShares ?? data?.validShares ?? 0
+  const confirmedInvalidShares = data?.confirmedInvalidShares ?? data?.invalidShares ?? 0
   const isUnified =
     data?.visibleBalance !== undefined ||
     data?.confirmedBalance !== undefined ||
@@ -96,6 +102,10 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     visibleTotalHashes: isUnified ? parseHashCount(visibleTotalHashes ?? data?.totalHashes ?? 0) : undefined,
     isLocalActive: isUnified ? Boolean(data?.isLocalActive) : undefined,
     isPoolConfirmed: isUnified ? Boolean(data?.isPoolConfirmed) : undefined,
+    confirmedValidShares: isUnified ? parseHashCount(confirmedValidShares) : parseHashCount(data?.validShares ?? 0),
+    confirmedInvalidShares: isUnified ? parseHashCount(confirmedInvalidShares) : parseHashCount(data?.invalidShares ?? 0),
+    externalMiningActive: isUnified ? Boolean(data?.externalMiningActive ?? data?.isPoolConfirmed) : parseHashCount(data?.validShares ?? 0) > 0,
+    poolIdentifier: typeof data?.poolIdentifier === 'string' ? data.poolIdentifier : typeof data?.identifier === 'string' ? data.identifier : null,
     status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { RefreshCw, Zap, Target } from 'lucide-react'
 import { resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
@@ -20,6 +20,10 @@ interface MiningStats {
   isLocalActive?: boolean
   isPoolConfirmed?: boolean
   status?: string
+  confirmedValidShares?: number
+  confirmedInvalidShares?: number
+  externalMiningActive?: boolean
+  poolIdentifier?: string | null
 }
 
 interface MiningStatsWidgetProps {
@@ -107,7 +111,9 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
   const visibleBalance = Number(stats?.visibleBalance ?? stats?.balance ?? confirmedBalance + localBalance)
   const visibleHashrate = Number(stats?.visibleHashrate ?? stats?.hashrate ?? 0)
   const visibleTotalHashes = Number(stats?.visibleTotalHashes ?? stats?.totalHashes ?? 0)
-  const confirmed = Boolean(stats?.isPoolConfirmed)
+  const confirmedValidShares = Number(stats?.confirmedValidShares ?? 0)
+  const confirmedInvalidShares = Number(stats?.confirmedInvalidShares ?? 0)
+  const confirmed = Boolean(stats?.isPoolConfirmed || confirmedValidShares > 0)
   const localActive = Boolean(stats?.isLocalActive)
   const progressPercent = hasVisibleMiningData(stats) ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
   const remaining = Math.max(fundingGoal - visibleBalance, 0)
@@ -185,7 +191,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Hashrate visible</p>
           <p className="font-bold text-slate-900">{visibleHashrate.toFixed(2)} H/s</p>
@@ -205,6 +211,12 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <p className="mb-1 text-xs font-bold text-slate-600">Shares confirmados</p>
+          <p className="font-bold text-slate-900">{confirmedValidShares.toLocaleString('es-ES')}</p>
+          <p className="mt-1 text-xs text-slate-500">{confirmedInvalidShares.toLocaleString('es-ES')} inválidos</p>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Aporte local visible</p>
           <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
           <p className="mt-1 text-xs text-slate-500">navegador</p>
@@ -214,7 +226,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Saldo visible del portal: SupportXMR + aporte local</p>
+          <p className="text-sm font-bold text-slate-900">Estado visible: SupportXMR confirmado + aporte local</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
