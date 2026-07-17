@@ -229,12 +229,17 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const poolIdentifier = typeof confirmedStats?.identifier === "string" ? confirmedStats.identifier : null
   const poolExpiry = Number(confirmedStats?.expiry || 0) || null
   const isPoolConfirmed = isConfirmedPoolStats(confirmedStats)
+  const localMiners = Math.max(0, Math.trunc(Number(telemetry?.activeSessions || (isLocalActive ? 1 : 0))))
+  const localBrowserMiners = Math.max(0, Math.trunc(Number(telemetry?.browserSessions || 0)))
+  const localNativeMiners = Math.max(0, Math.trunc(Number(telemetry?.nativeSessions || 0)))
+  const localBrowserHashrate = Number(telemetry?.browserHashrate || 0)
+  const localNativeHashrate = Number(telemetry?.nativeHashrate || 0)
   const visibleBalance = confirmedBalance + localVisibleBalance
-  const visibleHashrate = Math.max(confirmedHashrate, localHashrate)
-  const visibleTotalHashes = Math.max(confirmedTotalHashes, localTotalHashes)
+  const visibleHashrate = confirmedHashrate + localHashrate
+  const visibleTotalHashes = confirmedTotalHashes + localTotalHashes
   const status = isLocalActive
-    ? (isPoolConfirmed ? "Prueba local activa + pool confirmado" : "Prueba local activa del navegador")
-    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmación del pool")
+    ? (isPoolConfirmed ? "Pool confirmado + aporte local activo" : "Aporte local activo del proyecto")
+    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmaci?n del pool")
 
   return {
     wallet,
