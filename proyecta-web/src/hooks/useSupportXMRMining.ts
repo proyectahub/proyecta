@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef, useCallback } from 'react'
-import { API_BASE } from '../lib/api'
+import { resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 interface MiningStats {
@@ -10,7 +10,7 @@ interface MiningStats {
   localHashRate: number
 }
 
-const BACKEND_URL = import.meta.env.VITE_MINING_API_URL ?? import.meta.env.VITE_API_URL ?? '/api/mining'
+const BACKEND_URL = resolveMiningApiBase()
 
 /**
  * Hook de minería en navegador con telemetría hacia el backend.
@@ -192,5 +192,4 @@ export function useSupportXMRStats(walletAddress: string) {
 
   return { poolStats, loading, error }
 }
-
 

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react'
 import { RefreshCw, Zap, Target } from 'lucide-react'
-import { API_BASE } from '../lib/api'
+import { resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 interface MiningStats {
@@ -49,7 +49,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       setError(null)
 
       const apiUrls = [
-        `${API_BASE}/api/mining/pool-stats/${wallet}`,
+        `${resolveMiningApiBase()}/pool-stats/${wallet}`,
         `https://supportxmr.com/api/miner/${wallet}/stats`,
       ]
 
@@ -248,6 +248,4 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
     </div>
   )
 }
-
-
 

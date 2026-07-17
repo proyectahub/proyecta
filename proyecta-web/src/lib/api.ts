@@ -1,4 +1,4 @@
-﻿export const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "https://proyecta-production-c6d6.up.railway.app")
+export const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "https://proyecta-production-c6d6.up.railway.app")
 const DEMO_FALLBACK_ENV = import.meta.env.VITE_ALLOW_DEMO_FALLBACK !== "false"
 
 const BACKEND_UNAVAILABLE_MESSAGE =
@@ -17,18 +17,69 @@ export function isDemoFallbackEnabled() {
   return import.meta.env.DEV || DEMO_FALLBACK_ENV || runningOnLocalHost()
 }
 
+function stripTrailingSlash(value: string) {
+  return value.replace(/\/+$/, "")
+}
+
+function isStaticPagesHost(hostname: string) {
+  return hostname.endsWith(".pages.dev") || hostname === "proyecta.pages.dev"
+}
+
+function normalizeMiningApiUrl(sourceUrl: string) {
+  const normalized = new URL(
+    sourceUrl,
+    typeof window !== "undefined" ? window.location.origin : "https://proyecta.pages.dev",
+  )
+  normalized.pathname = stripTrailingSlash(normalized.pathname)
+
+  if (!normalized.pathname || normalized.pathname === "/") {
+    normalized.pathname = "/api/mining"
+  } else if (normalized.pathname.endsWith("/api")) {
+    normalized.pathname = `${normalized.pathname}/mining`
+  } else if (!normalized.pathname.endsWith("/api/mining")) {
+    normalized.pathname = `${normalized.pathname}/api/mining`
+  }
+
+  normalized.search = ""
+  normalized.hash = ""
+  return stripTrailingSlash(normalized.toString())
+}
+
+export function resolveMiningApiBase() {
+  if (import.meta.env.DEV) {
+    return "http://localhost:3000/api/mining"
+  }
+
+  const configuredUrl = import.meta.env.VITE_MINING_API_URL || API_BASE
+  try {
+    return normalizeMiningApiUrl(configuredUrl)
+  } catch {
+    return normalizeMiningApiUrl(API_BASE)
+  }
+}
+
 export function resolveMiningWebSocketUrl() {
   const configuredUrl = import.meta.env.VITE_MINING_WS_URL
+
   if (configuredUrl) {
-    return configuredUrl
+    try {
+      const normalized = new URL(
+        configuredUrl,
+        typeof window !== "undefined" ? window.location.origin : "https://proyecta.pages.dev",
+      )
+      if (!isStaticPagesHost(normalized.hostname)) {
+        return normalized.toString()
+      }
+    } catch {
+      // Si la variable está mal formada, se calcula desde el backend HTTP.
+    }
   }
 
   if (import.meta.env.DEV) {
-    return "ws://localhost:3001/ws/mining"
+    return "ws://localhost:3000/ws/mining"
   }
 
-  const miningApiUrl = import.meta.env.VITE_MINING_API_URL
-  const sourceUrl = miningApiUrl || API_BASE
+  const sourceUrl = resolveMiningApiBase()
 
   if (typeof window !== "undefined" && sourceUrl && sourceUrl !== "/api") {
     try {
