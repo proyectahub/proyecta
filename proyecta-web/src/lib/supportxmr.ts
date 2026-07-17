@@ -19,6 +19,11 @@ export interface SupportXMRNormalizedStats {
   confirmedInvalidShares?: number
   externalMiningActive?: boolean
   poolIdentifier?: string | null
+  localMiners?: number
+  localBrowserMiners?: number
+  localNativeMiners?: number
+  localBrowserHashrate?: number
+  localNativeHashrate?: number
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -78,6 +83,11 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
   const visibleTotalHashes = data?.visibleTotalHashes ?? data?.totalHashes
   const confirmedValidShares = data?.confirmedValidShares ?? data?.validShares ?? 0
   const confirmedInvalidShares = data?.confirmedInvalidShares ?? data?.invalidShares ?? 0
+  const localMiners = data?.localMiners ?? 0
+  const localBrowserMiners = data?.localBrowserMiners ?? 0
+  const localNativeMiners = data?.localNativeMiners ?? 0
+  const localBrowserHashrate = data?.localBrowserHashrate ?? 0
+  const localNativeHashrate = data?.localNativeHashrate ?? 0
   const isUnified =
     data?.visibleBalance !== undefined ||
     data?.confirmedBalance !== undefined ||
@@ -106,6 +116,11 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     confirmedInvalidShares: isUnified ? parseHashCount(confirmedInvalidShares) : parseHashCount(data?.invalidShares ?? 0),
     externalMiningActive: isUnified ? Boolean(data?.externalMiningActive ?? data?.isPoolConfirmed) : parseHashCount(data?.validShares ?? 0) > 0,
     poolIdentifier: typeof data?.poolIdentifier === 'string' ? data.poolIdentifier : typeof data?.identifier === 'string' ? data.identifier : null,
+    localMiners: isUnified ? parseHashCount(localMiners) : undefined,
+    localBrowserMiners: isUnified ? parseHashCount(localBrowserMiners) : undefined,
+    localNativeMiners: isUnified ? parseHashCount(localNativeMiners) : undefined,
+    localBrowserHashrate: isUnified ? parseDecimalLike(localBrowserHashrate) : undefined,
+    localNativeHashrate: isUnified ? parseDecimalLike(localNativeHashrate) : undefined,
     status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }

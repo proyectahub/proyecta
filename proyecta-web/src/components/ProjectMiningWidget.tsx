@@ -44,6 +44,9 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
   const visibleHashrate = Number(poolStats?.visibleHashrate ?? poolStats?.hashrate ?? 0)
   const visibleHashes = Number(poolStats?.visibleTotalHashes ?? poolStats?.totalHashes ?? 0)
   const confirmedValidShares = Number(poolStats?.confirmedValidShares ?? poolStats?.validShares ?? 0)
+  const localMiners = Number(poolStats?.localMiners ?? 0)
+  const localBrowserMiners = Number(poolStats?.localBrowserMiners ?? 0)
+  const localNativeMiners = Number(poolStats?.localNativeMiners ?? 0)
   const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares)
 
   const formatTime = (seconds: number) => {

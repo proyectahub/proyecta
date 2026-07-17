@@ -151,7 +151,7 @@ function createMiningCompatibilityRouter() {
       wallet,
       acceptedShares: summary.confirmedTotalHashes > 0 ? summary.confirmedTotalHashes : 0,
       rejectedShares: 0,
-      miners: summary.isLocalActive ? 1 : 0,
+      miners: summary.localMiners || (summary.isLocalActive ? 1 : 0),
       uptime: summary.isLocalActive ? Math.max(1, Math.trunc((Date.now() - lastSeenAt) / 1000)) : 0,
       visibleBalance: summary.visibleBalance,
       status: summary.status,

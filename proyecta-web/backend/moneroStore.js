@@ -18,12 +18,14 @@ function readStore() {
   const store = JSON.parse(data)
   if (!store.addresses) store.addresses = {}
   if (!store.miningTelemetry) store.miningTelemetry = {}
+  if (!store.miningTelemetrySessions) store.miningTelemetrySessions = {}
   return store
 }
 
 function writeStore(data) {
   if (!data.addresses) data.addresses = {}
   if (!data.miningTelemetry) data.miningTelemetry = {}
+  if (!data.miningTelemetrySessions) data.miningTelemetrySessions = {}
   fs.writeFileSync(storePath, JSON.stringify(data, null, 2), "utf8")
   fs.chmodSync(storePath, 0o600)
 }
@@ -111,23 +113,100 @@ function normalizeTelemetry(wallet, telemetry = {}) {
   }
 }
 
+function getSessionKey(telemetry = {}) {
+  const source = typeof telemetry.source === "string" && telemetry.source.trim() ? telemetry.source.trim() : "browser"
+  const sessionId = typeof telemetry.sessionId === "string" && telemetry.sessionId.trim() ? telemetry.sessionId.trim() : "default"
+  return source + ":" + sessionId
+}
+
 function recordMiningTelemetry(wallet, telemetry = {}) {
   const store = readStore()
-  const previous = store.miningTelemetry[wallet] || {}
   const normalized = normalizeTelemetry(wallet, telemetry)
-  store.miningTelemetry[wallet] = {
+  const source = typeof telemetry.source === "string" && telemetry.source.trim() ? telemetry.source.trim() : "browser"
+  const sessionKey = getSessionKey({ ...telemetry, source })
+
+  if (!store.miningTelemetrySessions[wallet]) {
+    store.miningTelemetrySessions[wallet] = {}
+  }
+
+  const previous = store.miningTelemetrySessions[wallet][sessionKey] || {}
+  const session = {
     ...previous,
     ...normalized,
+    source,
+    sessionId: normalized.sessionId || sessionKey,
     createdAt: previous.createdAt || normalized.lastSeenAt,
     updatedAt: normalized.lastSeenAt,
   }
+
+  store.miningTelemetrySessions[wallet][sessionKey] = session
+  store.miningTelemetry[wallet] = session
   writeStore(store)
-  return store.miningTelemetry[wallet]
+  return session
 }
 
 function getMiningTelemetry(wallet) {
   const store = readStore()
-  return store.miningTelemetry[wallet] || null
+  const sessions = store.miningTelemetrySessions?.[wallet] || {}
+  const cutoff = Date.now() - 90000
+  const activeSessions = Object.values(sessions).filter((session) => {
+    const lastSeen = new Date(session.updatedAt || session.lastSeenAt || 0).getTime()
+    return Number.isFinite(lastSeen) && lastSeen >= cutoff && session.active !== false
+  })
+
+  if (activeSessions.length === 0) {
+    const legacy = store.miningTelemetry[wallet] || null
+    if (!legacy) return null
+    const lastSeen = new Date(legacy.updatedAt || legacy.lastSeenAt || 0).getTime()
+    return Number.isFinite(lastSeen) && lastSeen >= cutoff ? legacy : null
+  }
+
+  const totals = activeSessions.reduce(
+    (accumulator, session) => {
+      const source = session.source === "native" || session.source === "app" ? "native" : "browser"
+      const totalHashes = Math.max(0, Math.trunc(Number(session.totalHashes || 0)))
+      const hashRate = Number(session.hashRate || 0)
+      const balance = Number(session.localVisibleBalance || 0)
+
+      accumulator.totalHashes += totalHashes
+      accumulator.hashRate += Number.isFinite(hashRate) ? hashRate : 0
+      accumulator.localVisibleBalance += Number.isFinite(balance) ? balance : 0
+      accumulator.acceptedShares += Math.max(0, Math.trunc(Number(session.acceptedShares || 0)))
+      accumulator.rejectedShares += Math.max(0, Math.trunc(Number(session.rejectedShares || 0)))
+      accumulator.elapsedSeconds = Math.max(accumulator.elapsedSeconds, Math.max(0, Math.trunc(Number(session.elapsedSeconds || 0))))
+      accumulator.poolConnected = accumulator.poolConnected || Boolean(session.poolConnected)
+      accumulator.sources[source] += 1
+      accumulator.sourceHashrate[source] += Number.isFinite(hashRate) ? hashRate : 0
+      return accumulator
+    },
+    {
+      wallet,
+      totalHashes: 0,
+      hashRate: 0,
+      elapsedSeconds: 0,
+      acceptedShares: 0,
+      rejectedShares: 0,
+      poolConnected: false,
+      localVisibleBalance: 0,
+      sources: { browser: 0, native: 0 },
+      sourceHashrate: { browser: 0, native: 0 },
+    },
+  )
+
+  return {
+    ...totals,
+    active: true,
+    activeSessions: activeSessions.length,
+    browserSessions: totals.sources.browser,
+    nativeSessions: totals.sources.native,
+    browserHashrate: totals.sourceHashrate.browser,
+    nativeHashrate: totals.sourceHashrate.native,
+    lastSeenAt: activeSessions
+      .map((session) => session.updatedAt || session.lastSeenAt)
+      .filter(Boolean)
+      .sort()
+      .at(-1) || new Date().toISOString(),
+  }
 }
 
 function isConfirmedPoolStats(stats) {
@@ -176,6 +255,11 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     localBalance: localVisibleBalance,
     localHashrate,
     localTotalHashes,
+    localMiners,
+    localBrowserMiners,
+    localNativeMiners,
+    localBrowserHashrate,
+    localNativeHashrate,
     visibleBalance,
     visibleHashrate,
     visibleTotalHashes,

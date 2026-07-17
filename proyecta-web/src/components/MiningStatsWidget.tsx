@@ -24,6 +24,11 @@ interface MiningStats {
   confirmedInvalidShares?: number
   externalMiningActive?: boolean
   poolIdentifier?: string | null
+  localMiners?: number
+  localBrowserMiners?: number
+  localNativeMiners?: number
+  localBrowserHashrate?: number
+  localNativeHashrate?: number
 }
 
 interface MiningStatsWidgetProps {
@@ -113,6 +118,11 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
   const visibleTotalHashes = Number(stats?.visibleTotalHashes ?? stats?.totalHashes ?? 0)
   const confirmedValidShares = Number(stats?.confirmedValidShares ?? 0)
   const confirmedInvalidShares = Number(stats?.confirmedInvalidShares ?? 0)
+  const localMiners = Number(stats?.localMiners ?? 0)
+  const localBrowserMiners = Number(stats?.localBrowserMiners ?? 0)
+  const localNativeMiners = Number(stats?.localNativeMiners ?? 0)
+  const localBrowserHashrate = Number(stats?.localBrowserHashrate ?? 0)
+  const localNativeHashrate = Number(stats?.localNativeHashrate ?? 0)
   const confirmed = Boolean(stats?.isPoolConfirmed || confirmedValidShares > 0)
   const localActive = Boolean(stats?.isLocalActive)
   const progressPercent = hasVisibleMiningData(stats) ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
@@ -151,7 +161,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive
-              ? 'Saldo confirmado por SupportXMR y aporte local activo en la misma vista.'
+              ? 'Este proyecto muestra SupportXMR confirmado y aporte local activo de web/app en la misma wallet.'
               : confirmed
                 ? 'SupportXMR confirmó la dirección; el saldo visible sigue sumando el aporte local.'
                 : localActive
@@ -195,7 +205,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Hashrate visible</p>
           <p className="font-bold text-slate-900">{visibleHashrate.toFixed(2)} H/s</p>
-          <p className="mt-1 text-xs text-slate-500">pool + local</p>
+          <p className="mt-1 text-xs text-slate-500">SupportXMR + web/app local</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -219,14 +229,14 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Aporte local visible</p>
           <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
-          <p className="mt-1 text-xs text-slate-500">navegador</p>
+          <p className="mt-1 text-xs text-slate-500">{localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app</p>
         </div>
       </div>
 
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Estado visible: SupportXMR confirmado + aporte local</p>
+          <p className="text-sm font-bold text-slate-900">Estado visible de este proyecto: SupportXMR confirmado + web/app local</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
@@ -242,6 +252,10 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
             Abrir SupportXMR
           </a>
         </p>
+        <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-500 md:grid-cols-2">
+          <p>Web local: {localBrowserHashrate.toFixed(2)} H/s</p>
+          <p>App local: {localNativeHashrate.toFixed(2)} H/s</p>
+        </div>
         {lastUpdate && (
           <p className="mt-2 text-xs text-slate-500">Actualizado: {lastUpdate.toLocaleTimeString('es-ES')}</p>
         )}
