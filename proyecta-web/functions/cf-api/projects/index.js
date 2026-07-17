@@ -18,6 +18,6 @@ export async function onRequestPost({ env, request }) {
     const payload = await request.json()
     return saveProject(env.proyecta_auth, payload)
   } catch (error) {
-    return json({ error: 'No fue posible guardar el proyecto.' }, { status: 500 })
+    return json({ error: 'No fue posible guardar el proyecto.', detail: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
 }
