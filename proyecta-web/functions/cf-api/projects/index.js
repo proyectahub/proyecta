@@ -9,7 +9,7 @@ export async function onRequestGet({ env }) {
   try {
     return json(await listProjects(env.proyecta_auth))
   } catch (error) {
-    return json({ error: 'No fue posible cargar proyectos.', detail: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    return json({ error: 'No fue posible cargar proyectos.' }, { status: 500 })
   }
 }
 
@@ -18,6 +18,6 @@ export async function onRequestPost({ env, request }) {
     const payload = await request.json()
     return saveProject(env.proyecta_auth, payload)
   } catch (error) {
-    return json({ error: 'No fue posible guardar el proyecto.', detail: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    return json({ error: 'No fue posible guardar el proyecto.' }, { status: 500 })
   }
 }

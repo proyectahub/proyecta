@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS projects (
 `
 
 export async function ensureProjectsSchema(db) {
-  await db.exec(PROJECTS_SCHEMA.replace(/s+/g, ' ').trim())
+  await db.exec(PROJECTS_SCHEMA.replace(/\s+/g, ' ').trim())
   await db.exec('CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at)')
   return db
 }
@@ -49,7 +49,7 @@ function parseHitos(value) {
 export function normalizeProjectPayload(input = {}) {
   const now = Date.now()
   const fundraisingAddress = asText(input.fundraisingAddress || input.fundraising_address || input.moneroAddress || input.monero_address)
-  const id = asText(input.id) || `proj_fb56a85e`
+  const id = asText(input.id) || `proj_${crypto.randomUUID().slice(0, 8)}`
   const hitos = parseHitos(input.hitos || input.hitos_json)
 
   return {

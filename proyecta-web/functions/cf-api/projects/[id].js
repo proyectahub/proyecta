@@ -9,6 +9,6 @@ export async function onRequestGet({ env, params }) {
     }
     return json(project)
   } catch (error) {
-    return json({ error: 'No fue posible cargar el proyecto.', detail: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    return json({ error: 'No fue posible cargar el proyecto.' }, { status: 500 })
   }
 }
