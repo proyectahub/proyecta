@@ -52,9 +52,31 @@ export function ProjectsExperience() {
         if (response.ok) {
           const remoteProjects = normalizeProjects(await response.json())
           const localProjects = loadLocalProjects()
+          const localOnlyProjects = localProjects.filter((local) => !remoteProjects.some((remote) => remote.id === local.id))
+          const syncedLocalProjects = (
+            await Promise.all(
+              localOnlyProjects.map(async (project) => {
+                try {
+                  const saveResponse = await fetch(`${API_BASE}/api/projects`, {
+                    method: 'POST',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(project),
+                  })
+
+                  if (!saveResponse.ok) return project
+                  return normalizeProjects([await saveResponse.json()])[0] || project
+                } catch {
+                  return project
+                }
+              }),
+            )
+          ).filter(Boolean)
           const merged = [
             ...remoteProjects,
-            ...localProjects.filter((local) => !remoteProjects.some((remote) => remote.id === local.id)),
+            ...syncedLocalProjects,
           ].sort((left, right) => right.createdAt - left.createdAt)
           setProjects(merged)
           localStorage.setItem('proyecta_projects', JSON.stringify(merged))
