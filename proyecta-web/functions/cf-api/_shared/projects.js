@@ -113,24 +113,10 @@ export async function saveProject(db, input) {
   }
 
   await db.prepare(`
-    INSERT INTO projects (
+    INSERT OR REPLACE INTO projects (
       id, title, description, category, funding_goal, fundraising_address, monero_address,
       author, author_name, raised, status, hitos_json, cover_image, created_at, updated_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      title = excluded.title,
-      description = excluded.description,
-      category = excluded.category,
-      funding_goal = excluded.funding_goal,
-      fundraising_address = excluded.fundraising_address,
-      monero_address = excluded.monero_address,
-      author = excluded.author,
-      author_name = excluded.author_name,
-      raised = excluded.raised,
-      status = excluded.status,
-      hitos_json = excluded.hitos_json,
-      cover_image = excluded.cover_image,
-      updated_at = excluded.updated_at
   `).bind(
     project.id,
     project.title,
