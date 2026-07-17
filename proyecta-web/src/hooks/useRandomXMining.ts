@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE, resolveMiningWebSocketUrl } from '../lib/api'
 
 export interface RandomXStats {
@@ -40,6 +40,8 @@ export function useRandomXMining(
   const isClosingRef = useRef(false)
   const sessionIdRef = useRef(Math.random().toString(36).slice(2))
   const lastTelemetryAtRef = useRef(0)
+  const workersStartedRef = useRef(false)
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const sendTelemetry = useCallback(
     (payload: {
@@ -88,6 +90,11 @@ export function useRandomXMining(
     startTimeRef.current = Date.now()
     perWorkerRef.current = Array.from({ length: threads }, () => ({ rate: 0, hashes: 0 }))
     hasPoolJobRef.current = false
+    workersStartedRef.current = false
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current)
+      fallbackTimerRef.current = null
+    }
 
     const workers: Worker[] = []
     for (let index = 0; index < threads; index += 1) {
@@ -138,12 +145,33 @@ export function useRandomXMining(
           setError(message.error)
         }
       }
-
-      worker.postMessage({ type: 'start' })
       workers.push(worker)
     }
 
     workersRef.current = workers
+
+    const startWorkers = (mode: 'start' | 'benchmark') => {
+      if (workersStartedRef.current) return
+      workersStartedRef.current = true
+      for (const worker of workersRef.current) {
+        worker.postMessage({ type: mode })
+      }
+      setStats((current) => ({
+        ...current,
+        status: mode === 'benchmark' ? 'Prueba local RandomX activa' : current.status,
+      }))
+    }
+
+    fallbackTimerRef.current = setTimeout(() => {
+      if (!hasPoolJobRef.current) {
+        startWorkers('benchmark')
+        setStats((current) => ({
+          ...current,
+          poolConnected: false,
+          status: 'Prueba local RandomX activa; esperando puente con el pool.',
+        }))
+      }
+    }, 5000)
 
     const ws = new WebSocket(WS_URL)
     wsRef.current = ws
@@ -167,6 +195,11 @@ export function useRandomXMining(
 
       if (message.type === 'job') {
         hasPoolJobRef.current = true
+        if (fallbackTimerRef.current) {
+          clearTimeout(fallbackTimerRef.current)
+          fallbackTimerRef.current = null
+        }
+        startWorkers('start')
         for (const worker of workersRef.current) {
           worker.postMessage({ type: 'job', job: message.job })
         }
@@ -205,6 +238,7 @@ export function useRandomXMining(
     }
 
     ws.onerror = () => {
+      if (!hasPoolJobRef.current) startWorkers('benchmark')
       setStats((current) => ({
         ...current,
         poolConnected: false,
@@ -213,6 +247,7 @@ export function useRandomXMining(
     }
 
     ws.onclose = () => {
+      if (!isClosingRef.current && !hasPoolJobRef.current) startWorkers('benchmark')
       if (isClosingRef.current) {
         return
       }
@@ -226,6 +261,11 @@ export function useRandomXMining(
     }
 
     return () => {
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current)
+        fallbackTimerRef.current = null
+      }
+      workersStartedRef.current = false
       for (const worker of workersRef.current) {
         worker.postMessage({ type: 'stop' })
         worker.terminate()
