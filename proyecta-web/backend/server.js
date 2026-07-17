@@ -101,7 +101,7 @@ function createMiningCompatibilityRouter() {
   const router = express.Router()
 
   router.get("/health", (_req, res) => {
-    res.json({ ok: true, status: "healthy", service: "mining" })
+    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-2026-07-17", hasWebSocketRoute: true })
   })
 
   router.post("/submit", (req, res) => {
