@@ -15,9 +15,10 @@ export async function onRequestGet({ env }) {
 
 export async function onRequestPost({ env, request }) {
   try {
-    const payload = await request.json()
+    const raw = await request.text()
+    const payload = JSON.parse(raw.replace(/^\uFEFF/, ''))
     return saveProject(env.proyecta_auth, payload)
   } catch (error) {
-    return json({ error: 'No fue posible guardar el proyecto.', detail: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    return json({ error: 'No fue posible guardar el proyecto.' }, { status: 500 })
   }
 }
