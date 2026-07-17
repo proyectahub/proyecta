@@ -161,7 +161,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive
-              ? 'Este proyecto muestra SupportXMR confirmado y aporte local activo de web/app en la misma wallet.'
+              ? 'Este proyecto suma una red abierta de computadoras: SupportXMR confirmado + aportes web/app activos en la misma wallet.'
               : confirmed
                 ? 'SupportXMR confirmó la dirección; el saldo visible sigue sumando el aporte local.'
                 : localActive
@@ -205,7 +205,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Hashrate visible</p>
           <p className="font-bold text-slate-900">{visibleHashrate.toFixed(2)} H/s</p>
-          <p className="mt-1 text-xs text-slate-500">SupportXMR + web/app local</p>
+          <p className="mt-1 text-xs text-slate-500">pool + todos los equipos activos</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -227,16 +227,16 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Aporte local visible</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Red local visible</p>
           <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
-          <p className="mt-1 text-xs text-slate-500">{localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app</p>
+          <p className="mt-1 text-xs text-slate-500">{localMiners} equipo(s) activos: {localBrowserMiners} web / {localNativeMiners} app</p>
         </div>
       </div>
 
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Estado visible de este proyecto: SupportXMR confirmado + web/app local</p>
+          <p className="text-sm font-bold text-slate-900">Estado visible de este proyecto: pool confirmado + red colectiva activa</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
@@ -253,8 +253,8 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
           </a>
         </p>
         <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-500 md:grid-cols-2">
-          <p>Web local: {localBrowserHashrate.toFixed(2)} H/s</p>
-          <p>App local: {localNativeHashrate.toFixed(2)} H/s</p>
+          <p>Web activa: {localBrowserHashrate.toFixed(2)} H/s</p>
+          <p>App activa: {localNativeHashrate.toFixed(2)} H/s</p>
         </div>
         {lastUpdate && (
           <p className="mt-2 text-xs text-slate-500">Actualizado: {lastUpdate.toLocaleTimeString('es-ES')}</p>

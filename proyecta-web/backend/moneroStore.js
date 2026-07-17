@@ -4,6 +4,8 @@ import { fileURLToPath } from "url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const storePath = path.join(__dirname, "monero-addresses.json")
+const ACTIVE_SESSION_TTL_MS = 90 * 1000
+const STORED_SESSION_TTL_MS = 30 * 60 * 1000
 
 function ensureStoreExists() {
   if (!fs.existsSync(storePath)) {
@@ -119,11 +121,30 @@ function getSessionKey(telemetry = {}) {
   return source + ":" + sessionId
 }
 
+function pruneWalletTelemetrySessions(store, wallet) {
+  const sessions = store.miningTelemetrySessions?.[wallet]
+  if (!sessions) return
+
+  const cutoff = Date.now() - STORED_SESSION_TTL_MS
+  for (const [sessionKey, session] of Object.entries(sessions)) {
+    const lastSeen = new Date(session.updatedAt || session.lastSeenAt || 0).getTime()
+    if (!Number.isFinite(lastSeen) || lastSeen < cutoff) {
+      delete sessions[sessionKey]
+    }
+  }
+
+  if (Object.keys(sessions).length === 0) {
+    delete store.miningTelemetrySessions[wallet]
+  }
+}
+
 function recordMiningTelemetry(wallet, telemetry = {}) {
   const store = readStore()
   const normalized = normalizeTelemetry(wallet, telemetry)
   const source = typeof telemetry.source === "string" && telemetry.source.trim() ? telemetry.source.trim() : "browser"
   const sessionKey = getSessionKey({ ...telemetry, source })
+
+  pruneWalletTelemetrySessions(store, wallet)
 
   if (!store.miningTelemetrySessions[wallet]) {
     store.miningTelemetrySessions[wallet] = {}
@@ -148,7 +169,7 @@ function recordMiningTelemetry(wallet, telemetry = {}) {
 function getMiningTelemetry(wallet) {
   const store = readStore()
   const sessions = store.miningTelemetrySessions?.[wallet] || {}
-  const cutoff = Date.now() - 90000
+  const cutoff = Date.now() - ACTIVE_SESSION_TTL_MS
   const activeSessions = Object.values(sessions).filter((session) => {
     const lastSeen = new Date(session.updatedAt || session.lastSeenAt || 0).getTime()
     return Number.isFinite(lastSeen) && lastSeen >= cutoff && session.active !== false
