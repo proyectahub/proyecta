@@ -364,7 +364,7 @@ function buildUnifiedMiningSummary(wallet, poolStats) {
   const visibleHashrate = Math.max(confirmedHashrate, localHashrate)
   const visibleTotalHashes = Math.max(confirmedTotalHashes, localTotalHashes)
   const status = localActive
-    ? (poolConfirmed ? 'Prueba local activa + pool confirmado' : 'Prueba local activa del navegador')
+    ? (poolConfirmed ? 'Pool confirmado + aporte local visible' : 'Aporte local visible del navegador')
     : (poolConfirmed ? 'Pool confirmado' : 'Esperando confirmación del pool')
 
   return {

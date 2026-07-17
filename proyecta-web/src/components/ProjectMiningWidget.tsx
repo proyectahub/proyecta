@@ -73,11 +73,11 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
   }
 
   const communityLabel = poolConfirmed && localActive
-    ? 'Pool confirmado + prueba local activa'
+    ? 'Pool confirmado + aporte local visible'
     : poolConfirmed
       ? 'Pool confirmado'
       : localActive
-        ? 'Prueba local activa'
+        ? 'Aporte local visible'
         : 'Esperando confirmación del pool'
 
   return (
