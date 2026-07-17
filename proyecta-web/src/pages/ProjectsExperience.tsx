@@ -19,14 +19,14 @@ interface Project {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  biology: '🧬 Biología',
-  chemistry: '⚗️ Química',
-  physics: '⚛️ Física',
-  mathematics: '📐 Matemáticas',
-  medicine: '🏥 Medicina',
-  'computer-science': '💻 Informática',
-  ecology: '🌿 Ecología',
-  other: '📚 Otro',
+  biology: 'ðŸ§¬ BiologÃ­a',
+  chemistry: 'âš—ï¸ QuÃ­mica',
+  physics: 'âš›ï¸ FÃ­sica',
+  mathematics: 'ðŸ“ MatemÃ¡ticas',
+  medicine: 'ðŸ¥ Medicina',
+  'computer-science': 'ðŸ’» InformÃ¡tica',
+  ecology: 'ðŸŒ¿ EcologÃ­a',
+  other: 'ðŸ“š Otro',
 }
 
 export function ProjectsExperience() {
@@ -36,13 +36,17 @@ export function ProjectsExperience() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadLocalProjects = () => {
-      const saved = localStorage.getItem('proyecta_projects')
-      if (!saved) return []
-      const allProjects = JSON.parse(saved) as Project[]
-      const normalizedProjects = normalizeProjects(allProjects)
-      localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
-      return normalizedProjects
+    const loadPendingProjects = () => {
+      try {
+        const saved = localStorage.getItem('proyecta_projects_pending')
+        if (!saved) return []
+        const allProjects = JSON.parse(saved) as Project[]
+        const normalizedProjects = normalizeProjects(allProjects)
+        localStorage.setItem('proyecta_projects_pending', JSON.stringify(normalizedProjects))
+        return normalizedProjects
+      } catch {
+        return []
+      }
     }
 
     const loadProjects = async () => {
@@ -51,43 +55,22 @@ export function ProjectsExperience() {
         const response = await fetch(`${PROJECTS_API_BASE}/projects`, { headers: { Accept: 'application/json' } })
         if (response.ok) {
           const remoteProjects = normalizeProjects(await response.json())
-          const localProjects = loadLocalProjects()
-          const localOnlyProjects = localProjects.filter((local) => !remoteProjects.some((remote) => remote.id === local.id))
-          const syncedLocalProjects = (
-            await Promise.all(
-              localOnlyProjects.map(async (project) => {
-                try {
-                  const saveResponse = await fetch(`${PROJECTS_API_BASE}/projects`, {
-                    method: 'POST',
-                    headers: {
-                      Accept: 'application/json',
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(project),
-                  })
-
-                  if (!saveResponse.ok) return project
-                  return normalizeProjects([await saveResponse.json()])[0] || project
-                } catch {
-                  return project
-                }
-              }),
-            )
-          ).filter(Boolean)
+          const pendingProjects = loadPendingProjects()
+          const pendingOnlyProjects = pendingProjects.filter((pending) => !remoteProjects.some((remote) => remote.id === pending.id))
           const merged = [
             ...remoteProjects,
-            ...syncedLocalProjects,
+            ...pendingOnlyProjects,
           ].sort((left, right) => right.createdAt - left.createdAt)
           setProjects(merged)
           localStorage.setItem('proyecta_projects', JSON.stringify(merged))
           return
         }
 
-        setProjects(loadLocalProjects())
+        setProjects(loadPendingProjects())
       } catch (err) {
         console.error('Error loading projects:', err)
         try {
-          setProjects(loadLocalProjects())
+          setProjects(loadPendingProjects())
         } catch {
           setProjects([])
         }
@@ -124,7 +107,7 @@ export function ProjectsExperience() {
       <div className="space-y-4">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">Proyectos de investigación</h1>
+            <h1 className="text-4xl font-bold text-slate-900">Proyectos de investigaciÃ³n</h1>
             <p className="text-slate-600 mt-2">
               Apoya la ciencia directamente. {projects.length} proyecto{projects.length !== 1 ? 's' : ''} activo{projects.length !== 1 ? 's' : ''}
             </p>
@@ -134,13 +117,13 @@ export function ProjectsExperience() {
             onClick={() => navigate('/login?intent=publish')}
             className="nova-button-solid whitespace-nowrap"
           >
-            📢 Publicar proyecto
+            ðŸ“¢ Publicar proyecto
           </button>
         </div>
 
-        {/* Explicación visual: Cómo funciona */}
+        {/* ExplicaciÃ³n visual: CÃ³mo funciona */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 space-y-4">
-          <h3 className="font-bold text-slate-900 text-lg">⛏️ Cómo funciona tu aporte</h3>
+          <h3 className="font-bold text-slate-900 text-lg">â›ï¸ CÃ³mo funciona tu aporte</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Paso 1 */}
@@ -154,23 +137,23 @@ export function ProjectsExperience() {
 
             {/* Flecha */}
             <div className="flex items-center justify-center md:col-span-0">
-              <div className="hidden md:block text-2xl text-purple-400">→</div>
-              <div className="md:hidden text-2xl text-purple-400">↓</div>
+              <div className="hidden md:block text-2xl text-purple-400">â†’</div>
+              <div className="md:hidden text-2xl text-purple-400">â†“</div>
             </div>
 
             {/* Paso 2 */}
             <div className="flex flex-col items-center text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-lg">2</div>
               <div>
-                <p className="font-bold text-slate-900 text-sm">Minería RandomX</p>
+                <p className="font-bold text-slate-900 text-sm">MinerÃ­a RandomX</p>
                 <p className="text-xs text-slate-600">Tu CPU calcula hashes</p>
               </div>
             </div>
 
             {/* Flecha */}
             <div className="flex items-center justify-center md:col-span-0">
-              <div className="hidden md:block text-2xl text-purple-400">→</div>
-              <div className="md:hidden text-2xl text-purple-400">↓</div>
+              <div className="hidden md:block text-2xl text-purple-400">â†’</div>
+              <div className="md:hidden text-2xl text-purple-400">â†“</div>
             </div>
 
             {/* Paso 3 */}
@@ -178,14 +161,14 @@ export function ProjectsExperience() {
               <div className="w-12 h-12 rounded-full bg-fuchsia-600 text-white flex items-center justify-center font-bold text-lg">3</div>
               <div>
                 <p className="font-bold text-slate-900 text-sm">XMR directo</p>
-                <p className="text-xs text-slate-600">Se envía a investigador</p>
+                <p className="text-xs text-slate-600">Se envÃ­a a investigador</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg p-4 border border-purple-200">
             <p className="text-sm text-slate-700">
-              <strong>✅ Sin intermediarios:</strong> Los XMR van directamente a la billetera del investigador. PROYECTA no custodia fondos.
+              <strong>âœ… Sin intermediarios:</strong> Los XMR van directamente a la billetera del investigador. PROYECTA no custodia fondos.
             </p>
           </div>
         </div>
@@ -193,7 +176,7 @@ export function ProjectsExperience() {
         {/* Filtros */}
         {categories.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-bold text-slate-700">Filtrar por categoría:</p>
+            <p className="text-sm font-bold text-slate-700">Filtrar por categorÃ­a:</p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedCategory(null)}
@@ -230,18 +213,18 @@ export function ProjectsExperience() {
       {/* Proyectos */}
       {filteredProjects.length === 0 ? (
         <div className="nova-card p-12 text-center space-y-4">
-          <div className="text-6xl">📭</div>
+          <div className="text-6xl">ðŸ“­</div>
           <h3 className="text-xl font-bold text-slate-900">No hay proyectos</h3>
           <p className="text-slate-600">
             {selectedCategory
-              ? 'No hay proyectos en esta categoría'
-              : 'Sé el primero en publicar un proyecto'}
+              ? 'No hay proyectos en esta categorÃ­a'
+              : 'SÃ© el primero en publicar un proyecto'}
           </p>
           <button
             onClick={() => navigate('/login?intent=publish')}
             className="nova-button-solid inline-block mt-4"
           >
-            📢 Publicar proyecto
+            ðŸ“¢ Publicar proyecto
           </button>
         </div>
       ) : (
@@ -292,3 +275,4 @@ export function ProjectsExperience() {
     </div>
   )
 }
+

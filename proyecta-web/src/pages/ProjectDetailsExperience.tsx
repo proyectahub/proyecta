@@ -34,15 +34,18 @@ export function ProjectDetailsExperience() {
       return
     }
 
-    const loadLocalProject = () => {
-      const saved = localStorage.getItem('proyecta_projects')
-      if (!saved) return null
-      const projects = JSON.parse(saved)
-      const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
-      localStorage.setItem('proyecta_projects', JSON.stringify(normalizedProjects))
-      return normalizedProjects.find((p: Project) => p.id === id) || null
+    const loadPendingProject = () => {
+      try {
+        const saved = localStorage.getItem('proyecta_projects_pending')
+        if (!saved) return null
+        const projects = JSON.parse(saved)
+        const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
+        localStorage.setItem('proyecta_projects_pending', JSON.stringify(normalizedProjects))
+        return normalizedProjects.find((p: Project) => p.id === id) || null
+      } catch {
+        return null
+      }
     }
-
     const loadProject = async () => {
       setLoading(true)
       try {
@@ -53,7 +56,7 @@ export function ProjectDetailsExperience() {
           return
         }
 
-        setProject(loadLocalProject())
+        setProject(loadPendingProject())
       } catch (err) {
         console.error('Error loading project:', err)
         try {
@@ -105,13 +108,13 @@ export function ProjectDetailsExperience() {
       <div className="nova-card space-y-3 border-2 border-slate-200 bg-white p-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Wallet personal del investigador</p>
         <p className="text-sm text-slate-600">
-          Esta es la dirección pública a la que el pool envía los XMR del proyecto.
+          Esta es la direcciÃ³n pÃºblica a la que el pool envÃ­a los XMR del proyecto.
         </p>
         <code className="block break-all rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-800">
           {normalizeProjectWalletAddress(project.fundraisingAddress)}
         </code>
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-          <span>{isValidProjectWalletAddress(project.fundraisingAddress) ? 'Dirección válida' : 'Dirección pendiente de validar'}</span>
+          <span>{isValidProjectWalletAddress(project.fundraisingAddress) ? 'DirecciÃ³n vÃ¡lida' : 'DirecciÃ³n pendiente de validar'}</span>
           <a
             href="https://supportxmr.com/"
             target="_blank"
@@ -140,7 +143,7 @@ export function ProjectDetailsExperience() {
       />
 
       <div className="nova-card space-y-4 p-6">
-        <h2 className="text-2xl font-bold">Descripción</h2>
+        <h2 className="text-2xl font-bold">DescripciÃ³n</h2>
         <div
           className="space-y-4 text-slate-700"
           dangerouslySetInnerHTML={{ __html: project.description }}
