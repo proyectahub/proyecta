@@ -103,6 +103,29 @@ async function buildWalletSummary(wallet) {
   return buildUnifiedMiningSummary(wallet, confirmedStats)
 }
 
+function buildProjectTelemetryKey(wallet, projectId) {
+  const safeProjectId = String(projectId || "").trim()
+  return safeProjectId ? `${wallet}::project::${safeProjectId}` : wallet
+}
+
+function buildProjectMiningSummary(wallet, projectId) {
+  const telemetryKey = buildProjectTelemetryKey(wallet, projectId)
+  return {
+    ...buildUnifiedMiningSummary(telemetryKey, null),
+    wallet,
+    projectId: String(projectId || "").trim() || null,
+    isPoolConfirmed: false,
+    externalMiningActive: false,
+    confirmedBalance: 0,
+    confirmedHashrate: 0,
+    confirmedTotalHashes: 0,
+    confirmedTotalPaid: 0,
+    confirmedValidShares: 0,
+    confirmedInvalidShares: 0,
+    status: "Esperando aporte local del proyecto",
+  }
+}
+
 function createMiningCompatibilityRouter() {
   const router = express.Router()
 
@@ -119,9 +142,11 @@ function createMiningCompatibilityRouter() {
     const rejectedShares = Number(req.body?.rejectedShares || 0)
     const sessionId = typeof req.body?.sessionId === "string" ? req.body.sessionId : null
     const poolConnected = Boolean(req.body?.poolConnected)
+    const projectId = typeof req.body?.projectId === "string" ? req.body.projectId.trim() : ""
+    const telemetryKey = buildProjectTelemetryKey(wallet, projectId)
 
     if (wallet) {
-      recordMiningTelemetry(wallet, {
+      recordMiningTelemetry(telemetryKey, {
         totalHashes: hashes,
         hashRate,
         elapsedSeconds,
@@ -138,7 +163,7 @@ function createMiningCompatibilityRouter() {
       poolConnected: poolConnected || hashes > 0 || hashRate > 0,
       accepted: true,
       submittedHashes: hashes,
-      summary: wallet ? buildUnifiedMiningSummary(wallet, null) : null,
+      summary: wallet ? buildProjectMiningSummary(wallet, projectId) : null,
     })
   })
 
@@ -161,6 +186,13 @@ function createMiningCompatibilityRouter() {
   router.get("/summary/:wallet", async (req, res) => {
     const wallet = req.params.wallet
     const summary = await buildWalletSummary(wallet)
+    res.json(summary)
+  })
+
+  router.get("/project-stats/:projectId/:wallet", (req, res) => {
+    const wallet = req.params.wallet
+    const projectId = req.params.projectId
+    const summary = buildProjectMiningSummary(wallet, projectId)
     res.json(summary)
   })
 

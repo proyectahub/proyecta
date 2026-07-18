@@ -19,6 +19,7 @@ export function useRandomXMining(
   walletAddress: string,
   enabled: boolean,
   cpuPercentage: number = 50,
+  projectId?: string,
 ) {
   const [stats, setStats] = useState<RandomXStats>({
     hashRate: 0,
@@ -63,13 +64,14 @@ export function useRandomXMining(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           walletAddress,
+          projectId,
           sessionId: sessionIdRef.current,
           source: 'browser',
           ...payload,
         }),
       }).catch(() => undefined)
     },
-    [walletAddress],
+    [walletAddress, projectId],
   )
 
   useEffect(() => {
@@ -284,7 +286,7 @@ export function useRandomXMining(
       }))
       setError(null)
     }
-  }, [enabled, walletAddress, cpuPercentage, sendTelemetry])
+  }, [enabled, walletAddress, cpuPercentage, projectId, sendTelemetry])
 
   const stop = useCallback(() => {
     if (wsRef.current) {

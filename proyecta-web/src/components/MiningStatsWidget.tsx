@@ -35,21 +35,22 @@ interface MiningStatsWidgetProps {
   wallet: string
   fundingGoal: number
   projectTitle: string
+  projectId?: string
 }
 
 function hasVisibleMiningData(stats: MiningStats | null) {
   if (!stats) return false
-  return Boolean(stats.visibleBalance || stats.confirmedBalance || stats.localBalance || stats.hashrate || stats.totalHashes)
+  return Boolean(stats.localBalance || stats.localHashrate || stats.localTotalHashes || stats.isLocalActive || stats.localMiners)
 }
 
 function formatXmr(value: number, decimals = 4) {
   return value.toFixed(decimals)
 }
 
-export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProps) {
+export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId }: MiningStatsWidgetProps) {
   const [stats, setStats] = useState<MiningStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   const fetchMiningStats = async () => {
@@ -57,10 +58,12 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
       setLoading(true)
       setError(null)
 
-      const apiUrls = [
-        `${resolveMiningApiBase()}/pool-stats/${wallet}`,
-        `https://supportxmr.com/api/miner/${wallet}/stats`,
-      ]
+      const apiUrls = projectId
+        ? [`${resolveMiningApiBase()}/project-stats/${encodeURIComponent(projectId)}/${wallet}`]
+        : [
+            `${resolveMiningApiBase()}/pool-stats/${wallet}`,
+            `https://supportxmr.com/api/miner/${wallet}/stats`,
+          ]
 
       for (const url of apiUrls) {
         try {
@@ -94,7 +97,7 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
     fetchMiningStats()
     const interval = setInterval(fetchMiningStats, 30000)
     return () => clearInterval(interval)
-  }, [wallet])
+  }, [wallet, projectId])
 
   if (loading && !stats) {
     return (
@@ -128,6 +131,55 @@ export function MiningStatsWidget({ wallet, fundingGoal }: MiningStatsWidgetProp
   const progressPercent = hasVisibleMiningData(stats) ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
   const remaining = Math.max(fundingGoal - visibleBalance, 0)
   const usdValue = (visibleBalance * 316.12).toFixed(2)
+  const projectHasMiningActivity = hasVisibleMiningData(stats)
+
+  if (stats && !projectHasMiningActivity) {
+    return (
+      <div className="nova-card space-y-4 border-2 border-slate-200 bg-white p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+              <Zap className="h-5 w-5 text-slate-500" />
+              Minería comunitaria lista
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Aún no se ha iniciado minería para <span className="font-semibold">{projectTitle}</span>. No se muestra el historial global de la wallet como avance de este proyecto.
+            </p>
+          </div>
+          <button
+            onClick={fetchMiningStats}
+            className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-50 hover:text-purple-600"
+            title="Actualizar ahora"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="mb-1 text-xs font-bold text-slate-600">Recaudado por este proyecto</p>
+            <p className="font-bold text-slate-900">0.0000 XMR</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="mb-1 text-xs font-bold text-slate-600">Hashrate activo</p>
+            <p className="font-bold text-slate-900">0.00 H/s</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="mb-1 text-xs font-bold text-slate-600">Hashes del proyecto</p>
+            <p className="font-bold text-slate-900">0.00M</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="mb-1 text-xs font-bold text-slate-600">Estado</p>
+            <p className="font-bold text-slate-900">Sin minería iniciada</p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
+          La dirección del investigador sigue siendo válida para recibir XMR, pero el progreso de este proyecto empieza en cero hasta que alguien elija navegador o app y aporte cómputo.
+        </div>
+      </div>
+    )
+  }
 
   if (!stats) {
     return (

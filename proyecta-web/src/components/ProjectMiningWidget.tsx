@@ -21,7 +21,7 @@ function formatAmount(value: unknown) {
   return Number.isFinite(numeric) ? numeric.toFixed(4) : '0.0000'
 }
 
-export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: ProjectMiningWidgetProps) {
+export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projectId }: ProjectMiningWidgetProps) {
   const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(null)
   const [showOptionsModal, setShowOptionsModal] = useState(true)
   const [miningEnabled, setMiningEnabled] = useState(false)
@@ -33,20 +33,17 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle }: Proj
     projectMoneroAddress,
     miningEnabled && isValidAddress && miningMode === 'browser',
     cpuPercentage,
+    projectId,
   )
 
-  const { poolStats } = useSupportXMRStats(projectMoneroAddress)
+  const { poolStats } = useSupportXMRStats(projectMoneroAddress, projectId)
   const localActive = Boolean(poolStats?.isLocalActive)
   const poolConfirmed = Boolean(poolStats?.isPoolConfirmed)
   const visibleBalance = Number(poolStats?.visibleBalance ?? poolStats?.balance ?? 0)
   const confirmedBalance = Number(poolStats?.confirmedBalance ?? 0)
   const localBalance = Number(poolStats?.localBalance ?? 0)
-  const visibleHashrate = Number(poolStats?.visibleHashrate ?? poolStats?.hashrate ?? 0)
   const visibleHashes = Number(poolStats?.visibleTotalHashes ?? poolStats?.totalHashes ?? 0)
   const confirmedValidShares = Number(poolStats?.confirmedValidShares ?? poolStats?.validShares ?? 0)
-  const localMiners = Number(poolStats?.localMiners ?? 0)
-  const localBrowserMiners = Number(poolStats?.localBrowserMiners ?? 0)
-  const localNativeMiners = Number(poolStats?.localNativeMiners ?? 0)
   const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares)
 
   const formatTime = (seconds: number) => {

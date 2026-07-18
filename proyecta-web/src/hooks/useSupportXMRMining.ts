@@ -1,4 +1,4 @@
-ï»¿import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
@@ -13,8 +13,8 @@ interface MiningStats {
 const BACKEND_URL = resolveMiningApiBase()
 
 /**
- * Hook de minerÃ­a en navegador con telemetrÃ­a hacia el backend.
- * El backend guarda la actividad local y la suma con la confirmaciÃ³n del pool.
+ * Hook de minería en navegador con telemetría hacia el backend.
+ * El backend guarda la actividad local y la suma con la confirmación del pool.
  */
 export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpuPercentage: number = 50) {
   const [stats, setStats] = useState<MiningStats>({
@@ -136,9 +136,9 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
 }
 
 /**
- * Hook para obtener estadÃ­sticas unificadas de minerÃ­a desde el backend.
+ * Hook para obtener estadísticas unificadas de minería desde el backend.
  */
-export function useSupportXMRStats(walletAddress: string) {
+export function useSupportXMRStats(walletAddress: string, projectId?: string) {
   const [poolStats, setPoolStats] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -149,12 +149,19 @@ export function useSupportXMRStats(walletAddress: string) {
     const fetchStats = async () => {
       setLoading(true)
       try {
-        const backendRes = await fetch(`${BACKEND_URL}/pool-stats/${walletAddress}`)
+        const statsPath = projectId
+          ? `${BACKEND_URL}/project-stats/${encodeURIComponent(projectId)}/${walletAddress}`
+          : `${BACKEND_URL}/pool-stats/${walletAddress}`
+        const backendRes = await fetch(statsPath)
         if (backendRes.ok) {
           const data = await backendRes.json()
           setPoolStats(normalizeSupportXMRStats(data))
           setError(null)
           return
+        }
+
+        if (projectId) {
+          throw new Error('No se pudieron cargar stats del proyecto')
         }
 
         const response = await fetch(`https://supportxmr.com/api/miner/${walletAddress}/stats`)
@@ -188,7 +195,7 @@ export function useSupportXMRStats(walletAddress: string) {
     const interval = setInterval(fetchStats, 30000)
 
     return () => clearInterval(interval)
-  }, [walletAddress])
+  }, [walletAddress, projectId])
 
   return { poolStats, loading, error }
 }
