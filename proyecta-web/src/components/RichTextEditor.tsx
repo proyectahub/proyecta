@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { Bold, Heading2, ImageIcon, Italic, Link2, List, Wand2 } from 'lucide-react'
 
 interface RichTextEditorProps {

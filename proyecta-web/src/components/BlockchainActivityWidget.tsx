@@ -1,4 +1,4 @@
-﻿import { useBlockchainMonitoring } from '../hooks/useBlockchainMonitoring'
+import { useBlockchainMonitoring } from '../hooks/useBlockchainMonitoring'
 
 interface BlockchainActivityWidgetProps {
   projectId: string

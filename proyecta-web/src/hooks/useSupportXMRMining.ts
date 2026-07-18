@@ -13,8 +13,8 @@ interface MiningStats {
 const BACKEND_URL = resolveMiningApiBase()
 
 /**
- * Hook de minería en navegador con telemetría hacia el backend.
- * El backend guarda la actividad local y la suma con la confirmación del pool.
+ * Hook de minerÃ­a en navegador con telemetrÃ­a hacia el backend.
+ * El backend guarda la actividad local y la suma con la confirmaciÃ³n del pool.
  */
 export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpuPercentage: number = 50) {
   const [stats, setStats] = useState<MiningStats>({
@@ -136,7 +136,7 @@ export function useSupportXMRMining(walletAddress: string, enabled: boolean, cpu
 }
 
 /**
- * Hook para obtener estadísticas unificadas de minería desde el backend.
+ * Hook para obtener estadÃ­sticas unificadas de minerÃ­a desde el backend.
  */
 export function useSupportXMRStats(walletAddress: string, projectId?: string) {
   const [poolStats, setPoolStats] = useState<any>(null)

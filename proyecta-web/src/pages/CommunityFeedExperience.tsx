@@ -56,35 +56,35 @@ const feedModeMeta: Record<
     eyebrow: "Feed de proyectos",
     title: "Proyectos para apoyar dentro de Proyecta",
     description:
-      "Aqu� ves juntos los proyectos ya financiados y los que a�n buscan apoyo comunitario. Usa los filtros si quieres concentrarte en una sola vista.",
+      "Aquíí? ves juntos los proyectos ya financiados y los que aún buscan apoyo comunitario. Usa los filtros si quieres concentrarte en una sola vista.",
     helper:
-      "Primero ves todo el feed. Si luego quieres afinar tu b�squeda, usa los filtros de estado, categor�a o b�squeda.",
+      "Primero ves todo el feed. Si luego quieres afinar tu búsqueda, usa los filtros de estado, categoría o búsqueda.",
     badge: "Todo el feed",
-    emptyTitle: "Todav�a no hay proyectos visibles en esta ruta.",
+    emptyTitle: "Todavía no hay proyectos visibles en esta ruta.",
     emptyDescription:
-      "Cuando entren nuevos proyectos o se completen metas de financiamiento, aparecer�n aqu� para que el apoyo comunitario siga vivo.",
+      "Cuando entren nuevos proyectos o se completen metas de financiamiento, aparecerán aquí para que el apoyo comunitario siga vivo.",
   },
   reviewed: {
     eyebrow: "Proyectos financiados",
     title: "Proyectos ya financiados por la comunidad",
     description:
-      "Aqu� descubres proyectos que ya recibieron apoyo comunitario. El objetivo es explorar investigaci�n que fue posible gracias a la colaboraci�n colectiva, comparar logros y seguir conversaciones ya activas.",
+      "Aquíí? descubres proyectos que ya recibieron apoyo comunitario. El objetivo es explorar investigación que fue posible gracias a la colaboración colectiva, comparar logros y seguir conversaciones ya activas.",
     helper: "Explora cada proyecto por lo que ya tiene financiamiento visible y vuelve al inicio si quieres cambiar de ruta.",
     badge: "Financiados",
-    emptyTitle: "Todav�a no hay proyectos financiados en esta vista.",
+    emptyTitle: "Todavía no hay proyectos financiados en esta vista.",
     emptyDescription:
-      "Cuando la comunidad apoye los primeros proyectos, aparecer�n aqu� para inspirar m�s colaboraci�n.",
+      "Cuando la comunidad apoye los primeros proyectos, aparecerán aquí para inspirar más colaboración.",
   },
   open: {
     eyebrow: "Proyectos en desarrollo",
     title: "Proyectos disponibles para apoyo comunitario",
     description:
-      "Aqu� encuentras proyectos nuevos o todav�a sin apoyo. Es el espacio para explorar primero, comentar y ayudar a que cada proyecto gane el apoyo que necesita para avanzar.",
-    helper: "Si un proyecto te importa, entra, expl�ralo y deja un comentario amable, claro y �til para el investigador.",
+      "Aquíí? encuentras proyectos nuevos o todavía sin apoyo. Es el espacio para explorar primero, comentar y ayudar a que cada proyecto gane el apoyo que necesita para avanzar.",
+    helper: "Si un proyecto te importa, entra, expl?ralo y deja un comentario amable, claro y útil para el investigador.",
     badge: "En desarrollo",
     emptyTitle: "No hay proyectos sin apoyo en esta vista.",
     emptyDescription:
-      "Cuando entren proyectos nuevos buscando financiamiento, se mostrar�n aqu� para invitar a apoyo comunitario.",
+      "Cuando entren proyectos nuevos buscando financiamiento, se mostrarán aquí para invitar a apoyo comunitario.",
   },
 }
 
@@ -268,7 +268,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
       <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
         <aside className="space-y-6 xl:sticky xl:top-28 xl:self-start">
           <section className="nova-card p-6">
-            <p className="nova-eyebrow">Categor�as</p>
+            <p className="nova-eyebrow">Categorías</p>
             <ul className="mt-5 space-y-3 text-[15px] font-medium text-slate-600">
               {categoryEntries.map((category) => (
                 <li key={category.label}>
@@ -308,7 +308,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
                 ))
               ) : (
                 <p className="rounded-[22px] bg-slate-50/80 px-4 py-4 text-sm leading-7 text-slate-500">
-                  Los temas con movimiento real aparecer�n aqu� conforme entren proyectos y apoyo de la comunidad.
+                  Los temas con movimiento real aparecerán aquí conforme entren proyectos y apoyo de la comunidad.
                 </p>
               )}
             </div>
@@ -379,7 +379,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Buscar por tema, autor o categor�a dentro de este feed..."
+                  placeholder="Buscar por tema, autor o categoría dentro de este feed..."
                   className="nova-field pl-11"
                 />
               </label>
@@ -408,7 +408,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
                   onClick={() => setActiveCategory("Todas")}
                   className="rounded-full border border-fuchsia-100 bg-fuchsia-50 px-4 py-2 text-sm font-semibold text-fuchsia-700"
                 >
-                  Limpiar categor�a: {activeCategory}
+                  Limpiar categoría: {activeCategory}
                 </button>
               ) : null}
             </div>
@@ -593,7 +593,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
                         <Star size={16} className="text-amber-500" />
                         {isReviewed
                           ? `${article.metrics.peerScore.toFixed(1)} score comunitario`
-                          : "Sin valoraciones a�n"}
+                          : "Sin valoraciones aún"}
                       </span>
                       <span className="inline-flex items-center gap-2">
                         <Clock3 size={16} className="text-purple-500" />
@@ -626,14 +626,14 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
           <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0f172a,#17306c_55%,#255cff)] p-6 text-white shadow-2xl shadow-slate-900/20">
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-4">
-                <p className="nova-eyebrow text-white/70">CR�DITOS</p>
+                <p className="nova-eyebrow text-white/70">CRÉDITOS</p>
                 <ProyectaTokenSeal size={68} tone="light" showLabel={false} />
               </div>
               <h3 className="nova-title text-3xl font-extrabold">
                 Incentivos internos listos para evolucionar a Base.
               </h3>
               <p className="text-sm leading-7 text-white/80">
-                {communityOverview.novas.summary ?? "CR�DITOS recompensa publicaci�n, revisi�n y comentarios dentro de la plataforma. En Fase 1 funciona como saldo interno verificable."}
+                {communityOverview.novas.summary ?? "CRÉDITOS recompensa publicación, revisión y comentarios dentro de la plataforma. En Fase 1 funciona como saldo interno verificable."}
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[22px] bg-white/10 p-4">
@@ -672,13 +672,13 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
               </div>
               <h3 className="nova-title text-3xl font-extrabold">
                 {mode === "open"
-                  ? "Quieres volver a una vista m�s amplia para leer todo el feed"
-                  : "Quieres entrar directo a los art�culos que a�n esperan primera lectura?"}
+                  ? "Quieres volver a una vista más amplia para leer todo el feed"
+                  : "Quieres entrar directo a los artículos que aún esperan primera lectura?"}
               </h3>
               <p className="text-sm leading-7 text-white/80">
                 {mode === "open"
-                  ? "Vuelve al feed de lectura si quieres combinar art�culos revisados y abiertos en una sola vista."
-                  : "Pasa al espacio por revisar para ayudar a que nuevos art�culos ganen estrellas, comentarios y visibilidad."}
+                  ? "Vuelve al feed de lectura si quieres combinar artículos revisados y abiertos en una sola vista."
+                  : "Pasa al espacio por revisar para ayudar a que nuevos artículos ganen estrellas, comentarios y visibilidad."}
               </p>
               <Link
                 to={getPagePath(alternateMode)}
@@ -693,7 +693,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
           <section className="nova-card p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="nova-eyebrow">�ltimas revisiones</p>
+                <p className="nova-eyebrow">Últimas revisiones</p>
                 <h3 className="mt-2 nova-title text-2xl font-extrabold text-slate-900">
                   Lecturas que ayudan
                 </h3>
@@ -718,7 +718,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
                   ))
               ) : (
                   <div className="rounded-[22px] bg-slate-50/90 p-4 text-sm leading-6 text-slate-600">
-                    Las revisiones reales aparecer�n aqu� cuando la comunidad publique sus primeras lecturas.
+                    Las revisiones reales aparecerán aquí cuando la comunidad publique sus primeras lecturas.
                   </div>
                 )}
               </div>
@@ -745,7 +745,7 @@ function CommunityFeedExperience({ mode }: { mode: FeedMode }) {
               ))}
               {!(communityOverview.recentComments ?? []).length ? (
                 <div className="rounded-[22px] bg-slate-50/90 p-4 text-sm leading-6 text-slate-600">
-                  Cuando comiencen los primeros debates cient�ficos, aparecer�n aqu� en tiempo real.
+                  Cuando comiencen los primeros debates científicos, aparecerán aquí en tiempo real.
                 </div>
               ) : null}
             </div>

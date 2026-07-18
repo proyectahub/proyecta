@@ -1,4 +1,4 @@
-﻿import { ensureSchema, json, loginWallet, updateWalletProfile, getWalletFromRequest } from "../_shared/auth.js"
+import { ensureSchema, json, loginWallet, updateWalletProfile, getWalletFromRequest } from "../_shared/auth.js"
 
 export async function onRequestPost(context) {
   const { env, request } = context

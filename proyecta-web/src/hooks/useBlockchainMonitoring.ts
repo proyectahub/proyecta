@@ -1,4 +1,4 @@
-﻿import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useMoneroBlockchain } from './useMoneroBlockchain'
 import { useIPFSVita } from './useIPFSVita'
 import { useWalletAuth } from '../context/WalletAuthContext'

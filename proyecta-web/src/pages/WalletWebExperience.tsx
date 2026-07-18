@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ExternalLink, Globe2, Lock, ShieldCheck, ClipboardPaste } from 'lucide-react'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { MoneroWebVisualGuide } from '../components/MoneroWebVisualGuide'

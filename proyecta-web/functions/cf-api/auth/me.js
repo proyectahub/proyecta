@@ -1,4 +1,4 @@
-﻿import { ensureSchema, getUserFromRequest, json } from "../_shared/auth.js"
+import { ensureSchema, getUserFromRequest, json } from "../_shared/auth.js"
 
 export async function onRequestGet(context) {
   const { env, request } = context

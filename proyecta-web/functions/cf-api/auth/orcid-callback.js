@@ -1,4 +1,4 @@
-﻿import { createSession, ensureSchema, json } from '../_shared/auth.js'
+import { createSession, ensureSchema, json } from '../_shared/auth.js'
 import { buildOrcidRedirectUri, decodeOrcidState, exchangeOrcidCode, linkOrcidToUser, resolveOrcidDisplayName } from '../_shared/orcid.js'
 
 export async function onRequestGet(context) {

@@ -1,4 +1,4 @@
-﻿const DEFAULT_ORCID_BASE_URL = 'https://orcid.org'
+const DEFAULT_ORCID_BASE_URL = 'https://orcid.org'
 const DEFAULT_ORCID_API_BASE_URL = 'https://pub.orcid.org'
 
 export function buildOrcidRedirectUri(request, env) {

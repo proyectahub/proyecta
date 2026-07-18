@@ -124,7 +124,7 @@ export const categoryLabels = [
   "Economía",
   "Historia",
   "Filosofía",
-  "LingÃ¼ística",
+  "Lingüística",
   "Humanidades Digitales",
 ]
 
@@ -176,7 +176,7 @@ export const reviewHighlights = [
 export const editorialPrinciples = [
   {
     title: "Serio, pero cercano",
-    copy: "Aquí la ciencia se comunica con criterio, pero también con una voz humana que invita a leer, preguntar y seguir explorando.",
+    copy: "Aquííí la ciencia se comunica con criterio, pero también con una voz humana que invita a leer, preguntar y seguir explorando.",
   },
   {
     title: "Lectura amable",

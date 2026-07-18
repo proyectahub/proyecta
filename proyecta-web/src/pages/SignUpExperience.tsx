@@ -28,7 +28,7 @@ export function SignUpExperience() {
     }
 
     if (password !== confirmPassword) {
-      setError('Las contrase?as no coinciden')
+      setError('Las contraseñas no coinciden')
       return
     }
 
@@ -140,7 +140,7 @@ export function SignUpExperience() {
               onClick={() => navigate('/login')}
               className="text-blue-600 underline"
             >
-              Inicia sesi?n
+              Inicia sesión
             </button>
           </p>
         </form>

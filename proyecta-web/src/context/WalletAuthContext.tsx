@@ -1,4 +1,4 @@
-﻿import React, { createContext, useEffect, useState, ReactNode } from 'react'
+import React, { createContext, useEffect, useState, ReactNode } from 'react'
 import { useMoneroBlockchain } from '../hooks/useMoneroBlockchain'
 import { useIPFSVita } from '../hooks/useIPFSVita'
 

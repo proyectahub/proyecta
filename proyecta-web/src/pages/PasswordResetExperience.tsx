@@ -1,4 +1,4 @@
-﻿import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowRight, CheckCircle2, KeyRound, ShieldCheck } from "lucide-react"
 import { toast } from "react-hot-toast"
@@ -32,7 +32,7 @@ export default function PasswordResetExperience() {
         const data = await parseApiJson(response)
 
         if (!response.ok || !data.valid) {
-          throw new Error(data.error || "El enlace ya no es valido.")
+          throw new Error(data.error || "El enlace ya no es válido.")
         }
 
         if (isMounted) {
@@ -165,7 +165,7 @@ export default function PasswordResetExperience() {
 
           {tokenStatus === "checking" ? (
             <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-500">
-              Estamos vávalidando tu enlace de recuperación...
+              Estamos validando tu enlace de recuperación...
             </div>
           ) : null}
 
@@ -175,7 +175,7 @@ export default function PasswordResetExperience() {
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <p className="font-semibold text-slate-900">El enlace ya no es valido</p>
+                <p className="font-semibold text-slate-900">El enlace ya no es válido</p>
                 <p className="mt-2">
                   Puede haber expirado o ya fue usado. Solicita una recuperación nueva para seguir.
                 </p>

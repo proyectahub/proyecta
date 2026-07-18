@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { ProjectMiningWidget } from './ProjectMiningWidget'
 import { MiningOptionsModal } from './MiningOptionsModal'
 

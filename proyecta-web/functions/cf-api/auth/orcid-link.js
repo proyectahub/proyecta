@@ -1,4 +1,4 @@
-﻿import { ensureSchema, getUserFromRequest, json } from '../_shared/auth.js'
+import { ensureSchema, getUserFromRequest, json } from '../_shared/auth.js'
 import { buildOrcidAuthorizeUrl, buildOrcidRedirectUri, encodeOrcidState } from '../_shared/orcid.js'
 
 export async function onRequest(context) {

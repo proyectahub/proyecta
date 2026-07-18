@@ -50,7 +50,7 @@ const editorialValues = [
   },
   {
     title: "Rigor sin distorsion",
-    copy: "Divulgar no significa exagerar hallazgos ni prometer lo que la evidencia no sostiene. Aquí importa explicar con claridad sin sacrificar precisi?n.",
+    copy: "Divulgar no significa exagerar hallazgos ni prometer lo que la evidencia no sostiene. Aquííí importa explicar con claridad sin sacrificar precisión.",
   },
   {
     title: "Fuentes y contexto",
@@ -83,20 +83,20 @@ const articleTemplateSections = [
   },
   {
     title: "L?mites y cautelas",
-    copy: "Aclara que no puede concluirse todav?a, que falta revisar o en que condiciones aplica.",
+    copy: "Aclara que no puede concluirse todavía, que falta revisar o en que condiciones aplica.",
   },
   {
     title: "Fuentes consultables",
-    copy: "A?ade referencias reales para que el artículo pueda seguirse, verificarse y luego exportarse con formato acad?mico.",
+    copy: "Añade referencias reales para que el artículo pueda seguirse, verificarse y luego exportarse con formato académico.",
   },
 ] as const
 
 const articleTemplateHtml = `
   <h2>Idea central</h2>
-  <p>Resume en 2 o 3 frases cual es la pregunta, el hallazgo o la idea principal de tu artículo de divulgaci?n.</p>
+  <p>Resume en 2 o 3 frases cual es la pregunta, el hallazgo o la idea principal de tu artículo de divulgación.</p>
 
   <h2>Por que importa</h2>
-  <p>Explica por que este tema merece atencion científica o publica y que aporta a la conversaci?n.</p>
+  <p>Explica por que este tema merece atencion científica o publica y que aporta a la conversación.</p>
 
   <h2>Metodo o ruta de trabajo</h2>
   <p>Describe que se hizo, que se observo o desde que evidencia parte el artículo.</p>
@@ -105,7 +105,7 @@ const articleTemplateHtml = `
   <p>Presenta los hallazgos principales con lenguaje claro, sin exageraciones ni promesas que la evidencia no sostenga.</p>
 
   <h2>L?mites y cautelas</h2>
-  <p>Se?ala que límites tiene el estudio, que preguntas siguen abiertas o que contexto conviene tener presente.</p>
+  <p>Señala que límites tiene el estudio, que preguntas siguen abiertas o que contexto conviene tener presente.</p>
 
   <h2>Conclusion</h2>
   <p>Cierra con la idea principal y con una invitacion a seguir leyendo, revisando o dialogando sobre el tema.</p>
@@ -222,7 +222,7 @@ export default function EditorExperience() {
         const localArticle = feedArticles.find((article) => article.id === id)
 
         if (!localArticle) {
-          throw new Error("No fue posible cargar la publicaci?n.")
+          throw new Error("No fue posible cargar la publicación.")
         }
 
         setTitle(localArticle.title ?? "")
@@ -233,7 +233,7 @@ export default function EditorExperience() {
         editor.commands.setContent(localArticle.contentHtml ?? "")
       } catch (error) {
         if (!controller.signal.aborted) {
-          const message = error instanceof Error ? error.message : "No fue posible cargar la publicaci?n."
+          const message = error instanceof Error ? error.message : "No fue posible cargar la publicación."
           toast.error(message)
           navigate(-1)
         }
@@ -404,7 +404,7 @@ export default function EditorExperience() {
   const handleAddCategory = async () => {
     const token = window.localStorage.getItem("proyecta-session-token")
     if (!token) {
-      toast.error("Inicia sesi?n para agregar nuevas áreas.")
+      toast.error("Inicia sesión para agregar nuevas áreas.")
       navigate("/login")
       return
     }
@@ -474,7 +474,7 @@ export default function EditorExperience() {
 
     const token = window.localStorage.getItem("proyecta-session-token")
     if (!token) {
-      toast.error("Inicia sesi?n para publicar.")
+      toast.error("Inicia sesión para publicar.")
       navigate("/login")
       return
     }
@@ -572,17 +572,17 @@ export default function EditorExperience() {
   const publicationRequirements = [
     {
       label: "Título, área y cuerpo",
-      detail: hasTitle && hasCategory && hasBody ? "Listo para circular" : "Completa título, ?rea y contenido",
+      detail: hasTitle && hasCategory && hasBody ? "Listo para circular" : "Completa título, área y contenido",
       ready: hasTitle && hasCategory && hasBody,
     },
     {
-      label: "Extensi?n mínima",
-      detail: meetsWordCount ? `${wordCount} palabras: cumples el mínimo editorial` : `M?nimo ${minimumWordCount} palabras para publicar`,
+      label: "Extensión mínima",
+      detail: meetsWordCount ? `${wordCount} palabras: cumples el mínimo editorial` : `Mínimo ${minimumWordCount} palabras para publicar`,
       ready: meetsWordCount,
     },
     {
       label: "Figura principal obligatoria",
-      detail: hasFigure ? "El artículo ya tiene una imagen o figura principal" : "Agrega una figura original o con atribuci?n clara antes de publicar",
+      detail: hasFigure ? "El artículo ya tiene una imagen o figura principal" : "Agrega una figura original o con atribución clara antes de publicar",
       ready: hasFigure,
     },
     {
@@ -660,7 +660,7 @@ export default function EditorExperience() {
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
               <input
                 type="text"
-                placeholder="T?tulo de la publicación..."
+                placeholder="Título de la publicación..."
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 className="w-full border-none bg-transparent p-0 nova-title text-4xl font-extrabold text-slate-900 outline-none placeholder:text-slate-200 md:text-[3.6rem]"
@@ -693,7 +693,7 @@ export default function EditorExperience() {
                         Figura principal
                       </p>
                       <p className="mt-2 text-sm leading-7 text-slate-600">
-                        Esta imagen acompa?a tu publicación desde el inicio y ayuda a dar contexto visual a la lectura.
+                        Esta imagen acompaña tu publicación desde el inicio y ayuda a dar contexto visual a la lectura.
                       </p>
                     </div>
 
@@ -742,7 +742,7 @@ export default function EditorExperience() {
 
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
               <div className="rounded-[24px] border border-fuchsia-100 bg-fuchsia-50/60 p-4 text-sm leading-7 text-fuchsia-900">
-                  Seleccionar un ?rea científica organiza el feed, mejora el descubrimiento y ayuda a que la comunidad encuentre tu artículo con más facilidad. La idea es comunicar ciencia con criterio, pero tambi?n con una lectura amable.
+                  Seleccionar un área científica organiza el feed, mejora el descubrimiento y ayuda a que la comunidad encuentre tu artículo con más facilidad. La idea es comunicar ciencia con criterio, pero también con una lectura amable.
               </div>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-600">Área científica</span>
@@ -751,8 +751,8 @@ export default function EditorExperience() {
                   onChange={(event) => setCategory(event.target.value)}
                   className="nova-field"
                 >
-                  <option value="">Selecciona un ?rea</option>
-                  {(categoryGroups.length ? categoryGroups : [{ family: "?reas", categories }]).map((group) => (
+                  <option value="">Selecciona un área</option>
+                  {(categoryGroups.length ? categoryGroups : [{ family: "áreas", categories }]).map((group) => (
                     <optgroup key={group.family} label={group.family}>
                       {group.categories.map((item) => (
                         <option key={item} value={item}>
@@ -770,7 +770,7 @@ export default function EditorExperience() {
                 type="text"
                 value={newCategory}
                 onChange={(event) => setNewCategory(event.target.value)}
-                placeholder="Agregar nueva ?rea o disciplina..."
+                placeholder="Agregar nueva área o disciplina..."
                 className="nova-field"
               />
               <button
@@ -779,11 +779,11 @@ export default function EditorExperience() {
                 className="nova-button-soft justify-center disabled:opacity-60"
               >
                 <Plus size={16} />
-                Agregar ?rea
+                Agregar área
               </button>
             </div>
             <p className="text-sm leading-7 text-slate-500">
-              Las áreas se agrupan automáticamente por familias como ciencias de la vida, ciencias f?sicas, ingenier?as, ciencias sociales, humanidades e interdisciplina.
+              Las áreas se agrupan automáticamente por familias como ciencias de la vida, ciencias físicas, ingenierías, ciencias sociales, humanidades e interdisciplina.
             </p>
 
             <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-5">
@@ -794,10 +794,10 @@ export default function EditorExperience() {
                     Patron editorial sugerido
                   </div>
                   <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-                    Una guía amable para escribir un artículo de divulgaci?n
+                    Una guía amable para escribir un artículo de divulgación
                   </h2>
                   <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                    Este patrón te ayuda a ordenar la idea central, la relevancia, el método, los resultados, las cautelas y las fuentes. Tambi?n deja mejor preparada la publicación para una futura exportaci?n en PDF acad?mico y metadatos editoriales más sólidos.
+                    Este patrón te ayuda a ordenar la idea central, la relevancia, el método, los resultados, las cautelas y las fuentes. También deja mejor preparada la publicación para una futura exportación en PDF académico y metadatos editoriales más sólidos.
                   </p>
                 </div>
 
@@ -907,7 +907,7 @@ export default function EditorExperience() {
                     Referencias reales para fortalecer el artículo
                   </h2>
                   <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                    Puedes citar artículos científicos, DOIs, repositorios, preprints, datos abiertos, sitios institucionales o informes t?cnicos. Estas fuentes viajarán con la publicación y ayudarán a una futura salida en PDF con estilo acad?mico.
+                    Puedes citar artículos científicos, DOIs, repositorios, preprints, datos abiertos, sitios institucionales o informes t?cnicos. Estas fuentes viajarán con la publicación y ayudarán a una futura salida en PDF con estilo académico.
                   </p>
                 </div>
 
@@ -946,7 +946,7 @@ export default function EditorExperience() {
                           type="text"
                           value={source.title}
                           onChange={(event) => handleSourceChange(index, "title", event.target.value)}
-                          placeholder="Ejemplo: T?tulo del artículo, preprint o recurso consultado"
+                          placeholder="Ejemplo: Título del artículo, preprint o recurso consultado"
                           className="nova-field"
                         />
                       </label>
@@ -1035,7 +1035,7 @@ export default function EditorExperience() {
                         item.ready ? "bg-emerald-100 text-emerald-700" : "bg-white text-slate-500"
                       }`}
                     >
-                      {item.ready ? "Cumplido" : "Pendiente"}
+                      {item.ready ? "Cumpválido" : "Pendiente"}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
@@ -1073,7 +1073,7 @@ export default function EditorExperience() {
               <strong className="text-slate-900">+7</strong> por cada revisión científica realizada.
             </div>
             <div className="rounded-[22px] bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
-              <strong className="text-slate-900">+3</strong> por cada comentario científico ?til dentro de la comunidad.
+              <strong className="text-slate-900">+3</strong> por cada comentario científico útil dentro de la comunidad.
             </div>
           </div>
         </section>

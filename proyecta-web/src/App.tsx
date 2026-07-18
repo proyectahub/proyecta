@@ -49,10 +49,10 @@ function PrivateRoute({ children }: { children: React.ReactElement }) {
         <div className="space-y-3">
           <p className="nova-eyebrow">Sincronizando identidad</p>
           <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-            Preparando tu sesi髇 cient韋ica
+            Preparando tu sesi贸n cient铆fica
           </h2>
           <p className="text-sm leading-7 text-slate-500">
-            Estamos preparando tu sesi髇 para mostrarte el editor, tu perfil y tu actividad dentro de la comunidad.
+            Estamos preparando tu sesi贸n para mostrarte el editor, tu perfil y tu actividad dentro de la comunidad.
           </p>
         </div>
       </div>
@@ -71,10 +71,10 @@ function TraditionalPrivateRoute({ children }: { children: React.ReactElement })
         <div className="space-y-3">
           <p className="nova-eyebrow">Sincronizando identidad</p>
           <h2 className="nova-title text-2xl font-extrabold text-slate-900">
-            Preparando tu sesi髇 cient韋ica
+            Preparando tu sesi贸n cient铆fica
           </h2>
           <p className="text-sm leading-7 text-slate-500">
-            Estamos preparando tu sesi髇 para abrir Monero Web en una pesta馻 aparte y volver luego con la direcci髇 p鷅lica.
+            Estamos preparando tu sesi贸n para abrir Monero Web en una pesta帽a aparte y volver luego con la direcci贸n p煤blica.
           </p>
         </div>
       </div>
@@ -134,8 +134,8 @@ function AppRoutes() {
         <Route path="/profile" element={<UserProfileExperience />} />
         <Route path="/revisadas" element={<ReviewedFeedExperience />} />
         <Route path="/por-revisar" element={<OpenReviewFeedExperience />} />
-        <Route path="/recuperar-contrase馻" element={<PasswordRecovery />} />
-        <Route path="/restablecer-contrase馻" element={<PasswordReset />} />
+        <Route path="/recuperar-contrase帽a" element={<PasswordRecovery />} />
+        <Route path="/restablecer-contrase帽a" element={<PasswordReset />} />
         <Route path="/aviso-de-privacidad" element={<PrivacyNotice />} />
         <Route path="/computacion-donada" element={<ComputeDonationExperience />} />
         <Route path="/orcid/callback" element={<OrcidCallback />} />

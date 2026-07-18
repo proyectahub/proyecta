@@ -260,7 +260,7 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const visibleTotalHashes = confirmedTotalHashes + localTotalHashes
   const status = isLocalActive
     ? (isPoolConfirmed ? "Pool confirmado + aporte local activo" : "Aporte local activo del proyecto")
-    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmaci?n del pool")
+    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmación del pool")
 
   return {
     wallet,

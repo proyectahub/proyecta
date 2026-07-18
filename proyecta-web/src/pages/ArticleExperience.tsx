@@ -324,7 +324,7 @@ function getReviewLabel(value: number) {
 function getRatingPrompt(value: number) {
   switch (value) {
     case 1:
-      return "Todav?a no comunica bien el aporte."
+      return "Todavía no comunica bien el aporte."
     case 2:
       return "Tiene potencial, pero necesita más claridad."
     case 3:
@@ -345,8 +345,8 @@ function getCriterionValue(source: Partial<Record<ReviewCriterionKey, number>>, 
 function mapApiArticleToFeed(article: ApiArticle): FeedArticle {
   return {
     id: article.id ?? "article",
-    title: article.title ?? "Publicaci?n Proyecta",
-    excerpt: article.excerpt ?? "Este artículo a?n no tiene extracto disponible.",
+    title: article.title ?? "Publicación Proyecta",
+    excerpt: article.excerpt ?? "Este artículo aún no tiene extracto disponible.",
     heroKicker: "",
     category: article.category ?? "General",
     timeAgo: "Reciente",
@@ -637,7 +637,7 @@ export default function ArticleExperience() {
         <p className="nova-eyebrow">{articleNotFound ? "Art?culo no disponible" : "Sin conexión"}</p>
         <h1 className="nova-title mt-3 text-3xl font-extrabold text-slate-900">
           {articleNotFound
-            ? "Este artículo no est? disponible en Proyecta."
+            ? "Este artículo no está disponible en Proyecta."
             : "No pudimos cargar esta publicación en este momento."}
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
@@ -671,7 +671,7 @@ export default function ArticleExperience() {
   const handleCopyCitation = async () => {
     try {
       if (typeof navigator === "undefined" || !navigator.clipboard) {
-        toast.error("Tu navegador no permite copiar autom?ticamente. Copia la cita manualmente.")
+        toast.error("Tu navegador no permite copiar automáticamente. Copia la cita manualmente.")
         return
       }
       await navigator.clipboard.writeText(citationLabel)
@@ -935,7 +935,7 @@ export default function ArticleExperience() {
                   <div>
                     <p class="eyebrow">Proyecta</p>
                     <p class="brand-title">DIVUL<span>GAR?A</span></p>
-                    <p class="tagline">Divulgaci?n científica con identidad visible, lectura abierta y formato editorial Proyecta</p>
+                    <p class="tagline">Divulgación científica con identidad visible, lectura abierta y formato editorial Proyecta</p>
                   </div>
                 </div>
 
@@ -970,7 +970,7 @@ export default function ArticleExperience() {
                 <footer class="footer">
                   <div>
                     <strong>Proyecta</strong><br />
-                    Formato editorial para divulgación científica y circulaci?n académica.
+                    Formato editorial para divulgación científica y circulación académica.
                   </div>
                   <div>
                     URL publica:<br />
@@ -995,7 +995,7 @@ export default function ArticleExperience() {
 
   const handleVote = async (nextVote: 1 | -1) => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para votar publicaciones.")
+      toast.error("Inicia sesión para votar publicaciones.")
       return
     }
 
@@ -1034,7 +1034,7 @@ export default function ArticleExperience() {
         newVote === 1
           ? "Guardamos tu voto positivo."
           : newVote === -1
-            ? "Guardamos tu se?al crítica."
+            ? "Guardamos tu señal crítica."
             : "Se retir? tu voto.",
       )
     } catch (error) {
@@ -1064,7 +1064,7 @@ export default function ArticleExperience() {
 
   const handleReviewSubmit = async () => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para dejar una revisión.")
+      toast.error("Inicia sesión para dejar una revisión.")
       return
     }
 
@@ -1108,7 +1108,7 @@ export default function ArticleExperience() {
           : prev,
       )
       setShowReviewForm(false)
-      toast.success(currentUserReview ? "Revisi?n actualizada." : "Revisi?n guardada.")
+      toast.success(currentUserReview ? "Revisión actualizada." : "Revisión guardada.")
     } catch (error) {
       const message = error instanceof Error ? error.message : "No fue posible guardar la revisión."
       toast.error(message)
@@ -1119,7 +1119,7 @@ export default function ArticleExperience() {
 
   const handleDeleteReview = async () => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para gestionar tu revisión.")
+      toast.error("Inicia sesión para gestionar tu revisión.")
       return
     }
 
@@ -1161,7 +1161,7 @@ export default function ArticleExperience() {
 
   const handleToggleFollow = async () => {
     if (!token || !article.author.id) {
-      toast.error("Necesitas iniciar sesi?n para seguir perfiles.")
+      toast.error("Necesitas iniciar sesión para seguir perfiles.")
       return
     }
 
@@ -1193,7 +1193,7 @@ export default function ArticleExperience() {
 
   const handleCommentSubmit = async () => {
     if (!id || !token) {
-      toast.error("Inicia sesi?n para comentar.")
+      toast.error("Inicia sesión para comentar.")
       return
     }
 
@@ -1295,7 +1295,7 @@ export default function ArticleExperience() {
               <div className="inline-flex items-center gap-3 rounded-full border border-fuchsia-100 bg-fuchsia-50/70 px-3 py-2">
                 <ProyectaMark size={28} glow={false} />
                 <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-fuchsia-700">
-                  Publicaci?n Proyecta
+                  Publicación Proyecta
                 </span>
               </div>
 
@@ -1420,7 +1420,7 @@ export default function ArticleExperience() {
             <section className="space-y-5 border-t border-slate-100 pt-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="nova-eyebrow">Valoraci?n comunitaria</p>
+                  <p className="nova-eyebrow">Valoración comunitaria</p>
                   <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">
                     Una lectura simple, clara y pública de cada artículo
                   </h2>
@@ -1428,7 +1428,7 @@ export default function ArticleExperience() {
                 {!token ? (
                   <Link to="/login" className="nova-button-dark">
                     <ShieldCheck size={16} />
-                    Inicia sesi?n para valorar
+                    Inicia sesión para valorar
                   </Link>
                 ) : (
                   <button onClick={() => setShowReviewForm((value) => !value)} className="nova-button-dark">
@@ -1471,7 +1471,7 @@ export default function ArticleExperience() {
                   <div className="mt-5 rounded-[24px] border border-white/80 bg-white p-5">
                     <p className="text-sm font-bold text-slate-900">{getReviewLabel(peerReviewSummary.overall)}</p>
                     <p className="mt-2 text-sm leading-7 text-slate-600">
-                      {peerReviewSummary.count ? `La comunidad lo está leyendo como un artículo de ${formatScore(peerReviewSummary.overall)}/5. Aqué importa qué tan bien comunica, qué tan ?til resulta y si invita a seguir la conversaci?n.` : "Todav?a no hay valoraciones. La primera lectura de la comunidad ayudar? a decir si este artículo se entiende, aporta y merece circular más."}
+                      {peerReviewSummary.count ? `La comunidad lo está leyendo como un artículo de ${formatScore(peerReviewSummary.overall)}/5. Aquííé importa qué tan bien comunica, qué tan útil resulta y si invita a seguir la conversación.` : "Todavía no hay valoraciones. La primera lectura de la comunidad ayudará a decir si este artículo se entiende, aporta y merece circular más."}
                     </p>
                   </div>
                 </div>
@@ -1494,13 +1494,13 @@ export default function ArticleExperience() {
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">3. Utilidad para la comunidad</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Valora si el artículo aporta algo ?til: una idea clara, una síntesis valiosa, una pregunta pertinente o una conexión bien explicada.
+                        Valora si el artículo aporta algo útil: una idea clara, una síntesis valiosa, una pregunta pertinente o una conexión bien explicada.
                       </p>
                     </div>
                     <div className="rounded-[24px] border border-white/80 bg-white/80 p-4">
                       <p className="font-bold text-slate-900">4. Comentario breve y respetuoso</p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Si dejas comentario, procura decir qué comunica bien, qué podr?a mejorar o qué aspecto te gustar?a ver ampliado. La revisión en Proyecta busca orientar, no descalificar.
+                        Si dejas comentario, procura decir qué comunica bien, qué podría mejorar o qué aspecto te gustaría ver ampliado. La revisión en Proyecta busca orientar, no descalificar.
                       </p>
                     </div>
                   </div>
@@ -1545,7 +1545,7 @@ export default function ArticleExperience() {
                       <div className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50/80 p-5">
                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Comentario de lectura</p>
                         <p className="mt-3 text-sm leading-7 text-slate-600">
-                          {review.comment || "Revisi?n enviada sin comentario adicional."}
+                          {review.comment || "Revisión enviada sin comentario adicional."}
                         </p>
                       </div>
                     </article>
@@ -1564,7 +1564,7 @@ export default function ArticleExperience() {
             <section className="space-y-5 border-t border-slate-100 pt-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="nova-eyebrow">Conversaci?n científica</p>
+                  <p className="nova-eyebrow">Conversación científica</p>
                   <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">Comentarios, preguntas y aportes abiertos</h2>
                 </div>
                 <div className="rounded-full bg-fuchsia-50 px-4 py-2 text-sm font-semibold text-fuchsia-700">
@@ -1601,7 +1601,7 @@ export default function ArticleExperience() {
                   <div className="rounded-[32px] border border-dashed border-slate-300 bg-slate-50/70 p-6">
                     <p className="font-bold text-slate-900">Aún no hay comentarios publicados.</p>
                     <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                      La conversaci?n aparecer? aqué cuando la comunidad deje preguntas, lecturas o aportes reales sobre este artículo.
+                      La conversación aparecerá aqué cuando la comunidad deje preguntas, lecturas o aportes reales sobre este artículo.
                     </p>
                   </div>
                 )}
@@ -1610,7 +1610,7 @@ export default function ArticleExperience() {
               <div className="nova-card-soft p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">S?mate a la conversaci?n</p>
+                    <p className="text-sm font-bold text-slate-900">S?mate a la conversación</p>
                     <p className="mt-1 text-sm leading-6 text-slate-500">
                       Los comentarios sirven para preguntas, lecturas complementarias y debate abierto. La revisión comunitaria queda arriba, en su propio espacio.
                     </p>
@@ -1618,7 +1618,7 @@ export default function ArticleExperience() {
                   {!token ? (
                     <Link to="/login" className="nova-button-soft">
                       <MessageSquare size={16} />
-                      Inicia sesi?n
+                      Inicia sesión
                     </Link>
                   ) : null}
                 </div>
@@ -1626,7 +1626,7 @@ export default function ArticleExperience() {
                 <textarea
                   value={newComment}
                   onChange={(event) => setNewComment(event.target.value)}
-                  placeholder="Comparte una observaci?n, pregunta o lectura crítica del artículo..."
+                  placeholder="Comparte una observación, pregunta o lectura crítica del artículo..."
                   className="nova-field mt-4 min-h-[120px]"
                   disabled={!token}
                 />
@@ -1698,8 +1698,8 @@ export default function ArticleExperience() {
                 <p className="text-sm font-bold text-slate-900">{getReviewLabel(peerReviewSummary.overall)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {peerReviewSummary.count
-                    ? "Esta se?al sirve para saber si la publicación conecta con la comunidad y si vale la pena seguirla moviendo dentro de Divulgaría."
-                    : "Todav?a no hay valoraciones. La primera opinión ayudar? a darle contexto p?blico a esta lectura."}
+                    ? "Esta señal sirve para saber si la publicación conecta con la comunidad y si vale la pena seguirla moviendo dentro de Divulgaría."
+                    : "Todavía no hay valoraciones. La primera opinión ayudará a darle contexto público a esta lectura."}
                 </p>
               </div>
             </div>
@@ -1707,12 +1707,12 @@ export default function ArticleExperience() {
             {!token ? (
               <Link to="/login" className="nova-button-dark w-full justify-center">
                 <ShieldCheck size={16} />
-                Inicia sesi?n para valorar
+                Inicia sesión para valorar
               </Link>
             ) : (
               <button onClick={() => setShowReviewForm((value) => !value)} className="nova-button-dark w-full justify-center">
                 <ShieldCheck size={16} />
-                {currentUserReview ? "Editar mi valoraci?n" : "Valorar art?culo"}
+                {currentUserReview ? "Editar mi valoración" : "Valorar artículo"}
               </button>
             )}
 

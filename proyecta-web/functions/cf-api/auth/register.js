@@ -1,4 +1,4 @@
-﻿import { createUser, ensureSchema, json } from "../_shared/auth.js"
+import { createUser, ensureSchema, json } from "../_shared/auth.js"
 
 export async function onRequestPost(context) {
   const { env, request } = context
@@ -8,7 +8,7 @@ export async function onRequestPost(context) {
   try {
     payload = await request.json()
   } catch {
-    return json({ error: "El cuerpo de la solicitud no es vÃ¡lido." }, { status: 400 })
+    return json({ error: "El cuerpo de la solicitud no es válido." }, { status: 400 })
   }
 
   try {
@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
     return json(result, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : "No fue posible crear la cuenta."
-    const status = /ya estÃ¡ registrado/i.test(message) ? 409 : 400
+    const status = /ya está registrado/i.test(message) ? 409 : 400
     return json({ error: message }, { status })
   }
 }

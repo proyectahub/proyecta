@@ -1,3 +1,3 @@
-﻿export function MiningMonitor() {
+export function MiningMonitor() {
   return null
 }

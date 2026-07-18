@@ -1,4 +1,4 @@
-﻿import React from "react"
+import React from "react"
 import { API_BASE } from "./lib/api"
 
 export default function Login() {

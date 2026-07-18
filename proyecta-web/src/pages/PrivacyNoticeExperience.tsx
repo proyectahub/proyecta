@@ -1,4 +1,4 @@
-﻿import { Coins, Scale, ShieldCheck } from "lucide-react"
+import { Coins, Scale, ShieldCheck } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { ProyectaBrandLockup, ProyectaMark } from "../components/brand/ProyectaBrand"
@@ -91,7 +91,7 @@ export default function PrivacyNoticeExperience() {
                 Antes del deploy público
               </p>
               <p className="mt-3 text-sm leading-7 text-slate-700">
-                Este aviso ya sirve para el flujo de registro y consentimiento, pero todav?a debe
+                Este aviso ya sirve para el flujo de registro y consentimiento, pero todavía debe
                 completarse con la identidad legal del responsable, domicilio y canal formal para
                 derechos ARCO antes del lanzamiento abierto.
               </p>

@@ -1,17 +1,17 @@
-﻿/**
- * PROYECTA Backend â€” Proxy Stratum REAL para SupportXMR
+/**
+ * PROYECTA Backend ? Proxy Stratum REAL para SupportXMR
  *
  * Arquitectura NO-CUSTODIAL y REAL:
  *
  *   Navegador (RandomX WASM)  <--WebSocket-->  Este proxy  <--TCP Stratum-->  SupportXMR  -->  Blockchain Monero
  *
  * El navegador calcula hashes RandomX REALES contra el job real del pool.
- * Cuando encuentra un share vÃ¡lido (hash < target), lo envÃ­a aquÃ­.
- * Este proxy reenvÃ­a el share al pool por el protocolo Stratum (TCP), que es
- * el ÃšNICO protocolo que SupportXMR acepta (los navegadores no pueden abrir
+ * Cuando encuentra un share válido (hash < target), lo envía aquí.
+ * Este proxy reenvía el share al pool por el protocolo Stratum (TCP), que es
+ * el ÚNICO protocolo que SupportXMR acepta (los navegadores no pueden abrir
  * sockets TCP, por eso se necesita este puente).
  *
- * Los XMR van DIRECTO a la direcciÃ³n del proyecto. PROYECTA nunca toca fondos.
+ * Los XMR van DIRECTO a la dirección del proyecto. PROYECTA nunca toca fondos.
  */
 
 import express from 'express'
@@ -45,7 +45,7 @@ function getLocalIP() {
 app.use(cors())
 app.use(express.json())
 
-// Servir archivos estÃ¡ticos del frontend
+// Servir archivos estáticos del frontend
 app.use(express.static(join(__dirname, 'dist')))
 
 // Endpoint para obtener IP local
@@ -59,7 +59,7 @@ app.get('/api/local-ip', (req, res) => {
 })
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// GestiÃ³n de conexiones Stratum al pool (una por wallet)
+// Gestión de conexiones Stratum al pool (una por wallet)
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const POOL_HOST = process.env.MONERO_POOL_HOST ?? 'pool.supportxmr.com'
@@ -94,7 +94,7 @@ class PoolConnection {
     const socket = net.connect({ host: POOL_HOST, port: POOL_PORT }, () => {
       this.connected = true
       this.retries = 0
-      console.log(`[POOL] âœ… TCP conectado. Enviando login...`)
+      console.log(`[POOL] ✅ TCP conectado. Enviando login...`)
       this.send({
         id: this.rpcId++,
         jsonrpc: '2.0',
@@ -160,7 +160,7 @@ class PoolConnection {
     if (msg.result && msg.result.id && msg.result.job) {
       this.authed = true
       this.minerId = msg.result.id
-      console.log(`[POOL] âœ… Autenticado. minerId=${this.minerId}`)
+      console.log(`[POOL] ✅ Autenticado. minerId=${this.minerId}`)
       this.setJob(msg.result.job)
 
       // keepalive cada 30s
@@ -176,7 +176,7 @@ class PoolConnection {
       return
     }
 
-    // Nuevo job (notificaciÃ³n push del pool)
+    // Nuevo job (notificación push del pool)
     if (msg.method === 'job' && msg.params) {
       this.setJob(msg.params)
       return
@@ -186,7 +186,7 @@ class PoolConnection {
     if (msg.result && typeof msg.result.status === 'string') {
       if (msg.result.status === 'OK') {
         this.acceptedShares++
-        console.log(`[POOL] âœ… Share ACEPTADO (total: ${this.acceptedShares})`)
+        console.log(`[POOL] ✅ Share ACEPTADO (total: ${this.acceptedShares})`)
         this.broadcast({ type: 'share_result', accepted: true, accepted_total: this.acceptedShares })
       }
       return
@@ -212,13 +212,13 @@ class PoolConnection {
 
   setJob(job) {
     this.currentJob = job
-    console.log(`[POOL] ðŸ“¥ Nuevo job: id=${job.job_id} height=${job.height} target=${job.target}`)
+    console.log(`[POOL] 📥 Nuevo job: id=${job.job_id} height=${job.height} target=${job.target}`)
     this.broadcast({ type: 'job', job, connected: true })
   }
 
   submitShare(jobId, nonce, result) {
     if (!this.authed) return
-    console.log(`[POOL] ðŸ“¤ Enviando share: job=${jobId} nonce=${nonce}`)
+    console.log(`[POOL] 📤 Enviando share: job=${jobId} nonce=${nonce}`)
     this.send({
       id: this.rpcId++,
       jsonrpc: '2.0',
@@ -243,9 +243,9 @@ class PoolConnection {
 
   removeSubscriber(ws) {
     this.subscribers.delete(ws)
-    // Si no quedan navegadores minando, cerrar la conexiÃ³n al pool
+    // Si no quedan navegadores minando, cerrar la conexión al pool
     if (this.subscribers.size === 0) {
-      console.log(`[POOL] Sin mineros para ${this.wallet.slice(0, 12)}. Cerrando conexiÃ³n.`)
+      console.log(`[POOL] Sin mineros para ${this.wallet.slice(0, 12)}. Cerrando conexión.`)
       this.closedByUs = true
       if (this.keepAliveTimer) clearInterval(this.keepAliveTimer)
       if (this.socket) this.socket.destroy()
@@ -291,9 +291,9 @@ wss.on('connection', (ws) => {
     }
 
     if (msg.type === 'subscribe' && msg.wallet) {
-      // Validar direcciÃ³n Monero (mainnet: empieza con 4, 95 chars)
+      // Validar dirección Monero (mainnet: empieza con 4, 95 chars)
       if (!/^[48][0-9A-Za-z]{94}$/.test(msg.wallet)) {
-        ws.send(JSON.stringify({ type: 'error', error: 'DirecciÃ³n Monero invÃ¡lida' }))
+        ws.send(JSON.stringify({ type: 'error', error: 'Dirección Monero inválida' }))
         return
       }
       pool = getOrCreatePool(msg.wallet)
@@ -317,7 +317,7 @@ wss.on('connection', (ws) => {
 })
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Endpoints HTTP (stats reales desde la API pÃºblica de SupportXMR)
+// Endpoints HTTP (stats reales desde la API pública de SupportXMR)
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const statsCache = new Map()
@@ -542,7 +542,7 @@ app.get('/api/mining/payments/:wallet', async (req, res) => {
   }
 })
 
-// Fallback para React Router: sirve index.html para cualquier ruta que no sea API o archivo estÃ¡tico
+// Fallback para React Router: sirve index.html para cualquier ruta que no sea API o archivo estático
 app.get('*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
 })
@@ -550,13 +550,13 @@ app.get('*', (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`
 â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘   PROYECTA â€” Proxy Stratum REAL para SupportXMR               â•‘
-â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
-â•‘  â›ï¸   MinerÃ­a RandomX REAL (no simulada)                      â•‘
-â•‘  ðŸ”—  Pool TCP:  ${POOL_HOST}:${POOL_PORT}            â•‘
-â•‘  ðŸŒ  WebSocket: ws://localhost:${PORT}/ws/mining             â•‘
-â•‘  ðŸ“¡  HTTP API:  http://localhost:${PORT}/api/mining          â•‘
-â•‘  ðŸ’°  Non-custodial: XMR directo a la direcciÃ³n del proyecto  â•‘
+║   PROYECTA ? Proxy Stratum REAL para SupportXMR               ║
+â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•╣
+║  â›ï¸   Minería RandomX REAL (no simulada)                      ║
+║  ??  Pool TCP:  ${POOL_HOST}:${POOL_PORT}            ║
+║  ??  WebSocket: ws://localhost:${PORT}/ws/mining             ║
+║  📡  HTTP API:  http://localhost:${PORT}/api/mining          ║
+║  💰  Non-custodial: XMR directo a la dirección del proyecto  ║
 â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   `)
 })

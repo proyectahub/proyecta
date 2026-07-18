@@ -75,7 +75,7 @@ function formatRelativeLabel(value: string) {
   if (diffInHours < 24) return `Hace ${Math.max(1, diffInHours)} horas`
 
   const diffInDays = Math.round(diffInHours / 24)
-  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} días`
+  return diffInDays <= 1 ? "Ayer" : `Hace ${diffInDays} dÃ­as`
 }
 
 function formatPublishedLabel(value: string) {
@@ -96,8 +96,8 @@ function formatPublishedLabel(value: string) {
 function mapApiArticle(article: ApiArticle, index: number): FeedArticle {
   return {
     id: article.id || `article-${index + 1}`,
-    title: article.title || "Publicación Proyecta",
-    excerpt: article.excerpt || "Esta publicación aún no tiene extracto disponible.",
+    title: article.title || "PublicaciÃ³n Proyecta",
+    excerpt: article.excerpt || "Esta publicaciÃ³n aÃºn no tiene extracto disponible.",
     heroKicker: "",
     category: article.category || "General",
     timeAgo: formatRelativeLabel(article.createdAt),

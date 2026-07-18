@@ -1,4 +1,4 @@
-﻿import { FormEvent, useState } from "react"
+import { FormEvent, useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowRight, KeyRound, Mail, ShieldCheck } from "lucide-react"
 import { toast } from "react-hot-toast"
@@ -65,7 +65,7 @@ export default function PasswordRecoveryExperience() {
                 </h1>
                 <p className="max-w-xl text-base leading-8 text-white/80">
                   Si ya construiste una cuenta en Proyecta, también debes poder volver a ella
-                  sin fricción. Aquí protegemos tu acceso con un enlace temporal y una recuperación
+                  sin fricción. Aquííí protegemos tu acceso con un enlace temporal y una recuperación
                   pensada para una comunidad verificable.
                 </p>
               </div>

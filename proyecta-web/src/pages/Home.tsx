@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { feedArticles } from "../data/mockData"
 import { API_BASE } from "../lib/api"
 

@@ -1,6 +1,6 @@
 /**
- * Genera una direcci髇 Monero v醠ida basada en un seed
- * En producci髇, esto vendr韆 de una wallet real
+ * Genera una direcci贸n Monero v谩lida basada en un seed
+ * En producci贸n, esto vendr铆a de una wallet real
  */
 export function generateMoneroAddress(seed: string): string {
   // Generador determinista de formato Monero para desarrollo y datos legacy.
@@ -23,14 +23,14 @@ export function generateMoneroAddress(seed: string): string {
 }
 
 /**
- * Valida que una direcci髇 sea un Monero address v醠ido
+ * Valida que una direcci贸n sea un Monero address v谩lido
  */
 export function isValidMoneroAddress(address: string): boolean {
   return /^[48][a-zA-Z0-9]{94}$/.test(address)
 }
 
 /**
- * Convierte una direcci髇 Monero a un VITA address (hash SHA-256)
+ * Convierte una direcci贸n Monero a un VITA address (hash SHA-256)
  */
 export async function hashMoneroAddress(address: string): Promise<string> {
   const encoder = new TextEncoder()

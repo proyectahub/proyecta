@@ -1,7 +1,7 @@
 {
     "name":  "backend",
     "version":  "1.0.0",
-    "description":  "DivulgarÃ­a OAuth Backend",
+    "description":  "Divulgaría OAuth Backend",
     "main":  "server.js",
     "type":  "module",
     "scripts":  {

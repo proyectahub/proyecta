@@ -1,4 +1,4 @@
-﻿import React, { createContext, useEffect, useState, ReactNode } from 'react'
+import React, { createContext, useEffect, useState, ReactNode } from 'react'
 import { isValidMoneroAddress } from '../utils/moneroAddress'
 
 export interface UserProfile {

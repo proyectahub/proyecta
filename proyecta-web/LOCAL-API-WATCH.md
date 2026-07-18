@@ -1,6 +1,6 @@
-﻿# Vigilancia local de DivulgarÃ­a
+﻿# Vigilancia local de Divulgaría
 
-Este proyecto ya tiene dos comandos listos para mantener viva la API pública de DivulgarÃ­a mientras tu computadora este encendida y el backend local pueda correr.
+Este proyecto ya tiene dos comandos listos para mantener viva la API pública de Divulgaría mientras tu computadora este encendida y el backend local pueda correr.
 
 ## Que hace cada comando
 
@@ -28,7 +28,7 @@ Este comando:
 - si no responde, intenta levantarlo desde `backend`
 - crea un nuevo quick tunnel de Cloudflare
 - actualiza el worker estable `nova-scientia-api`
-- vÃ¡lida otra vez `https://nova-scientia-api.unhumanx.workers.dev/api/health`
+- válida otra vez `https://nova-scientia-api.unhumanx.workers.dev/api/health`
 
 Usalo cuando veas mensajes como:
 
@@ -63,9 +63,9 @@ npm run cf:api:startup
 Este comando crea un acceso directo en la carpeta de inicio de Windows para lanzar automaticamente:
 
 - `activar-vigilancia-nova.cmd`
-- la vigilancia continua de DivulgarÃ­a
+- la vigilancia continua de Divulgaría
 
-Asi, cuando abras sesiÃ³n en Windows, se inicia una terminal con el watchdog sin que tengas que recordar el comando.
+As?, cuando abras sesión en Windows, se inicia una terminal con el watchdog sin que tengas que recordar el comando.
 
 ## Recomendacion de uso diario
 
@@ -131,4 +131,4 @@ Mientras el backend siga viviendo en tu maquina local:
 - tu internet debe seguir activo
 - el watchdog debe seguir corriendo
 
-Si quieres que DivulgarÃ­a quede permanentemente activa sin depender de tu PC, el siguiente paso correcto es migrar el backend a un hosting fijo.
+Si quieres que Divulgaría quede permanentemente activa sin depender de tu PC, el siguiente paso correcto es migrar el backend a un hosting fijo.

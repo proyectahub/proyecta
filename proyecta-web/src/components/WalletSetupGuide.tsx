@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, ExternalLink, Link2, ShieldCheck, Wallet } from 'lucide-react'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 

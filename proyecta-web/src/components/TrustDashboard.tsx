@@ -1,3 +1,3 @@
-﻿export function TrustDashboard() {
+export function TrustDashboard() {
   return null
 }

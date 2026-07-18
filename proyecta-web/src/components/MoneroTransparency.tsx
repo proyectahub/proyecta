@@ -9,7 +9,7 @@ export function MoneroTransparency() {
         <p className="text-slate-700">
           PROYECTA usa <strong>Monero (XMR)</strong> porque es la única criptomoneda que garantiza
           <strong> privacidad por defecto, descentralización real y resistencia a censura</strong>.
-          Aquí explicamos exactamente qué es, por qué la usamos, y cómo convertirla a dinero real.
+          Aquííí explicamos exactamente qué es, por qué la usamos, y cómo convertirla a dinero real.
         </p>
       </div>
 

@@ -106,10 +106,10 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
       }
 
       setStats(projectId ? createEmptyProjectStats() : null)
-      setError(projectId ? 'No fue posible consultar las estadísticas del proyecto.' : 'No fue posible consultar SupportXMR en este momento.')
+      setError(projectId ? 'No fue posible consultar las estadÃ­sticas del proyecto.' : 'No fue posible consultar SupportXMR en este momento.')
     } catch (err) {
       setStats(projectId ? createEmptyProjectStats() : null)
-      setError(err instanceof Error ? err.message : 'Error al obtener estadísticas')
+      setError(err instanceof Error ? err.message : 'Error al obtener estadÃ­sticas')
     } finally {
       setLoading(false)
     }
@@ -127,7 +127,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 font-bold text-slate-900">
             <Zap className="h-5 w-5 text-purple-600" />
-            Minería comunitaria
+            MinerÃ­a comunitaria
           </h3>
           <div className="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
         </div>
@@ -162,10 +162,10 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           <div>
             <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <Zap className="h-5 w-5 text-slate-500" />
-              Minería comunitaria lista
+              MinerÃ­a comunitaria lista
             </h3>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Aún no se ha iniciado minería para <span className="font-semibold">{projectTitle}</span>. No se muestra el historial global de la wallet como avance de este proyecto.
+              AÃºn no se ha iniciado minerÃ­a para <span className="font-semibold">{projectTitle}</span>. No se muestra el historial global de la wallet como avance de este proyecto.
             </p>
           </div>
           <button
@@ -192,12 +192,12 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           </div>
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <p className="mb-1 text-xs font-bold text-slate-600">Estado</p>
-            <p className="font-bold text-slate-900">Sin minería iniciada</p>
+            <p className="font-bold text-slate-900">Sin minerÃ­a iniciada</p>
           </div>
         </div>
 
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-          La dirección del investigador sigue siendo válida para recibir XMR, pero el progreso de este proyecto empieza en cero hasta que alguien elija navegador o app y aporte cómputo.
+          La direcciÃ³n del investigador sigue siendo vÃ¡lida para recibir XMR, pero el progreso de este proyecto empieza en cero hasta que alguien elija navegador o app y aporte cÃ³mputo.
         </div>
       </div>
     )
@@ -209,7 +209,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div className="flex items-center justify-between gap-3">
           <h3 className="flex items-center gap-2 font-bold text-amber-900">
             <Zap className="h-5 w-5" />
-            Minería comunitaria
+            MinerÃ­a comunitaria
           </h3>
           <button onClick={fetchMiningStats} className="text-xs font-bold text-amber-800 hover:text-amber-900">
             Reintentar
@@ -231,7 +231,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
             <Zap className="h-5 w-5 text-purple-600" />
-            Minería comunitaria
+            MinerÃ­a comunitaria
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive

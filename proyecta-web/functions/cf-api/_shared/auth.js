@@ -1,4 +1,4 @@
-﻿const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30
 
 const AUTH_SCHEMA_STATEMENTS = [
   `
@@ -319,12 +319,12 @@ async function createUser(db, payload) {
   }
 
   if (password.length < 6) {
-    throw new Error('La contraseÃ±a debe tener al menos 6 caracteres.')
+    throw new Error('La contraseña debe tener al menos 6 caracteres.')
   }
 
   const existing = await fetchUserByEmail(db, email)
   if (existing) {
-    throw new Error('Ese email ya estÃ¡ registrado.')
+    throw new Error('Ese email ya está registrado.')
   }
 
   const salt = randomToken()
@@ -417,16 +417,16 @@ async function loginUser(db, payload) {
   const password = normalizeText(payload.password)
 
   if (!email) throw new Error('El email es obligatorio.')
-  if (!password) throw new Error('La contraseÃ±a es obligatoria.')
+  if (!password) throw new Error('La contraseña es obligatoria.')
 
   const user = await fetchUserByEmail(db, email)
   if (!user) {
-    throw new Error('Email o contraseÃ±a incorrectos.')
+    throw new Error('Email o contraseña incorrectos.')
   }
 
   const passwordHash = await hashPassword(password, user.password_salt)
   if (passwordHash !== user.password_hash) {
-    throw new Error('Email o contraseÃ±a incorrectos.')
+    throw new Error('Email o contraseña incorrectos.')
   }
 
   const { token } = await createSession(db, user.id)
@@ -504,11 +504,11 @@ async function linkUserWallet(db, request, payload) {
   const walletWebUrl = normalizeText(payload.walletWebUrl)
 
   if (!/^[48][a-zA-Z0-9]{94}$/.test(mainAddress)) {
-    return json({ error: 'La direcciÃ³n Monero no tiene un formato vÃ¡lido.' }, { status: 400 })
+    return json({ error: 'La dirección Monero no tiene un formato válido.' }, { status: 400 })
   }
 
   if (viewKey && !/^[a-fA-F0-9]{64}$/.test(viewKey)) {
-    return json({ error: 'La view key pÃºblica no tiene un formato vÃ¡lido.' }, { status: 400 })
+    return json({ error: 'La view key pública no tiene un formato válido.' }, { status: 400 })
   }
 
   const userVitaAddress = await hashWallet(mainAddress)
@@ -547,11 +547,11 @@ async function upsertWalletProfile(db, payload) {
   const walletWebUrl = normalizeText(payload.walletWebUrl)
 
   if (!/^[48][a-zA-Z0-9]{94}$/.test(mainAddress)) {
-    throw new Error('La direcciÃ³n Monero no tiene un formato vÃ¡lido.')
+    throw new Error('La dirección Monero no tiene un formato válido.')
   }
 
   if (viewKey && !/^[a-fA-F0-9]{64}$/.test(viewKey)) {
-    throw new Error('La view key pÃºblica no tiene un formato vÃ¡lido.')
+    throw new Error('La view key pública no tiene un formato válido.')
   }
 
   const userVitaAddress = await hashWallet(mainAddress)

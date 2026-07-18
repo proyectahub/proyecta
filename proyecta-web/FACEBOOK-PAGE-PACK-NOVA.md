@@ -26,7 +26,7 @@ Visita el portal: https://divulgaria.pages.dev/
 ## Post fijado recomendado
 
 Bienvenidos a Divulgaría-Scientia.
-Aqui acercamos ciencia confiable, clara y abierta para toda la comunidad.
+Aquííi acercamos ciencia confiable, clara y abierta para toda la comunidad.
 Explora el portal, comparte y participa:
 https://divulgaria.pages.dev/
 

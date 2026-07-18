@@ -1,4 +1,4 @@
-﻿# Deploy inicial a Cloudflare para DivulgarÃ­a
+﻿# Deploy inicial a Cloudflare para Divulgaría
 
 ## Criterio recomendado
 
@@ -9,14 +9,14 @@ Para no romper el trabajo local, la mejor ruta hoy es:
 3. Mantener el backend actual en local o exponerlo temporalmente con un tunel.
 4. Migrar el backend despues a una capa compatible con Cloudflare (`Workers` + `D1` o similar).
 
-## Por que esta ruta es la mÃ¡s segura
+## Por qu? esta ruta es la más segura
 
 El frontend ya es una SPA de Vite y se publica muy bien en Cloudflare Pages.
 
 El backend actual usa:
 
 - `Express`
-- sesiÃ³nes en memoria
+- sesiónes en memoria
 - y un archivo local `backend/data/store.json`
 
 Ese almacenamiento local no es una base adecuada para un despliegue real en Cloudflare. Sirve en local, pero no como capa persistente de produccion.
@@ -47,7 +47,7 @@ npm run cf:pages:preview
 cd I:\MDATOS2.0\nova-scientia-web
 ```
 
-2. Inicia sesiÃ³n en Cloudflare:
+2. Inicia sesión en Cloudflare:
 
 ```bash
 npm run cf:login
@@ -99,14 +99,14 @@ Mientras no exista un backend público, puedes hacer pruebas visuales del fronte
 
 ## Fase 1.5: exponer temporalmente el backend sin migrarlo aún
 
-Si quieres vÃ¡lidar formularios, login y feed real antes de migrar el backend, usa un tunel temporal y apunta `VITE_API_URL` a esa URL publica.
+Si quieres válidar formularios, login y feed real antes de migrar el backend, usa un tunel temporal y apunta `VITE_API_URL` a esa URL publica.
 
 Opciones practicas:
 
 - `ngrok`
 - `Cloudflare Tunnel`
 
-Esto permite seguir trabajando igual en local sin tocar el backend productivo todav?a.
+Esto permite seguir trabajando igual en local sin tocar el backend productivo todavía.
 
 ## Fachada estable para la API
 
@@ -135,7 +135,7 @@ npm run cf:api:refresh-tunnel
 
 Ese flujo hace tres cosas:
 
-1. vÃ¡lida que tu backend local en `http://localhost:3000` este activo
+1. válida que tu backend local en `http://localhost:3000` est? activo
 2. levanta un quick tunnel nuevo con `cloudflared`
 3. actualiza `BACKEND_ORIGIN` en el `Worker` y vuelve a desplegar el proxy estable
 
@@ -167,10 +167,10 @@ Con esto no necesitas volver a desplegar Pages cada vez que cambie el tunnel del
 Antes de mover el backend a Cloudflare conviene hacer estas migraciones:
 
 1. Reemplazar `backend/data/store.json` por una base persistente.
-2. Mover sesiÃ³nes y usuarios a una capa durable.
+2. Mover sesiónes y usuarios a una capa durable.
 3. Adaptar la API a `Workers` o a una arquitectura equivalente.
 
-La ruta mÃ¡s natural para DivulgarÃ­a seria:
+La ruta más natural para Divulgaría seria:
 
 - frontend en `Pages`
 - API en `Workers`
@@ -188,9 +188,9 @@ La ruta mÃ¡s natural para DivulgarÃ­a seria:
 
 Emart?culo por Pages ahora mismo.
 
-No subas todav?a el backend actual a Cloudflare como si ya fuera productivo.
+No subas todavía el backend actual a Cloudflare como si ya fuera productivo.
 
-Primero vÃ¡lidamos:
+Primero válidamos:
 
 - inicio
 - feed
