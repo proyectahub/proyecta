@@ -26,7 +26,6 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { API_BASE } from "../lib/api"
 import { feedArticles } from "../data/mockData"
-import { feedArticles } from "../data/mockData"
 import { ProyectaMark, ProyectaTokenSeal } from "../components/brand/ProyectaBrand"
 
 type ProfileUser = {
@@ -226,7 +225,7 @@ function formatTimeAgo(value: string) {
 
 function resolveDisplayRole(profile: Pick<ProfileUser, "orcidId" | "role"> | null) {
   if (!profile) return "Divulgador/a"
-  return profile.orcidId ? "Divulgador/a cientÃ­fico/a" : "Divulgador/a"
+  return profile.orcidId ? "Divulgador/a científico/a" : "Divulgador/a"
 }
 
 function getArticleInterestScore(article: DiscoveryArticle, interests: string[]) {
@@ -252,7 +251,7 @@ export default function ProfileExperience() {
   const { id: routeProfileId } = useParams()
   const navigate = useNavigate()
   const { user: sessionUser, refreshUser } = useAuth()
-  const profileId = routeProfileId ?? sessionUser.id
+  const profileId = routeProfileId ?? sessionUser?.id
   const apiBaseUrl = API_BASE
   const [profile, setProfile] = useState<ProfileUser | null>(null)
   const [stats, setStats] = useState<UserStats>({ posts: 0, comments: 0, votes: 0 })
@@ -291,20 +290,20 @@ export default function ProfileExperience() {
   const token = window.localStorage.getItem("proyecta-session-token")
 
   const isOwner = useMemo(() => {
-    return !!sessionUser.id && sessionUser.id === profile.id
-  }, [profile.id, sessionUser.id])
+    return !!sessionUser?.id && !!profile?.id && sessionUser.id === profile.id
+  }, [profile?.id, sessionUser?.id])
 
   const resolvedAffiliation =
-    bibliometrics.primaryInstitution || productivity.primaryAffiliation || profile.affiliation || "No definida"
+    bibliometrics?.primaryInstitution || productivity?.primaryAffiliation || profile?.affiliation || "No definida"
 
-  const resolvedWorksCount = bibliometrics.worksCount ?? productivity.totalWorks ?? 0
-  const visibleProfileImage = form.image || profile.image || ""
+  const resolvedWorksCount = bibliometrics?.worksCount ?? productivity?.totalWorks ?? 0
+  const visibleProfileImage = form.image || profile?.image || ""
   const resolvedRole = resolveDisplayRole(profile)
 
   const profileInterests = useMemo(() => {
     const interestPool = [
       ...articles.map((article) => article.category),
-      ...(productivity.keywords ?? []),
+      ...(productivity?.keywords ?? []),
     ]
 
     const uniqueInterests = Array.from(
@@ -317,7 +316,7 @@ export default function ProfileExperience() {
     )
 
     return uniqueInterests.slice(0, 8)
-  }, [articles, productivity.keywords])
+  }, [articles, productivity?.keywords])
 
   const relatedArticles = useMemo(() => {
     if (!profile) {
@@ -374,7 +373,10 @@ export default function ProfileExperience() {
           }),
         ])
 
-        const communityData = feedArticles
+        const communityData: DiscoveryArticle[] = feedArticles.map((article, index) => ({
+          ...article,
+          createdAt: new Date(Date.now() - index * 60 * 60 * 1000).toISOString(),
+        }))
 
         if (!profileResponse.ok) {
           throw new Error("No encontramos el perfil del investigador.")
@@ -522,11 +524,11 @@ export default function ProfileExperience() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: form.name || profile.name || "",
-          role: form.role || profile.role || "",
-          affiliation: form.affiliation || profile.affiliation || "",
-          location: form.location || profile.location || "",
-          bio: form.bio || profile.bio || "",
+          name: form.name || profile?.name || "",
+          role: form.role || profile?.role || "",
+          affiliation: form.affiliation || profile?.affiliation || "",
+          location: form.location || profile?.location || "",
+          bio: form.bio || profile?.bio || "",
           image: imageDataUrl,
         }),
       })
@@ -554,7 +556,7 @@ export default function ProfileExperience() {
       toast.error(message, { id: toastId })
       setForm((prev) => ({
         ...prev,
-        image: profile.image ?? prev.image,
+        image: profile?.image ?? prev.image,
       }))
     } finally {
       setIsUploadingAvatar(false)
@@ -569,7 +571,7 @@ export default function ProfileExperience() {
     }
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Selecciona una imagen vÃ¡lida para tu perfil.")
+      toast.error("Selecciona una imagen válida para tu perfil.")
       return
     }
 
@@ -606,17 +608,17 @@ export default function ProfileExperience() {
 
   const handleDeletePost = async (articleId: string) => {
     if (!token) {
-      toast.error("Necesitas iniciar sesiÃ³n para eliminar publicaciones.")
+      toast.error("Necesitas iniciar sesión para eliminar publicaciones.")
       return
     }
 
-    const confirmed = window.confirm("Â¿Seguro que quieres eliminar esta publicaciÃ³n de Proyecta")
+    const confirmed = window.confirm("¿Seguro que quieres eliminar esta publicación de Proyecta")
     if (!confirmed) {
       return
     }
 
     setIsDeletingPostId(articleId)
-    const toastId = toast.loading("Eliminando publicaciÃ³n...")
+    const toastId = toast.loading("Eliminando publicación...")
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/posts/${articleId}`, {
@@ -628,13 +630,13 @@ export default function ProfileExperience() {
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error ?? "No fue posible eliminar la publicaciÃ³n.")
+        throw new Error(data.error ?? "No fue posible eliminar la publicación.")
       }
 
       toast.success("Publicaci?n eliminada.", { id: toastId })
       setReloadSeed((value) => value + 1)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No fue posible eliminar la publicaciÃ³n."
+      const message = error instanceof Error ? error.message : "No fue posible eliminar la publicación."
       toast.error(message, { id: toastId })
     } finally {
       setIsDeletingPostId(null)
@@ -717,7 +719,7 @@ export default function ProfileExperience() {
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
                 >
                   <PencilLine size={16} />
-                  {isEditing ? "Cerrar ediciÃ³n" : "Personalizar perfil"}
+                  {isEditing ? "Cerrar edición" : "Personalizar perfil"}
                 </button>
                 <button
                   onClick={handleLinkOrcid}
@@ -753,7 +755,7 @@ export default function ProfileExperience() {
                 {isOwner ? (
                   <button
                     type="button"
-                    onClick={() => photoInputRef.current.click()}
+                    onClick={() => photoInputRef.current?.click()}
                     disabled={isReadingImage || isUploadingAvatar}
                     className="absolute bottom-2 right-2 inline-flex items-center gap-2 rounded-full bg-slate-950/82 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-lg transition hover:bg-slate-900 disabled:opacity-60"
                   >
@@ -778,7 +780,7 @@ export default function ProfileExperience() {
                   )}
                   <span className="inline-flex items-center gap-2 rounded-full border border-fuchsia-100 bg-fuchsia-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-fuchsia-700">
                     <Coins size={14} />
-                    CRÃ‰DITOS {novas.total ?? profile.novasBalance ?? 0}
+                    CRÉDITOS {novas?.total ?? profile.novasBalance ?? 0}
                   </span>
                   {isOwner ? (
                     <button
@@ -812,8 +814,8 @@ export default function ProfileExperience() {
               <div className="rounded-[28px] bg-[linear-gradient(135deg,#17306c,#255cff)] px-7 py-5 text-white shadow-2xl shadow-fuchsia-600/20">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">CRÃ‰DITOS Fase 1</p>
-                    <p className="nova-title mt-2 text-4xl font-extrabold">{novas.total ?? profile.novasBalance ?? 0}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">CRÉDITOS Fase 1</p>
+                    <p className="nova-title mt-2 text-4xl font-extrabold">{novas?.total ?? profile.novasBalance ?? 0}</p>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Base-ready</p>
                   </div>
                   <ProyectaTokenSeal size={64} tone="light" showLabel={false} />
@@ -863,7 +865,7 @@ export default function ProfileExperience() {
                         <div className="flex flex-wrap gap-3">
                           <button
                             type="button"
-                            onClick={() => photoInputRef.current.click()}
+                            onClick={() => photoInputRef.current?.click()}
                             disabled={isReadingImage || isUploadingAvatar}
                             className="nova-button-soft px-4 py-2.5 disabled:opacity-60"
                           >
@@ -885,11 +887,11 @@ export default function ProfileExperience() {
                       <span className="mb-2 block text-sm font-semibold text-slate-600">T?tulo visible</span>
                       <p className="font-semibold text-slate-900">{resolvedRole}</p>
                       <p className="mt-2 text-sm leading-6 text-slate-500">
-                        Este tÃ­tulo se ajusta automÃ¡ticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a cientÃ­fico/a.
+                        Este título se ajusta automáticamente. Con perfil local aparece como divulgador/a y, al vincular ORCID, como divulgador/a científico/a.
                       </p>
                     </div>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">AfiliaciÃ³n</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Afiliación</span>
                       <input
                         value={form.affiliation}
                         onChange={(event) => setForm((prev) => ({ ...prev, affiliation: event.target.value }))}
@@ -897,7 +899,7 @@ export default function ProfileExperience() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">UbicaciÃ³n</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Ubicación</span>
                       <input
                         value={form.location}
                         onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
@@ -905,7 +907,7 @@ export default function ProfileExperience() {
                       />
                     </label>
                     <label className="block md:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600">BiografÃ­a</span>
+                      <span className="mb-2 block text-sm font-semibold text-slate-600">Biografía</span>
                       <textarea
                         value={form.bio}
                         onChange={(event) => setForm((prev) => ({ ...prev, bio: event.target.value }))}
@@ -927,7 +929,7 @@ export default function ProfileExperience() {
                 </div>
                 <div className="nova-card-soft p-5 text-center">
                   <p className="nova-title text-3xl font-extrabold text-slate-900">
-                    {bibliometrics ? bibliometrics.citedByCount : (productivity.recentWorks ?? 0)}
+                    {bibliometrics ? bibliometrics.citedByCount : (productivity?.recentWorks ?? 0)}
                   </p>
                   <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                     {bibliometrics ? "Citas totales" : "Ultimos 5 anos"}
@@ -949,15 +951,15 @@ export default function ProfileExperience() {
               {profile.orcidId ? (
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="nova-card-soft p-5 text-center">
-                    <p className="nova-title text-3xl font-extrabold text-slate-900">{bibliometrics.hIndex ?? 0}</p>
+                    <p className="nova-title text-3xl font-extrabold text-slate-900">{bibliometrics?.hIndex ?? 0}</p>
                     <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">H-index</p>
                   </div>
                   <div className="nova-card-soft p-5 text-center">
-                    <p className="nova-title text-3xl font-extrabold text-slate-900">{bibliometrics.i10Index ?? 0}</p>
+                    <p className="nova-title text-3xl font-extrabold text-slate-900">{bibliometrics?.i10Index ?? 0}</p>
                     <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">i10-index</p>
                   </div>
                   <div className="nova-card-soft p-5 text-center">
-                    <p className="nova-title text-3xl font-extrabold text-slate-900">{productivity.recentWorks ?? 0}</p>
+                    <p className="nova-title text-3xl font-extrabold text-slate-900">{productivity?.recentWorks ?? 0}</p>
                     <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Ultimos 5 anos</p>
                   </div>
                 </div>
@@ -971,7 +973,7 @@ export default function ProfileExperience() {
                       Artculos para leer con contexto o revisar primero
                     </h2>
                     <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                      Proyecta cruza las Ã¡reas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte artÃ­culos cercanos a tus intereses.
+                      Proyecta cruza las áreas que ya publicas y, si existe, la productividad sincronizada desde ORCID para sugerirte artículos cercanos a tus intereses.
                     </p>
                   </div>
                   <div className="flex max-w-xl flex-wrap gap-2">
@@ -986,7 +988,7 @@ export default function ProfileExperience() {
                       ))
                     ) : (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                        Tus intereses crecerÃ¡n con tus publicaciones y sincronizaciones
+                        Tus intereses crecerán con tus publicaciones y sincronizaciones
                       </span>
                     )}
                   </div>
@@ -1115,7 +1117,7 @@ export default function ProfileExperience() {
                         ))
                       ) : (
                         <div className="rounded-[24px] bg-white/90 p-5 text-sm leading-7 text-slate-600">
-                          En este momento no hay artÃ­culos abiertos a revisiÃ³n especialmente relacionados con tus intereses.
+                          En este momento no hay artículos abiertos a revisión especialmente relacionados con tus intereses.
                         </div>
                       )}
                     </div>
@@ -1173,7 +1175,7 @@ export default function ProfileExperience() {
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5">
                       <p className="text-sm leading-7 text-slate-600">
-                        TodavÃ­a no hay publicaciones. Cuando publiques tu primera entrada, aparecerÃ¡ aquÃ­.
+                        Todavía no hay publicaciones. Cuando publiques tu primera entrada, aparecerá aquí.
                       </p>
                     </div>
                   )}
@@ -1241,16 +1243,16 @@ export default function ProfileExperience() {
                             <p className="text-sm font-bold text-fuchsia-600">{review.rating}/5</p>
                           </div>
                           <h3 className="mt-3 font-bold text-slate-900">
-                            {review.article.title ? review.article.title : "Publicaci?n no disponible"}
+                            {review.article?.title ? review.article.title : "Publicación no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {review.comment || "RevisiÃ³n sin comentario adicional."}
+                            {review.comment || "Revisión sin comentario adicional."}
                           </p>
                         </article>
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        AÃºn no has dejado revisiones. Cuando evalÃºes artÃ­culos, aparecerÃ¡n aquÃ­.
+                        Aún no has dejado revisiones. Cuando evalúes artículos, aparecerán aquí.
                       </div>
                     )}
                   </div>
@@ -1274,16 +1276,16 @@ export default function ProfileExperience() {
                             </p>
                           </div>
                           <h3 className="mt-3 font-bold text-slate-900">
-                            {vote.article.title ? vote.article.title : "PublicaciÃ³n no disponible"}
+                            {vote.article?.title ? vote.article.title : "Publicación no disponible"}
                           </h3>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {vote.article.excerpt ? vote.article.excerpt : "La publicaciÃ³n asociada ya no estÃ¡ disponible."}
+                            {vote.article?.excerpt ? vote.article.excerpt : "La publicación asociada ya no está disponible."}
                           </p>
                         </article>
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        AÃºn no has votado publicaciones. Tus apoyos y votos aparecerÃ¡n aquÃ­.
+                        Aún no has votado publicaciones. Tus apoyos y votos aparecerán aquí.
                       </div>
                     )}
                   </div>
@@ -1303,14 +1305,14 @@ export default function ProfileExperience() {
                           {formatPublishedLabel(comment.createdAt)}
                         </p>
                         <h3 className="mt-3 font-bold text-slate-900">
-                          {comment.article.title ? comment.article.title : "Publicaci?n no disponible"}
+                          {comment.article?.title ? comment.article.title : "Publicación no disponible"}
                         </h3>
                         <p className="mt-2 text-sm leading-7 text-slate-600">{comment.comment}</p>
                       </article>
                     ))
                   ) : (
                     <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                      AÃºn no has comentado publicaciones. Tus aportes a la conversaciÃ³n aparecerÃ¡n aquÃ­.
+                      Aún no has comentado publicaciones. Tus aportes a la conversación aparecerán aquí.
                     </div>
                   )}
                 </div>
@@ -1322,7 +1324,7 @@ export default function ProfileExperience() {
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                     <ProyectaMark size={22} glow={false} />
-                    CRÃ‰DITOS
+                    CRÉDITOS
                   </h2>
                   <ProyectaTokenSeal size={60} showLabel={false} />
                 </div>
@@ -1332,26 +1334,26 @@ export default function ProfileExperience() {
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Saldo actual</span>
-                    <span className="font-semibold text-slate-900">{novas.total ?? profile.novasBalance ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{novas?.total ?? profile.novasBalance ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Publicaciones</span>
-                    <span className="font-semibold text-slate-900">{novas.publications ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{novas?.publications ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Revisiones</span>
-                    <span className="font-semibold text-slate-900">{novas.reviews ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{novas?.reviews ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Comentarios</span>
-                    <span className="font-semibold text-slate-900">{novas.comments ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{novas?.comments ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Bonus por calidad</span>
-                    <span className="font-semibold text-slate-900">{novas.qualityBonus ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{novas?.qualityBonus ?? 0}</span>
                   </div>
                   <div className="rounded-[20px] border border-fuchsia-100 bg-fuchsia-50/80 p-4 text-sm leading-7 text-fuchsia-800">
-                    Regla actual: +{novas.policy.publicationReward ?? 25} por publicar, +{novas.policy.reviewReward ?? 15} por revisar, +{novas.policy.commentReward ?? 5} por comentar y +{novas.policy.positiveVoteBonus ?? 2} por cada voto positivo recibido.
+                    Regla actual: +{novas?.policy?.publicationReward ?? 25} por publicar, +{novas?.policy?.reviewReward ?? 15} por revisar, +{novas?.policy?.commentReward ?? 5} por comentar y +{novas?.policy?.positiveVoteBonus ?? 2} por cada voto positivo recibido.
                   </div>
                 </div>
               </section>
@@ -1386,11 +1388,11 @@ export default function ProfileExperience() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600">Citas totales</span>
-                        <span className="font-semibold text-slate-900">{bibliometrics.citedByCount ?? 0}</span>
+                        <span className="font-semibold text-slate-900">{bibliometrics?.citedByCount ?? 0}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600">H-index</span>
-                        <span className="font-semibold text-slate-900">{bibliometrics.hIndex ?? 0}</span>
+                        <span className="font-semibold text-slate-900">{bibliometrics?.hIndex ?? 0}</span>
                       </div>
                     </>
                   ) : null}
@@ -1405,31 +1407,31 @@ export default function ProfileExperience() {
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Publicaciones y votos recibidos</span>
-                    <span className="font-semibold text-slate-900">{reputation.publications ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{reputation?.publications ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
                     <span className="text-slate-600">Revisiones realizadas</span>
-                    <span className="font-semibold text-slate-900">{reputation.reviews ?? 0}</span>
+                    <span className="font-semibold text-slate-900">{reputation?.reviews ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between rounded-[20px] bg-slate-50/80 p-4 text-sm">
-                    <span className="text-slate-600">Comentarios cientÃ­ficos</span>
-                    <span className="font-semibold text-slate-900">{reputation.comments ?? 0}</span>
+                    <span className="text-slate-600">Comentarios científicos</span>
+                    <span className="font-semibold text-slate-900">{reputation?.comments ?? 0}</span>
                   </div>
                   <div className="rounded-[20px] border border-fuchsia-100 bg-fuchsia-50/80 p-4 text-sm leading-7 text-fuchsia-800">
-                    Regla actual: +{reputation.policy.publicationBase ?? 10} por publicaciÃ³n, +{reputation.policy.voteBonus ?? 1} por voto positivo recibido, +{reputation.policy.reviewBase ?? 7} por revisiÃ³n y +{reputation.policy.commentBase ?? 3} por comentario.
+                    Regla actual: +{reputation?.policy?.publicationBase ?? 10} por publicación, +{reputation?.policy?.voteBonus ?? 1} por voto positivo recibido, +{reputation?.policy?.reviewBase ?? 7} por revisión y +{reputation?.policy?.commentBase ?? 3} por comentario.
                   </div>
                 </div>
               </section>
 
               <section className="nova-card p-6">
-                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">SincronizaciÃ³n ORCID</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sincronización ORCID</h2>
                 <div className="mt-4 space-y-3">
                   {profile.orcidId ? (
                     <>
                       <div className="flex gap-3 rounded-[22px] bg-emerald-50/80 p-4">
                         <ShieldCheck size={18} className="mt-1 shrink-0 text-emerald-600" />
                         <p className="text-sm leading-7 text-emerald-800">
-                          Tu cuenta local sigue siendo la principal. ORCID solo complementa tu perfil con productividad cientÃ­fica.
+                          Tu cuenta local sigue siendo la principal. ORCID solo complementa tu perfil con productividad científica.
                         </p>
                       </div>
                       <a
@@ -1439,11 +1441,11 @@ export default function ProfileExperience() {
                         className="inline-flex items-center gap-2 text-sm font-semibold text-fuchsia-600"
                       >
                         <ExternalLink size={16} />
-                        Abrir ORCID pÃºblico
+                        Abrir ORCID público
                       </a>
-                      {bibliometrics.openAlexId ? (
+                      {bibliometrics?.openAlexId ? (
                         <a
-                          href={bibliometrics.openAlexId}
+                          href={bibliometrics?.openAlexId}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 text-sm font-semibold text-fuchsia-600"
@@ -1457,7 +1459,7 @@ export default function ProfileExperience() {
                     <div className="flex gap-3 rounded-[22px] bg-slate-50/80 p-4">
                       <UserRound size={18} className="mt-1 shrink-0 text-slate-500" />
                       <p className="text-sm leading-7 text-slate-600">
-                        Puedes usar este perfil sin ORCID. Si quieres, luego sincronizas datos cientÃ­ficos desde ORCID.
+                        Puedes usar este perfil sin ORCID. Si quieres, luego sincronizas datos científicos desde ORCID.
                       </p>
                     </div>
                   )}
@@ -1467,7 +1469,7 @@ export default function ProfileExperience() {
               <section className="nova-card p-6">
                 <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   <Users size={16} className="text-fuchsia-500" />
-                  Red cientÃ­fica
+                  Red científica
                 </h2>
                 <div className="mt-5 space-y-5">
                   <div id="followers-list">

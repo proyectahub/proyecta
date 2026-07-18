@@ -1,4 +1,4 @@
-﻿export type Scientist = {
+export type Scientist = {
   id: string
   name: string
   image: string

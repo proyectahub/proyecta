@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+﻿import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { ProjectSecurityInfo } from '../components/ProjectSecurityInfo'
@@ -46,6 +46,7 @@ export function ProjectDetailsExperience() {
         return null
       }
     }
+
     const loadProject = async () => {
       setLoading(true)
       try {
@@ -60,7 +61,7 @@ export function ProjectDetailsExperience() {
       } catch (err) {
         console.error('Error loading project:', err)
         try {
-          setProject(loadLocalProject())
+          setProject(loadPendingProject())
         } catch {
           setProject(null)
         }
@@ -107,14 +108,14 @@ export function ProjectDetailsExperience() {
 
       <div className="nova-card space-y-3 border-2 border-slate-200 bg-white p-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Wallet personal del investigador</p>
-        <p className="text-sm text-slate-600">
-          Esta es la direcciÃ³n pÃºblica a la que el pool envÃ­a los XMR del proyecto.
-        </p>
+        <p className="text-sm text-slate-600">Esta es la dirección pública a la que el pool envía los XMR del proyecto.</p>
         <code className="block break-all rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-800">
           {normalizeProjectWalletAddress(project.fundraisingAddress)}
         </code>
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-          <span>{isValidProjectWalletAddress(project.fundraisingAddress) ? 'DirecciÃ³n vÃ¡lida' : 'DirecciÃ³n pendiente de validar'}</span>
+          <span>
+            {isValidProjectWalletAddress(project.fundraisingAddress) ? 'Dirección válida' : 'Dirección pendiente de validar'}
+          </span>
           <a
             href="https://supportxmr.com/"
             target="_blank"
@@ -136,18 +137,11 @@ export function ProjectDetailsExperience() {
         hitos={project.hitos}
       />
 
-      <MiningStatsWidget
-        wallet={project.fundraisingAddress}
-        fundingGoal={project.fundingGoal}
-        projectTitle={project.title}
-      />
+      <MiningStatsWidget wallet={project.fundraisingAddress} fundingGoal={project.fundingGoal} projectTitle={project.title} />
 
       <div className="nova-card space-y-4 p-6">
-        <h2 className="text-2xl font-bold">DescripciÃ³n</h2>
-        <div
-          className="space-y-4 text-slate-700"
-          dangerouslySetInnerHTML={{ __html: project.description }}
-        />
+        <h2 className="text-2xl font-bold">Descripción</h2>
+        <div className="space-y-4 text-slate-700" dangerouslySetInnerHTML={{ __html: project.description }} />
       </div>
 
       <ProjectComments projectId={project.id} projectAuthor={project.author} />
@@ -156,4 +150,3 @@ export function ProjectDetailsExperience() {
     </div>
   )
 }
-
