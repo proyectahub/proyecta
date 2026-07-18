@@ -47,6 +47,28 @@ function formatXmr(value: number, decimals = 4) {
   return value.toFixed(decimals)
 }
 
+function createEmptyProjectStats(): MiningStats {
+  return {
+    hashrate: 0,
+    totalHashes: 0,
+    balance: 0,
+    totalPaid: 0,
+    lastHash: Date.now(),
+    minPayout: 0.3,
+    confirmedBalance: 0,
+    localBalance: 0,
+    visibleBalance: 0,
+    localHashrate: 0,
+    localTotalHashes: 0,
+    visibleHashrate: 0,
+    visibleTotalHashes: 0,
+    isLocalActive: false,
+    isPoolConfirmed: false,
+    confirmedValidShares: 0,
+    confirmedInvalidShares: 0,
+    localMiners: 0,
+  }
+}
 export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId }: MiningStatsWidgetProps) {
   const [stats, setStats] = useState<MiningStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -83,11 +105,11 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         }
       }
 
-      setStats(null)
-      setError('No fue posible consultar SupportXMR en este momento.')
+      setStats(projectId ? createEmptyProjectStats() : null)
+      setError(projectId ? 'No fue posible consultar las estadísticas del proyecto.' : 'No fue posible consultar SupportXMR en este momento.')
     } catch (err) {
-      setStats(null)
-      setError(err instanceof Error ? err.message : 'Error al obtener estadÃ­sticas')
+      setStats(projectId ? createEmptyProjectStats() : null)
+      setError(err instanceof Error ? err.message : 'Error al obtener estadísticas')
     } finally {
       setLoading(false)
     }
@@ -105,11 +127,11 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 font-bold text-slate-900">
             <Zap className="h-5 w-5 text-purple-600" />
-            MinerÃ­a comunitaria en progreso
+            Minería comunitaria
           </h3>
           <div className="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
         </div>
-        <p className="text-sm text-slate-600">Consultando el saldo visible del portal y la confirmaciÃ³n del pool...</p>
+        <p className="text-sm text-slate-600">Consultando el estado de este proyecto...</p>
       </div>
     )
   }
@@ -187,7 +209,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div className="flex items-center justify-between gap-3">
           <h3 className="flex items-center gap-2 font-bold text-amber-900">
             <Zap className="h-5 w-5" />
-            MinerÃ­a comunitaria en progreso
+            Minería comunitaria
           </h3>
           <button onClick={fetchMiningStats} className="text-xs font-bold text-amber-800 hover:text-amber-900">
             Reintentar
@@ -209,7 +231,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div>
           <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
             <Zap className="h-5 w-5 text-purple-600" />
-            MinerÃ­a comunitaria en progreso
+            Minería comunitaria
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive
