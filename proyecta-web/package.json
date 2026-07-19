@@ -7,13 +7,17 @@
     "dev": "vite",
     "server": "node server.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
+    "typecheck": "tsc --noEmit",
     "build": "vite build",
+    "check": "npm run typecheck && npm run build && wrangler pages functions build",
     "preview": "vite preview",
     "cf:login": "wrangler login",
     "cf:whoami": "wrangler whoami",
     "cf:pages:create": "wrangler pages project create proyecta --production-branch main",
     "cf:pages:deploy": "npm run build && wrangler pages deploy dist --project-name proyecta --branch main",
     "cf:pages:preview": "npm run build && wrangler pages deploy dist --project-name proyecta --branch preview-local",
+    "cf:d1:migrate": "wrangler d1 migrations apply proyecta-auth --remote",
+    "cf:release": "npm run check && npm run cf:d1:migrate && wrangler pages deploy dist --project-name proyecta --branch main",
     "cf:api:deploy": "wrangler deploy --config cloudflare/api-proxy/wrangler.toml",
     "cf:api:tail": "wrangler tail --config cloudflare/api-proxy/wrangler.toml",
     "cf:api:status": "powershell -ExecutionPolicy Bypass -File ./scripts/check-cloudflare-backend.ps1",
@@ -55,7 +59,6 @@
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.14.0",
     "tailwind-merge": "^3.4.0",
-    "uuid": "^9.0.1",
     "ws": "^8.14.2"
   },
   "devDependencies": {
@@ -69,7 +72,7 @@
     "postcss": "^8.5.10",
     "tailwindcss": "^3.4.17",
     "typescript": "5.9.3",
-    "vite": "7.2.4",
+    "vite": "^7.3.6",
     "vite-plugin-singlefile": "2.3.0",
     "wrangler": "^4.84.1"
   }

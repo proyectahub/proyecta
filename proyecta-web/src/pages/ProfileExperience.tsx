@@ -796,7 +796,7 @@ export default function ProfileExperience() {
 
                 <p className="text-slate-600">{resolvedRole} ? {profile.affiliation}</p>
                 <p className="max-w-3xl text-base leading-8 text-slate-600">
-                  {profile.bio || "Aquíí puedes describir al investigador con tus propios datos."}
+                  {profile.bio || "Aquí puedes describir al investigador con tus propios datos."}
                 </p>
                 {isOwner ? (
                   <p className="text-sm font-medium text-slate-500">
@@ -1252,7 +1252,7 @@ export default function ProfileExperience() {
                       ))
                     ) : (
                       <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-                        Aún no has dejado revisiones. Cuando eval?es artículos, aparecerán aquí.
+                        Aún no has dejado revisiones. Cuando evalúes artículos, aparecerán aquí.
                       </div>
                     )}
                   </div>

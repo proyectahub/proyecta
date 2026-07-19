@@ -27,24 +27,12 @@ export function ProjectDetailsExperience() {
   const navigate = useNavigate()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedMiningOption, setSelectedMiningOption] = useState<'browser' | 'app' | null>(null)
 
   useEffect(() => {
     if (!id) {
       navigate('/projects')
       return
-    }
-
-    const loadPendingProject = () => {
-      try {
-        const saved = localStorage.getItem('proyecta_projects_pending')
-        if (!saved) return null
-        const projects = JSON.parse(saved)
-        const normalizedProjects = projects.map((p: Project) => normalizeProjectWallet(p))
-        localStorage.setItem('proyecta_projects_pending', JSON.stringify(normalizedProjects))
-        return normalizedProjects.find((p: Project) => p.id === id) || null
-      } catch {
-        return null
-      }
     }
 
     const loadProject = async () => {
@@ -57,14 +45,10 @@ export function ProjectDetailsExperience() {
           return
         }
 
-        setProject(loadPendingProject())
+        setProject(null)
       } catch (err) {
         console.error('Error loading project:', err)
-        try {
-          setProject(loadPendingProject())
-        } catch {
-          setProject(null)
-        }
+        setProject(null)
       } finally {
         setLoading(false)
       }
@@ -114,7 +98,7 @@ export function ProjectDetailsExperience() {
         </code>
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
           <span>
-            {isValidProjectWalletAddress(project.fundraisingAddress) ? 'Dirección válida' : 'Dirección pendiente de validar'}
+            {isValidProjectWalletAddress(project.fundraisingAddress) ? 'Formato de dirección válido' : 'Dirección pendiente de validar'}
           </span>
           <a
             href="https://supportxmr.com/"
@@ -134,14 +118,21 @@ export function ProjectDetailsExperience() {
         fundraisingAddress={project.fundraisingAddress}
         goal={project.fundingGoal}
         raised={project.raised}
+        onMiningOptionSelected={setSelectedMiningOption}
         hitos={project.hitos.map((hito) => ({ ...hito, completed: Boolean((hito as any).completed) }))}
       />
 
-      <MiningStatsWidget wallet={project.fundraisingAddress} fundingGoal={project.fundingGoal} projectTitle={project.title} projectId={project.id} />
+      <MiningStatsWidget
+        wallet={project.fundraisingAddress}
+        fundingGoal={project.fundingGoal}
+        projectTitle={project.title}
+        projectId={project.id}
+        selectedMiningOption={selectedMiningOption}
+      />
 
       <div className="nova-card space-y-4 p-6">
         <h2 className="text-2xl font-bold">Descripción</h2>
-        <div className="space-y-4 text-slate-700" dangerouslySetInnerHTML={{ __html: project.description }} />
+        <div className="whitespace-pre-wrap leading-7 text-slate-700">{project.description}</div>
       </div>
 
       <ProjectComments projectId={project.id} projectAuthor={project.author} />

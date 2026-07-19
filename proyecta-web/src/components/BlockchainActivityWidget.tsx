@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useBlockchainMonitoring } from '../hooks/useBlockchainMonitoring'
 
 interface BlockchainActivityWidgetProps {
@@ -11,7 +12,7 @@ export function BlockchainActivityWidget({
 }: BlockchainActivityWidgetProps) {
   const { events, monitoring, startMonitoring } = useBlockchainMonitoring()
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unwatch = startMonitoring(fundraisingAddress, projectId)
     return unwatch
   }, [startMonitoring, fundraisingAddress, projectId])

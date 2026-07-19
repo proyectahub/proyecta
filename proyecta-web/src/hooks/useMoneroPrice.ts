@@ -5,7 +5,7 @@ const CACHE_KEY = 'proyecta_xmr_price'
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 
 export function useMoneroPrice() {
-  const [xmrPrice, setXmrPrice] = useState(316.12)
+  const [xmrPrice, setXmrPrice] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -15,18 +15,20 @@ export function useMoneroPrice() {
       setError(null)
 
       try {
-        // Verificar cache
         const cached = localStorage.getItem(CACHE_KEY)
         if (cached) {
-          const { price, timestamp } = JSON.parse(cached)
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            setXmrPrice(price)
-            setLoading(false)
-            return
+          try {
+            const { price, timestamp } = JSON.parse(cached)
+            if (Number.isFinite(price) && price > 0 && Number.isFinite(timestamp) && Date.now() - timestamp < CACHE_DURATION) {
+              setXmrPrice(price)
+              setLoading(false)
+              return
+            }
+          } catch {
+            localStorage.removeItem(CACHE_KEY)
           }
         }
 
-        // Fetchar precio desde CoinGecko
         const response = await fetch(
           `${COINGECKO_API}/simple/price?ids=monero&vs_currencies=usd`
         )
@@ -34,9 +36,9 @@ export function useMoneroPrice() {
         if (!response.ok) throw new Error('Failed to fetch XMR price')
 
         const data = await response.json()
-        const price = data.monero?.usd || 316.12
+        const price = Number(data.monero?.usd)
+        if (!Number.isFinite(price) || price <= 0) throw new Error('Respuesta de cotización XMR inválida')
 
-        // Guardar en cache
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({ price, timestamp: Date.now() })
@@ -45,14 +47,14 @@ export function useMoneroPrice() {
         setXmrPrice(price)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
-        // Usar precio por defecto si falla
+        setXmrPrice(null)
       } finally {
         setLoading(false)
       }
     }
 
     fetchPrice()
-    const interval = setInterval(fetchPrice, 60000) // Actualizar cada minuto
+    const interval = setInterval(fetchPrice, 60000)
 
     return () => clearInterval(interval)
   }, [])

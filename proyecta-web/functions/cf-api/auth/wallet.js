@@ -1,8 +1,17 @@
-import { ensureSchema, json, loginWallet, updateWalletProfile, getWalletFromRequest } from "../_shared/auth.js"
+import { consumeRateLimit, ensureSchema, json, linkUserWallet, updateWalletProfile, getWalletFromRequest, getUserFromRequest } from "../_shared/auth.js"
 
 export async function onRequestPost(context) {
   const { env, request } = context
   await ensureSchema(env.proyecta_auth)
+  const user = await getUserFromRequest(env.proyecta_auth, request)
+  if (!user) {
+    return json({ error: 'Inicia sesión con tu cuenta PROYECTA antes de vincular una dirección Monero.' }, { status: 401 })
+  }
+
+  const rateLimit = await consumeRateLimit(env.proyecta_auth, request, 'wallet-link', 8, 15 * 60 * 1000)
+  if (!rateLimit.allowed) {
+    return json({ error: 'Demasiados intentos de vincular wallet. Intenta más tarde.' }, { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } })
+  }
 
   let payload = {}
   try {
@@ -12,7 +21,7 @@ export async function onRequestPost(context) {
   }
 
   try {
-    return json(await loginWallet(env.proyecta_auth, payload))
+    return linkUserWallet(env.proyecta_auth, request, payload)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No fue posible vincular la wallet.'
     const status = /formato válido/i.test(message) ? 400 : 400

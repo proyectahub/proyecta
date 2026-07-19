@@ -4,7 +4,6 @@ import { useIPFSVita } from '../hooks/useIPFSVita'
 
 export interface UserWallet {
   mainAddress: string
-  viewKey: string
   userVitaAddress: string
   createdAt: number
 }
@@ -26,7 +25,7 @@ interface WalletAuthContextType {
   user: UserProfile | null
   loading: boolean
   error: string | null
-  loginWithWallet: (mainAddress: string, viewKey: string) => Promise<void>
+  loginWithWallet: (mainAddress: string) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>
   updateVitaBalance: () => Promise<void>
@@ -37,7 +36,7 @@ export const WalletAuthContext = createContext<WalletAuthContextType | null>(nul
 
 const AUTH_API_BASE = '/cf-api/auth'
 const SESSION_STORAGE_KEY = 'proyecta_wallet_session_token'
-const CACHE_KEY = 'proyecta_wallet'
+const LEGACY_CACHE_KEY = 'proyecta_wallet'
 
 export function WalletAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -74,92 +73,41 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
   const clearSession = () => {
     try {
       localStorage.removeItem(SESSION_STORAGE_KEY)
-      localStorage.removeItem(CACHE_KEY)
+      localStorage.removeItem(LEGACY_CACHE_KEY)
     } catch {
       // Ignore storage failures.
     }
   }
 
-  const cacheUser = (profile: UserProfile) => {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(profile))
-    } catch {
-      // Ignore cache failures.
-    }
-  }
-
-  const loadCachedUser = (): UserProfile | null => {
-    try {
-      const saved = localStorage.getItem(CACHE_KEY)
-      if (!saved) return null
-      return JSON.parse(saved) as UserProfile
-    } catch {
-      try {
-        localStorage.removeItem(CACHE_KEY)
-      } catch {}
-      return null
-    }
-  }
-
-  const persistWalletProfile = async (profile: UserProfile) => {
-    const token = getSessionToken()
-    if (!token) {
-      return profile
-    }
-
-    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        fullName: profile.fullName,
-        email: profile.email,
-        institution: profile.institution,
-        researchArea: profile.researchArea,
-        orcidId: profile.orcidId,
-      }),
-    })
-
-    if (!response.ok) {
-      return profile
-    }
-
-    const data = await response.json()
-    return data.user as UserProfile
-  }
-
   const refreshFromServer = async () => {
     const token = getSessionToken()
     if (!token) {
-      const cached = loadCachedUser()
-      if (cached) setUser(cached)
       return
     }
 
-    const response = await fetch(`${AUTH_API_BASE}/wallet`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    try {
+      const response = await fetch(`${AUTH_API_BASE}/wallet`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-    if (!response.ok) {
+      if (!response.ok) {
+        clearSession()
+        setUser(null)
+        return
+      }
+
+      const data = await response.json()
+      setUser(data.user || null)
+    } catch {
       clearSession()
-      const cached = loadCachedUser()
-      if (cached) setUser(cached)
-      return
-    }
-
-    const data = await response.json()
-    if (data.user) {
-      setUser(data.user)
-      cacheUser(data.user)
+      setUser(null)
     }
   }
 
-  const loginWithWallet = async (mainAddress: string, viewKey: string) => {
+  const loginWithWallet = async (mainAddress: string) => {
     setLoading(true)
     setError(null)
 
@@ -178,7 +126,6 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({
           mainAddress,
-          viewKey,
           reputation: vitaBalance.vitaEarned,
           vitaBacked: vitaBalance.vitaBacked,
           vitaEarned: vitaBalance.vitaEarned,
@@ -205,7 +152,6 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
           reputation: vitaBalance.vitaEarned,
         }
         setUser(profile)
-        cacheUser(profile)
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Login failed'
@@ -260,7 +206,6 @@ export function WalletAuthProvider({ children }: { children: ReactNode }) {
 
     if (data.user) {
       setUser(data.user)
-      cacheUser(data.user)
     }
   }
 

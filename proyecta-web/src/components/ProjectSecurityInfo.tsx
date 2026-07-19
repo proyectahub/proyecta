@@ -10,19 +10,19 @@ export function ProjectSecurityInfo() {
         <ul className="space-y-3 text-emerald-800">
           <li className="flex gap-3 items-start">
             <span className="text-lg">✅</span>
-            <span><strong>Tu dinero está en blockchain</strong> — Monero públicamente verificable en cualquier momento</span>
+            <span><strong>Fondos sin custodia</strong> — El pool paga directamente a la dirección del investigador.</span>
           </li>
           <li className="flex gap-3 items-start">
             <span className="text-lg">✅</span>
-            <span><strong>PROYECTA no toca los fondos</strong> — Solo registra transacciones en IPFS para transparencia</span>
+            <span><strong>PROYECTA no toca los fondos</strong> — Solo muestra datos acreditados por el pool y la información publicada por el proyecto.</span>
           </li>
           <li className="flex gap-3 items-start">
             <span className="text-lg">✅</span>
-            <span><strong>Los investigadores controlan todo</strong> — Dirección multisig con supervisores comunitarios</span>
+            <span><strong>Los investigadores controlan su wallet</strong> — PROYECTA no recibe seed phrases, claves de gasto ni view keys.</span>
           </li>
           <li className="flex gap-3 items-start">
             <span className="text-lg">✅</span>
-            <span><strong>Auditoría en tiempo real</strong> — Cualquiera puede verificar transacciones en el explorador Monero</span>
+            <span><strong>Transparencia responsable</strong> — Los shares y pagos se verifican con el pool; Monero protege la privacidad en cadena.</span>
           </li>
         </ul>
       </div>
@@ -37,8 +37,8 @@ export function ProjectSecurityInfo() {
           <ul className="space-y-2 text-sm text-slate-700">
             <li>✓ Criptomoneda privada por defecto</li>
             <li>✓ Transacciones irreversibles (no se pueden revertir)</li>
-            <li>✓ Generada por minería comunitaria real</li>
-            <li>✓ Resiste análisis de quién envía qué</li>
+            <li>✓ Los pagos del pool se envían a la dirección del investigador</li>
+            <li>✓ La privacidad impide inferir saldo o historial desde una dirección pública</li>
           </ul>
         </div>
 
@@ -48,10 +48,10 @@ export function ProjectSecurityInfo() {
             <span>🤝</span> Gobernanza Descentralizada
           </h4>
           <ul className="space-y-2 text-sm text-slate-700">
-            <li>✓ Multisig: múltiples firmas necesarias</li>
-            <li>✓ Supervisores comunitarios verifican gastos</li>
-            <li>✓ Hitos votados por la comunidad</li>
-            <li>✓ Fondos bloqueados hasta completar objetivos</li>
+            <li>✓ Cada proyecto publica sus metas e hitos</li>
+            <li>✓ El investigador conserva el control de su wallet</li>
+            <li>✓ La comunidad puede revisar avances publicados</li>
+            <li>✓ Las reglas de liberación deben quedar documentadas por proyecto</li>
           </ul>
         </div>
 
@@ -71,13 +71,13 @@ export function ProjectSecurityInfo() {
         {/* Verificación */}
         <div className="nova-card p-6 border-l-4 border-emerald-500">
           <h4 className="font-bold text-emerald-900 mb-3 flex items-center gap-2">
-            <span>🔍</span> Verificación Pública
+            <span>🔍</span> Verificación del pool
           </h4>
           <ul className="space-y-2 text-sm text-slate-700">
-            <li>✓ Explorador Monero (xmrchain.net)</li>
-            <li>✓ Verifica donaciones en tiempo real</li>
-            <li>✓ Historial completo de transacciones</li>
-            <li>✓ Sin intermediarios financieros</li>
+            <li>✓ Shares, hashrate y pagos de SupportXMR</li>
+            <li>✓ Fecha y fuente de cada actualización</li>
+            <li>✓ Comprobantes voluntarios publicados por el investigador</li>
+            <li>✓ Sin custodia de fondos por PROYECTA</li>
           </ul>
         </div>
       </div>
@@ -85,13 +85,13 @@ export function ProjectSecurityInfo() {
       {/* CTA */}
       <div className="nova-card p-6 bg-blue-50 border-2 border-blue-200 text-center space-y-3">
         <p className="font-bold text-blue-900">¿Tienes dudas sobre Monero, seguridad o el mecanismo de fondos?</p>
-        <p className="text-sm text-blue-700 space-y-2">
+        <div className="space-y-2 text-sm text-blue-700">
           <div>
             Lee la <a href="/sobre-monero" className="underline font-bold hover:text-blue-900">guía completa sobre Monero XMR</a>
             {' '}(qué es, por qué lo usamos, cómo convertirlo a dinero real)
           </div>
           <div>O contacta a la comunidad en <a href="https://github.com/proyectahub/proyecta/discussions" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-900">GitHub Discussions</a></div>
-        </p>
+        </div>
       </div>
     </div>
   )

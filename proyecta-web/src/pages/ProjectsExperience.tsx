@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ProjectFundraisingCard } from '../components/ProjectFundraisingCard'
 import { normalizeProjects } from '../utils/projectWallet'
 import { PROJECTS_API_BASE } from '../lib/api'
+import { useMoneroPrice } from '../hooks/useMoneroPrice'
+import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 
 interface Project {
   id: string
@@ -12,7 +14,7 @@ interface Project {
   fundingGoal: number
   fundraisingAddress: string
   author: string
-  hitos: Array<{ name: string; payout: number }>
+  hitos: Array<{ name: string; payout: number; completed: boolean }>
   createdAt: number
   status: string
   raised: number
@@ -34,47 +36,30 @@ export function ProjectsExperience() {
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const { xmrPrice } = useMoneroPrice()
+  const { user } = useTraditionalAuth()
+  const openProjectForm = () => navigate(user ? '/create-project' : '/login?intent=publish')
 
   useEffect(() => {
-    const loadPendingProjects = () => {
-      try {
-        const saved = localStorage.getItem('proyecta_projects_pending')
-        if (!saved) return []
-        const allProjects = JSON.parse(saved) as Project[]
-        const normalizedProjects = normalizeProjects(allProjects)
-        localStorage.setItem('proyecta_projects_pending', JSON.stringify(normalizedProjects))
-        return normalizedProjects
-      } catch {
-        return []
-      }
-    }
-
     const loadProjects = async () => {
       setLoading(true)
       try {
         const response = await fetch(`${PROJECTS_API_BASE}/projects`, { headers: { Accept: 'application/json' } })
         if (response.ok) {
-          const remoteProjects = normalizeProjects(await response.json())
-          const pendingProjects = loadPendingProjects()
-          const pendingOnlyProjects = pendingProjects.filter(
-            (pending) => !remoteProjects.some((remote) => remote.id === pending.id),
-          )
-          const merged = [...remoteProjects, ...pendingOnlyProjects].sort(
-            (left, right) => right.createdAt - left.createdAt,
-          )
-          setProjects(merged)
-          localStorage.setItem('proyecta_projects', JSON.stringify(merged))
+          const remoteProjects = normalizeProjects((await response.json()) as Project[]).map((project) => ({
+            ...project,
+            hitos: Array.isArray(project.hitos)
+              ? project.hitos.map((hito) => ({ ...hito, completed: Boolean(hito.completed) }))
+              : [],
+          }))
+          setProjects(remoteProjects)
           return
         }
 
-        setProjects(loadPendingProjects())
+        setProjects([])
       } catch (err) {
         console.error('Error loading projects:', err)
-        try {
-          setProjects(loadPendingProjects())
-        } catch {
-          setProjects([])
-        }
+        setProjects([])
       } finally {
         setLoading(false)
       }
@@ -111,7 +96,7 @@ export function ProjectsExperience() {
             </p>
           </div>
 
-          <button onClick={() => navigate('/login?intent=publish')} className="nova-button-solid whitespace-nowrap">
+          <button onClick={openProjectForm} className="nova-button-solid whitespace-nowrap">
             📢 Publicar proyecto
           </button>
         </div>
@@ -200,18 +185,14 @@ export function ProjectsExperience() {
           <p className="text-slate-600">
             {selectedCategory ? 'No hay proyectos en esta categoría' : 'Sé el primero en publicar un proyecto'}
           </p>
-          <button onClick={() => navigate('/login?intent=publish')} className="nova-button-solid mt-4 inline-block">
+          <button onClick={openProjectForm} className="nova-button-solid mt-4 inline-block">
             📢 Publicar proyecto
           </button>
         </div>
       ) : (
         <div className="space-y-6">
           {filteredProjects.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => navigate(`/projects/${project.id}`)}
-              className="cursor-pointer transition hover:shadow-lg"
-            >
+            <div key={project.id} className="space-y-3">
               <ProjectFundraisingCard
                 projectId={project.id}
                 projectTitle={project.title}
@@ -221,6 +202,9 @@ export function ProjectsExperience() {
                 raised={project.raised}
                 hitos={project.hitos}
               />
+              <button onClick={() => navigate(`/projects/${project.id}`)} className="nova-button-soft w-full justify-center">
+                Ver detalles y comentarios
+              </button>
             </div>
           ))}
         </div>
@@ -242,7 +226,7 @@ export function ProjectsExperience() {
 
           <div className="nova-card p-6 text-center">
             <p className="text-3xl font-bold text-blue-600">
-              ${(projects.reduce((sum, p) => sum + p.raised, 0) * 316.12).toFixed(0)}
+              {xmrPrice === null ? 'USD no disponible' : `$${(projects.reduce((sum, p) => sum + p.raised, 0) * xmrPrice).toFixed(0)}`}
             </p>
             <p className="mt-1 text-sm text-slate-600">USD equivalentes</p>
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { RefreshCw, Zap, Target } from 'lucide-react'
 import { resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
+import { useMoneroPrice } from '../hooks/useMoneroPrice'
 
 interface MiningStats {
   hashrate: number
@@ -23,12 +24,16 @@ interface MiningStats {
   confirmedValidShares?: number
   confirmedInvalidShares?: number
   externalMiningActive?: boolean
+  miningIntent?: boolean
+  browserMiningSelected?: boolean
+  nativeMiningSelected?: boolean
   poolIdentifier?: string | null
   localMiners?: number
   localBrowserMiners?: number
   localNativeMiners?: number
   localBrowserHashrate?: number
   localNativeHashrate?: number
+  localTelemetryUnverified?: boolean
 }
 
 interface MiningStatsWidgetProps {
@@ -36,6 +41,7 @@ interface MiningStatsWidgetProps {
   fundingGoal: number
   projectTitle: string
   projectId?: string
+  selectedMiningOption?: 'browser' | 'app' | null
 }
 
 function hasVisibleMiningData(stats: MiningStats | null) {
@@ -69,7 +75,8 @@ function createEmptyProjectStats(): MiningStats {
     localMiners: 0,
   }
 }
-export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId }: MiningStatsWidgetProps) {
+export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId, selectedMiningOption = null }: MiningStatsWidgetProps) {
+  const { xmrPrice } = useMoneroPrice()
   const [stats, setStats] = useState<MiningStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [, setError] = useState<string | null>(null)
@@ -137,8 +144,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   }
 
   const confirmedBalance = Number(stats?.confirmedBalance ?? (stats?.isPoolConfirmed ? stats?.balance ?? 0 : 0))
-  const localBalance = Number(stats?.localBalance ?? 0)
-  const visibleBalance = Number(stats?.visibleBalance ?? stats?.balance ?? confirmedBalance + localBalance)
+  const visibleBalance = confirmedBalance
   const visibleHashrate = Number(stats?.visibleHashrate ?? stats?.hashrate ?? 0)
   const visibleTotalHashes = Number(stats?.visibleTotalHashes ?? stats?.totalHashes ?? 0)
   const confirmedValidShares = Number(stats?.confirmedValidShares ?? 0)
@@ -150,12 +156,23 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const localNativeHashrate = Number(stats?.localNativeHashrate ?? 0)
   const confirmed = Boolean(stats?.isPoolConfirmed || confirmedValidShares > 0)
   const localActive = Boolean(stats?.isLocalActive)
-  const progressPercent = hasVisibleMiningData(stats) ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
-  const remaining = Math.max(fundingGoal - visibleBalance, 0)
-  const usdValue = (visibleBalance * 316.12).toFixed(2)
+  const webMiningSelected = selectedMiningOption === 'browser' || Boolean(stats?.browserMiningSelected || stats?.miningIntent)
   const projectHasMiningActivity = hasVisibleMiningData(stats)
+  const showCommunityProgress = projectHasMiningActivity || webMiningSelected
+  const progressPercent = showCommunityProgress ? Math.min((visibleBalance / fundingGoal) * 100, 100) : 0
+  const remaining = Math.max(fundingGoal - visibleBalance, 0)
+  const usdValue = xmrPrice === null ? null : (visibleBalance * xmrPrice).toFixed(2)
+  const visibleStatusLabel = confirmed && localActive
+    ? 'Confirmado + telemetría local'
+    : confirmed
+      ? 'Saldo confirmado por SupportXMR'
+      : localActive
+        ? 'Telemetría local sin acreditar'
+        : webMiningSelected
+          ? 'Minería web seleccionada'
+          : 'Esperando confirmación del pool'
 
-  if (stats && !projectHasMiningActivity) {
+  if (stats && !showCommunityProgress) {
     return (
       <div className="nova-card space-y-4 border-2 border-slate-200 bg-white p-6">
         <div className="flex items-start justify-between gap-3">
@@ -235,12 +252,14 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           </h3>
           <p className="mt-1 text-sm text-slate-600">
             {confirmed && localActive
-              ? 'Este proyecto muestra dos capas reales: SupportXMR confirmado y aporte local visible del navegador o app.'
+              ? 'SupportXMR confirmó saldo y actividad. La telemetría del navegador o app se muestra por separado y no modifica la recaudación.'
               : confirmed
-                ? 'SupportXMR confirmó la dirección; el saldo visible sigue sumando el aporte local.'
+                ? 'SupportXMR confirmó la dirección. El saldo y el avance provienen exclusivamente del pool.'
                 : localActive
-                  ? 'Aporte local visible del navegador; el saldo visible del portal suma ese aporte mientras llega la confirmación.'
-                  : 'Esperando confirmación del pool. El saldo visible puede incluir prueba local.'}
+                  ? 'El navegador o app reporta actividad local. Esta telemetría no es saldo ni recaudación hasta que SupportXMR la acredite.'
+                  : webMiningSelected
+                    ? 'La opción de minería web ya fue seleccionada. El progreso se mantiene en cero hasta que el navegador empiece a reportar hashes reales.'
+                  : 'Esperando confirmación del pool. El saldo y la meta permanecen en cero hasta recibir datos acreditados.'}
           </p>
         </div>
         <button
@@ -252,8 +271,8 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         </button>
       </div>
 
-      <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${confirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : localActive ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
-        {confirmed && localActive ? 'Confirmado + local visible' : confirmed ? 'Saldo confirmado por SupportXMR' : localActive ? 'Aporte local visible' : 'Esperando confirmación del pool'}
+      <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${confirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : localActive || webMiningSelected ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+        {visibleStatusLabel}
       </div>
 
       <div className="space-y-2">
@@ -270,7 +289,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           />
         </div>
         <div className="flex justify-between text-xs text-slate-600">
-          <span>$ {usdValue} USD</span>
+          <span>{usdValue === null ? 'Cotización USD no disponible' : `$ ${usdValue} USD`}</span>
           <span>Falta: {remaining.toFixed(4)} XMR</span>
         </div>
       </div>
@@ -279,13 +298,13 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Hashrate visible</p>
           <p className="font-bold text-slate-900">{visibleHashrate.toFixed(2)} H/s</p>
-          <p className="mt-1 text-xs text-slate-500">pool confirmado + equipos locales</p>
+          <p className="mt-1 text-xs text-slate-500">solo datos confirmados por el pool</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="mb-1 text-xs font-bold text-slate-600">Total de hashes</p>
           <p className="font-bold text-slate-900">{(visibleTotalHashes / 1e6).toFixed(2)}M</p>
-          <p className="mt-1 text-xs text-slate-500">acumulados</p>
+          <p className="mt-1 text-xs text-slate-500">acreditados por el pool</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -301,16 +320,16 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Aporte local visible</p>
-          <p className="font-bold text-slate-900">{localBalance.toFixed(4)} XMR</p>
-          <p className="mt-1 text-xs text-slate-500">{localMiners} equipo(s) activos: {localBrowserMiners} web / {localNativeMiners} app</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Telemetría sin acreditar</p>
+          <p className="font-bold text-slate-900">{localMiners} equipo(s)</p>
+          <p className="mt-1 text-xs text-slate-500">{localBrowserMiners} web / {localNativeMiners} app. No equivale a XMR.</p>
         </div>
       </div>
 
       <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-2 flex items-center gap-2">
           <Target className="h-4 w-4 text-purple-600" />
-          <p className="text-sm font-bold text-slate-900">Estado visible de este proyecto: pool confirmado + aporte local visible</p>
+          <p className="text-sm font-bold text-slate-900">Estado visible de este proyecto: {visibleStatusLabel.toLowerCase()}</p>
         </div>
         <p className="text-xs text-slate-600">
           Dirección: <code className="break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs">{wallet.substring(0, 32)}...</code>
@@ -327,8 +346,8 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           </a>
         </p>
         <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-500 md:grid-cols-2">
-          <p>Web activa: {localBrowserHashrate.toFixed(2)} H/s</p>
-          <p>App activa: {localNativeHashrate.toFixed(2)} H/s</p>
+          <p>Web local: {localBrowserHashrate.toFixed(2)} H/s (sin acreditar)</p>
+          <p>App local: {localNativeHashrate.toFixed(2)} H/s (sin acreditar)</p>
         </div>
         {lastUpdate && (
           <p className="mt-2 text-xs text-slate-500">Actualizado: {lastUpdate.toLocaleTimeString('es-ES')}</p>
@@ -340,9 +359,9 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <ul className="space-y-1 text-xs text-emerald-800">
           <li>Comunidad elige iniciar minería para este proyecto</li>
           <li>Cada participante aporta poder de cómputo (App o Navegador)</li>
-          <li>SupportXMR acumula hashes y paga en XMR automáticamente</li>
+          <li>SupportXMR acredita shares y paga XMR según sus propios registros</li>
           <li>XMR va directamente a la dirección del investigador</li>
-          <li>PROYECTA solo registra, nunca custodia fondos</li>
+          <li>PROYECTA no custodia fondos ni convierte hashes locales en saldo</li>
         </ul>
       </div>
     </div>

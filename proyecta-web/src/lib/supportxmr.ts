@@ -103,7 +103,9 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     totalPaid: parseAtomicXmr(data?.totalPaid ?? data?.paid ?? 0),
     lastHash: parseHashCount(data?.lastHash ?? Date.now()),
     minPayout: parseAtomicXmr(data?.minPayout ?? 0.3) || 0.3,
-    confirmedBalance: isUnified ? parseAtomicXmr(confirmedBalance) : undefined,
+    confirmedBalance: isUnified
+      ? parseAtomicXmr(confirmedBalance)
+      : parseAtomicXmr(data?.balance ?? data?.amtDue ?? data?.due ?? 0),
     localBalance: isUnified ? parseAtomicXmr(localBalance) : undefined,
     visibleBalance: isUnified ? parseAtomicXmr(visibleBalance ?? data?.balance ?? 0) : undefined,
     localHashrate: isUnified ? parseDecimalLike(localHashrate) : undefined,
@@ -111,7 +113,12 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     visibleHashrate: isUnified ? parseDecimalLike(visibleHashrate ?? data?.hashrate ?? 0) : undefined,
     visibleTotalHashes: isUnified ? parseHashCount(visibleTotalHashes ?? data?.totalHashes ?? 0) : undefined,
     isLocalActive: isUnified ? Boolean(data?.isLocalActive) : undefined,
-    isPoolConfirmed: isUnified ? Boolean(data?.isPoolConfirmed) : undefined,
+    isPoolConfirmed: isUnified
+      ? Boolean(data?.isPoolConfirmed)
+      : parseHashCount(data?.totalHashes ?? data?.total_hashes ?? data?.hashes ?? 0) > 0 ||
+        parseAtomicXmr(data?.balance ?? data?.amtDue ?? data?.due ?? 0) > 0 ||
+        parseAtomicXmr(data?.totalPaid ?? data?.paid ?? 0) > 0 ||
+        parseHashCount(data?.validShares ?? data?.valid_shares ?? 0) > 0,
     confirmedValidShares: isUnified ? parseHashCount(confirmedValidShares) : parseHashCount(data?.validShares ?? 0),
     confirmedInvalidShares: isUnified ? parseHashCount(confirmedInvalidShares) : parseHashCount(data?.invalidShares ?? 0),
     externalMiningActive: isUnified ? Boolean(data?.externalMiningActive ?? data?.isPoolConfirmed) : parseHashCount(data?.validShares ?? 0) > 0,

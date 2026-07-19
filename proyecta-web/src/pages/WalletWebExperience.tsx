@@ -69,9 +69,7 @@ export function WalletWebExperience() {
   const fallbackUrl = ((import.meta as any).env?.VITE_MONERO_WEB_URL || '').trim() || DEFAULT_MONERO_WEB_URL
 
   const safeUrl = useMemo(() => normalizeUrl(configuredUrl || fallbackUrl), [configuredUrl, fallbackUrl])
-  const usingMoneroWebMode = user?.walletMode === 'monero_web'
   const [addressDraft, setAddressDraft] = useState(readPendingAddress())
-  const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
@@ -111,16 +109,6 @@ export function WalletWebExperience() {
       )
     } catch {
       // ignore postMessage failures
-    }
-  }
-
-  const handleCopyMoneroWeb = async () => {
-    try {
-      await navigator.clipboard.writeText(safeUrl || fallbackUrl)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
-    } catch {
-      setError('No fue posible copiar la URL del panel.')
     }
   }
 

@@ -1,9 +1,11 @@
 ﻿name = "proyecta"
 pages_build_output_dir = "dist"
+compatibility_date = "2026-07-19"
 
 [[d1_databases]]
 binding = "proyecta_auth"
 database_name = "proyecta-auth"
 database_id = "8af3aa4c-2f6e-42f9-8375-7d7f6afc6898"
+migrations_dir = "cloudflare/d1/migrations"
 
 

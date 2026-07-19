@@ -6,10 +6,10 @@ export type Scientist = {
   affiliation: string
   orcidId: string
   reputation: number
-  novasBalance: number
+  novasBalance?: number
   bio: string
   location: string
-  isDemo: boolean
+  isDemo?: boolean
 }
 
 export type ArticleSource = {
@@ -20,6 +20,7 @@ export type ArticleSource = {
 
 export type FeedArticle = {
   id: string
+  createdAt?: string
   title: string
   excerpt: string
   category: string
@@ -176,7 +177,7 @@ export const reviewHighlights = [
 export const editorialPrinciples = [
   {
     title: "Serio, pero cercano",
-    copy: "Aquííí la ciencia se comunica con criterio, pero también con una voz humana que invita a leer, preguntar y seguir explorando.",
+    copy: "Aquí la ciencia se comunica con criterio, pero también con una voz humana que invita a leer, preguntar y seguir explorando.",
   },
   {
     title: "Lectura amable",
@@ -263,6 +264,10 @@ export const feedArticles: FeedArticle[] = [
     },
     author: authorProfile,
     contentHtml: articleBody,
+    figureImage: "",
+    figureCaption: "",
+    sources: [],
+    viewerState: { vote: 0, followingAuthor: false },
   },
   {
     id: "corales-caribe",
@@ -292,6 +297,10 @@ export const feedArticles: FeedArticle[] = [
       location: "La Habana, Cuba",
     },
     contentHtml: articleBody,
+    figureImage: "",
+    figureCaption: "",
+    sources: [],
+    viewerState: { vote: 0, followingAuthor: false },
   },
   {
     id: "ia-diagnostico-rural",
@@ -321,5 +330,9 @@ export const feedArticles: FeedArticle[] = [
       location: "Monterrey, México",
     },
     contentHtml: articleBody,
+    figureImage: "",
+    figureCaption: "",
+    sources: [],
+    viewerState: { vote: 0, followingAuthor: false },
   },
 ]

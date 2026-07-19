@@ -1,4 +1,5 @@
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30
+const PBKDF2_ITERATIONS = 210000
 
 const AUTH_SCHEMA_STATEMENTS = [
   `
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
   institution TEXT,
   research_area TEXT,
   monero_wallet_main_address TEXT,
-  monero_wallet_view_key TEXT,
+  monero_wallet_view_key TEXT NOT NULL DEFAULT '',
   monero_wallet_user_vita_address TEXT,
   monero_wallet_linked_at INTEGER,
   wallet_mode TEXT NOT NULL DEFAULT 'external',
@@ -45,7 +46,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS wallet_profiles (
   id TEXT PRIMARY KEY,
   main_address TEXT NOT NULL UNIQUE,
-  view_key TEXT NOT NULL,
+  view_key TEXT NOT NULL DEFAULT '',
   user_vita_address TEXT NOT NULL,
   wallet_mode TEXT NOT NULL DEFAULT 'external',
   wallet_web_url TEXT NOT NULL DEFAULT '',
@@ -72,6 +73,25 @@ CREATE TABLE IF NOT EXISTS wallet_sessions (
 )
 `,
   `CREATE INDEX IF NOT EXISTS idx_wallet_sessions_wallet_id ON wallet_sessions(wallet_id)`,
+  `
+CREATE TABLE IF NOT EXISTS project_comments (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  author_id TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  parent_id TEXT,
+  created_at INTEGER NOT NULL
+)
+`,
+  `CREATE INDEX IF NOT EXISTS idx_project_comments_project ON project_comments(project_id, created_at DESC)`,
+  `
+CREATE TABLE IF NOT EXISTS request_rate_limits (
+  key TEXT PRIMARY KEY,
+  count INTEGER NOT NULL,
+  reset_at INTEGER NOT NULL
+)
+`,
 ]
 function now() {
   return Date.now()
@@ -110,7 +130,22 @@ async function sha256Hex(value) {
 }
 
 async function hashPassword(password, salt) {
-  return sha256Hex(`${salt}:${password}`)
+  const encoder = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits'])
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: encoder.encode(salt), iterations: PBKDF2_ITERATIONS },
+    key,
+    256,
+  )
+  const hash = Array.from(new Uint8Array(bits), (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `pbkdf2$${PBKDF2_ITERATIONS}$${hash}`
+}
+
+async function verifyPassword(password, salt, storedHash) {
+  if (String(storedHash).startsWith('pbkdf2$')) {
+    return await hashPassword(password, salt) === storedHash
+  }
+  return await sha256Hex(`${salt}:${password}`) === storedHash
 }
 
 async function hashWallet(address) {
@@ -119,8 +154,43 @@ async function hashWallet(address) {
 
 function parseBearerToken(request) {
   const authorization = request.headers.get('Authorization') || request.headers.get('authorization') || ''
-  if (!authorization.startsWith('Bearer ')) return null
-  return authorization.slice('Bearer '.length).trim() || null
+  if (authorization.startsWith('Bearer ')) return authorization.slice('Bearer '.length).trim() || null
+  const cookie = request.headers.get('Cookie') || ''
+  return cookie.split(';').map((part) => part.trim()).find((part) => part.startsWith('proyecta_session='))?.slice('proyecta_session='.length) || null
+}
+
+function sessionCookie(token) {
+  return `proyecta_session=${token}; Path=/; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}; HttpOnly; Secure; SameSite=Lax`
+}
+
+function clearSessionCookie() {
+  return 'proyecta_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax'
+}
+
+function getClientAddress(request) {
+  return request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() || 'unknown'
+}
+
+export async function consumeRateLimit(db, request, scope, limit, windowMs) {
+  const current = now()
+  const key = await sha256Hex(`${scope}:${getClientAddress(request)}`)
+  const existing = await db.prepare('SELECT count, reset_at FROM request_rate_limits WHERE key = ? LIMIT 1').bind(key).first()
+
+  if (!existing || Number(existing.reset_at || 0) <= current) {
+    await db
+      .prepare('INSERT OR REPLACE INTO request_rate_limits (key, count, reset_at) VALUES (?, ?, ?)')
+      .bind(key, 1, current + windowMs)
+      .run()
+    return { allowed: true, retryAfterSeconds: 0 }
+  }
+
+  const retryAfterSeconds = Math.max(1, Math.ceil((Number(existing.reset_at) - current) / 1000))
+  if (Number(existing.count || 0) >= limit) {
+    return { allowed: false, retryAfterSeconds }
+  }
+
+  await db.prepare('UPDATE request_rate_limits SET count = count + 1 WHERE key = ?').bind(key).run()
+  return { allowed: true, retryAfterSeconds: 0 }
 }
 
 async function ensureSchema(db) {
@@ -152,7 +222,6 @@ function buildMoneroWallet(row) {
 
   return {
     mainAddress: row.monero_wallet_main_address,
-    viewKey: row.monero_wallet_view_key || '',
     userVitaAddress: row.monero_wallet_user_vita_address || '',
     linkedAt: Number(row.monero_wallet_linked_at || now()),
   }
@@ -190,7 +259,6 @@ function buildWalletProfile(row) {
   return {
     wallet: {
       mainAddress: row.main_address,
-      viewKey: row.view_key,
       userVitaAddress: row.user_vita_address,
       createdAt: Number(row.created_at || now()),
     },
@@ -318,8 +386,8 @@ async function createUser(db, payload) {
     throw new Error('El nombre completo es obligatorio.')
   }
 
-  if (password.length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres.')
+  if (password.length < 10) {
+    throw new Error('La contraseña debe tener al menos 10 caracteres.')
   }
 
   const existing = await fetchUserByEmail(db, email)
@@ -347,7 +415,7 @@ async function createUser(db, payload) {
     wallet_mode: normalizeWalletMode(payload.walletMode),
     wallet_web_url: normalizeText(payload.walletWebUrl),
     monero_wallet_main_address: null,
-    monero_wallet_view_key: null,
+    monero_wallet_view_key: '',
     monero_wallet_user_vita_address: null,
     monero_wallet_linked_at: null,
     vita_backed: 0,
@@ -424,9 +492,14 @@ async function loginUser(db, payload) {
     throw new Error('Email o contraseña incorrectos.')
   }
 
-  const passwordHash = await hashPassword(password, user.password_salt)
-  if (passwordHash !== user.password_hash) {
+  const passwordMatches = await verifyPassword(password, user.password_salt, user.password_hash)
+  if (!passwordMatches) {
     throw new Error('Email o contraseña incorrectos.')
+  }
+
+  if (!String(user.password_hash).startsWith('pbkdf2$')) {
+    const upgradedHash = await hashPassword(password, user.password_salt)
+    await db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').bind(upgradedHash, now(), user.id).run()
   }
 
   const { token } = await createSession(db, user.id)
@@ -499,16 +572,11 @@ async function linkUserWallet(db, request, payload) {
   }
 
   const mainAddress = normalizeText(payload.mainAddress)
-  const viewKey = normalizeText(payload.viewKey)
   const walletMode = normalizeWalletMode(payload.walletMode)
   const walletWebUrl = normalizeText(payload.walletWebUrl)
 
   if (!/^[48][a-zA-Z0-9]{94}$/.test(mainAddress)) {
     return json({ error: 'La dirección Monero no tiene un formato válido.' }, { status: 400 })
-  }
-
-  if (viewKey && !/^[a-fA-F0-9]{64}$/.test(viewKey)) {
-    return json({ error: 'La view key pública no tiene un formato válido.' }, { status: 400 })
   }
 
   const userVitaAddress = await hashWallet(mainAddress)
@@ -518,7 +586,7 @@ async function linkUserWallet(db, request, payload) {
     .prepare(
       `
       UPDATE users
-      SET monero_wallet_main_address = ?, monero_wallet_view_key = ?,
+      SET monero_wallet_main_address = ?, monero_wallet_view_key = '',
           monero_wallet_user_vita_address = ?, monero_wallet_linked_at = ?,
           wallet_mode = ?, wallet_web_url = ?, updated_at = ?
       WHERE id = ?
@@ -526,7 +594,6 @@ async function linkUserWallet(db, request, payload) {
     )
     .bind(
       mainAddress,
-      viewKey || '',
       userVitaAddress,
       linkedAt,
       walletMode,
@@ -542,16 +609,11 @@ async function linkUserWallet(db, request, payload) {
 
 async function upsertWalletProfile(db, payload) {
   const mainAddress = normalizeText(payload.mainAddress)
-  const viewKey = normalizeText(payload.viewKey)
   const walletMode = normalizeWalletMode(payload.walletMode)
   const walletWebUrl = normalizeText(payload.walletWebUrl)
 
   if (!/^[48][a-zA-Z0-9]{94}$/.test(mainAddress)) {
     throw new Error('La dirección Monero no tiene un formato válido.')
-  }
-
-  if (viewKey && !/^[a-fA-F0-9]{64}$/.test(viewKey)) {
-    throw new Error('La view key pública no tiene un formato válido.')
   }
 
   const userVitaAddress = await hashWallet(mainAddress)
@@ -563,7 +625,7 @@ async function upsertWalletProfile(db, payload) {
   const wallet = {
     id: existing?.id || buildId('wallet'),
     main_address: mainAddress,
-    view_key: viewKey || '',
+    view_key: '',
     user_vita_address: userVitaAddress,
     wallet_mode: walletMode,
     wallet_web_url: walletWebUrl,
@@ -585,14 +647,13 @@ async function upsertWalletProfile(db, payload) {
       .prepare(
         `
         UPDATE wallet_profiles
-        SET view_key = ?, user_vita_address = ?, wallet_mode = ?, wallet_web_url = ?, full_name = ?, email = ?, institution = ?,
+        SET view_key = '', user_vita_address = ?, wallet_mode = ?, wallet_web_url = ?, full_name = ?, email = ?, institution = ?,
             research_area = ?, orcid_id = ?, reputation = ?, vita_backed = ?, vita_earned = ?,
             vita_pledged = ?, updated_at = ?
         WHERE id = ?
       `,
       )
       .bind(
-        wallet.view_key || '',
         wallet.user_vita_address,
         wallet.wallet_mode,
         wallet.wallet_web_url,
@@ -624,7 +685,7 @@ async function upsertWalletProfile(db, payload) {
       .bind(
         wallet.id,
         wallet.main_address,
-        wallet.view_key || '',
+        '',
         wallet.user_vita_address,
         wallet.wallet_mode,
         wallet.wallet_web_url,
@@ -707,6 +768,8 @@ export {
   normalizeEmail,
   normalizeText,
   parseBearerToken,
+  sessionCookie,
+  clearSessionCookie,
   upsertWalletProfile,
   updateUserProfile,
   updateWalletProfile,

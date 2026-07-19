@@ -1,4 +1,5 @@
 import { DonateToProject } from './DonateToProject'
+import { useMoneroPrice } from '../hooks/useMoneroPrice'
 
 interface ProjectFundraisingCardProps {
   projectId: string
@@ -7,6 +8,7 @@ interface ProjectFundraisingCardProps {
   fundraisingAddress: string
   goal: number
   raised: number
+  onMiningOptionSelected?: (option: 'browser' | 'app') => void
   hitos?: Array<{
     name: string
     payout: number
@@ -21,8 +23,10 @@ export function ProjectFundraisingCard({
   fundraisingAddress,
   goal,
   raised,
+  onMiningOptionSelected,
   hitos = [],
 }: ProjectFundraisingCardProps) {
+  const { xmrPrice } = useMoneroPrice()
   const safeRaised = Number(raised) || 0
   const safeGoal = Number(goal) || 0
   const progress = safeGoal > 0 ? Math.min((safeRaised / safeGoal) * 100, 100) : 0
@@ -58,7 +62,7 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-blue-600">
                     {safeRaised.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">${(safeRaised * 316.12).toFixed(0)} USD</p>
+                  <p className="text-xs text-slate-500">{xmrPrice === null ? 'USD no disponible' : `$${(safeRaised * xmrPrice).toFixed(0)} USD`}</p>
                 </div>
 
                 <div className="bg-white rounded-lg p-3">
@@ -66,7 +70,7 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-amber-600">
                     {remaining.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">${(remaining * 316.12).toFixed(0)} USD</p>
+                  <p className="text-xs text-slate-500">{xmrPrice === null ? 'USD no disponible' : `$${(remaining * xmrPrice).toFixed(0)} USD`}</p>
                 </div>
 
                 <div className="bg-white rounded-lg p-3">
@@ -74,7 +78,7 @@ export function ProjectFundraisingCard({
                   <p className="text-lg font-bold text-slate-900">
                     {safeGoal.toFixed(2)} <span className="text-xs">XMR</span>
                   </p>
-                  <p className="text-xs text-slate-500">${(safeGoal * 316.12).toFixed(0)} USD</p>
+                  <p className="text-xs text-slate-500">{xmrPrice === null ? 'USD no disponible' : `$${(safeGoal * xmrPrice).toFixed(0)} USD`}</p>
                 </div>
               </div>
             </div>
@@ -93,15 +97,7 @@ export function ProjectFundraisingCard({
                 </button>
               </div>
               <p className="text-xs text-slate-500">
-                ✅ Verificable en{' '}
-                <a
-                  href={`https://xmrchain.net/address/${fundraisingAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  explorador Monero
-                </a>
+                Monero no publica el saldo de una dirección. La actividad minera y los pagos se verifican mediante SupportXMR.
               </p>
             </div>
           </div>
@@ -113,6 +109,7 @@ export function ProjectFundraisingCard({
               projectGoal={safeGoal}
               projectTitle={projectTitle}
               projectRaised={safeRaised}
+              onMiningOptionSelected={onMiningOptionSelected}
             />
           </div>
         </div>

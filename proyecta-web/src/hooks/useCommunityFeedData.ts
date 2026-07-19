@@ -123,8 +123,10 @@ function mapApiArticle(article: ApiArticle, index: number): FeedArticle {
       affiliation: article.author.affiliation || "Comunidad Proyecta",
       orcidId: article.author.orcidId || "",
       reputation: Number(article.author.reputation ?? 0),
+      novasBalance: 0,
       bio: article.author.bio || "",
       location: article.author.location || "LatAm",
+      isDemo: false,
     },
     viewerState: {
       vote: Number(article.viewerState?.vote ?? 0),

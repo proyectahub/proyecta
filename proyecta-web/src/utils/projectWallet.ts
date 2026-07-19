@@ -1,4 +1,4 @@
-import { generateMoneroAddress, isValidMoneroAddress } from './moneroAddress'
+import { isValidMoneroAddress } from './moneroAddress'
 
 export function normalizeProjectWalletAddress(address: string | null | undefined) {
   return String(address || '').trim()
@@ -17,21 +17,11 @@ export interface ProjectWalletLike {
   [key: string]: any
 }
 
-function deriveSeed(project: ProjectWalletLike) {
-  return [
-    project.id || 'project',
-    project.title || 'unknown',
-    project.createdAt || 0,
-    project.fundraisingAddress || '',
-    project.moneroAddress || '',
-  ].join('|')
-}
-
 export function normalizeProjectWallet<T extends ProjectWalletLike>(project: T): T {
   const validWallet =
     (project.moneroAddress && isValidMoneroAddress(project.moneroAddress) && project.moneroAddress) ||
     (project.fundraisingAddress && isValidMoneroAddress(project.fundraisingAddress) && project.fundraisingAddress) ||
-    generateMoneroAddress(deriveSeed(project))
+    ''
 
   return {
     ...project,

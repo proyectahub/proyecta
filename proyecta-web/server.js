@@ -64,6 +64,8 @@ app.get('/api/local-ip', (req, res) => {
 
 const POOL_HOST = process.env.MONERO_POOL_HOST ?? 'pool.supportxmr.com'
 const POOL_PORT = Number(process.env.MONERO_POOL_PORT ?? '3333') // Stratum plaintext - mainnet
+const MAX_POOL_CONNECTIONS = Number(process.env.MAX_POOL_CONNECTIONS ?? '100')
+const MAX_SUBSCRIBERS_PER_WALLET = Number(process.env.MAX_SUBSCRIBERS_PER_WALLET ?? '16')
 
 /** @type {Map<string, PoolConnection>} */
 const pools = new Map()
@@ -75,6 +77,7 @@ class PoolConnection {
     this.connected = false
     this.authed = false
     this.rpcId = 1
+    this.pendingRequests = new Map()
     this.minerId = null // session id que devuelve el pool en el login
     this.currentJob = null
     this.buffer = ''
@@ -106,7 +109,7 @@ class PoolConnection {
           algo: ['rx/0'],
           difficulty: 50,
         },
-      })
+      }, 'login')
     })
 
     socket.setEncoding('utf8')
@@ -132,8 +135,9 @@ class PoolConnection {
     this.socket = socket
   }
 
-  send(obj) {
+  send(obj, requestType = null) {
     if (this.socket && this.connected) {
+      if (requestType && obj.id != null) this.pendingRequests.set(obj.id, requestType)
       this.socket.write(JSON.stringify(obj) + '\n')
     }
   }
@@ -156,6 +160,9 @@ class PoolConnection {
       return
     }
 
+    const requestType = msg.id != null ? this.pendingRequests.get(msg.id) : null
+    if (msg.id != null) this.pendingRequests.delete(msg.id)
+
     // Respuesta al login: contiene minerId + primer job
     if (msg.result && msg.result.id && msg.result.job) {
       this.authed = true
@@ -171,7 +178,7 @@ class PoolConnection {
           jsonrpc: '2.0',
           method: 'keepalived',
           params: { id: this.minerId },
-        })
+        }, 'keepalive')
       }, 30000)
       return
     }
@@ -183,7 +190,7 @@ class PoolConnection {
     }
 
     // Respuesta a un submit (share)
-    if (msg.result && typeof msg.result.status === 'string') {
+    if (requestType === 'submit' && msg.result && typeof msg.result.status === 'string') {
       if (msg.result.status === 'OK') {
         this.acceptedShares++
         console.log(`[POOL] ✅ Share ACEPTADO (total: ${this.acceptedShares})`)
@@ -193,7 +200,7 @@ class PoolConnection {
     }
 
     // Error en submit u otro
-    if (msg.error) {
+    if (requestType === 'submit' && msg.error) {
       this.rejectedShares++
       const errorMsg = msg.error.message || JSON.stringify(msg.error)
       console.warn(`[POOL] âŒ Share rechazado: ${errorMsg}`)
@@ -229,7 +236,7 @@ class PoolConnection {
         nonce,
         result,
       },
-    })
+    }, 'submit')
   }
 
   addSubscriber(ws) {
@@ -283,6 +290,10 @@ wss.on('connection', (ws) => {
   console.log('[WS] Navegador conectado')
 
   ws.on('message', (raw) => {
+    if (raw.length > 4096) {
+      ws.close(1009, 'Mensaje demasiado grande')
+      return
+    }
     let msg
     try {
       msg = JSON.parse(raw.toString())
@@ -291,17 +302,28 @@ wss.on('connection', (ws) => {
     }
 
     if (msg.type === 'subscribe' && msg.wallet) {
+      if (pool) return
       // Validar dirección Monero (mainnet: empieza con 4, 95 chars)
       if (!/^[48][0-9A-Za-z]{94}$/.test(msg.wallet)) {
         ws.send(JSON.stringify({ type: 'error', error: 'Dirección Monero inválida' }))
         return
       }
+      if (!pools.has(msg.wallet) && pools.size >= MAX_POOL_CONNECTIONS) {
+        ws.send(JSON.stringify({ type: 'error', error: 'Capacidad temporal de minería alcanzada' }))
+        return
+      }
       pool = getOrCreatePool(msg.wallet)
+      if (pool.subscribers.size >= MAX_SUBSCRIBERS_PER_WALLET) {
+        ws.send(JSON.stringify({ type: 'error', error: 'Demasiados mineros conectados para esta wallet' }))
+        pool = null
+        return
+      }
       pool.addSubscriber(ws)
       console.log(`[WS] Suscrito a wallet ${msg.wallet.slice(0, 12)}...`)
     }
 
     if (msg.type === 'share' && pool) {
+      if (typeof msg.job_id !== 'string' || msg.job_id.length > 256 || !/^[0-9a-f]{8}$/i.test(msg.nonce) || !/^[0-9a-f]{64}$/i.test(msg.result)) return
       pool.submitShare(msg.job_id, msg.nonce, msg.result)
     }
   })

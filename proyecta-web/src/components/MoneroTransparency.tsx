@@ -7,9 +7,9 @@ export function MoneroTransparency() {
       <div className="space-y-4">
         <h2 className="text-3xl font-bold text-slate-900">🔓 Transparencia total sobre Monero XMR</h2>
         <p className="text-slate-700">
-          PROYECTA usa <strong>Monero (XMR)</strong> porque es la única criptomoneda que garantiza
-          <strong> privacidad por defecto, descentralización real y resistencia a censura</strong>.
-          Aquííí explicamos exactamente qué es, por qué la usamos, y cómo convertirla a dinero real.
+          PROYECTA usa <strong>Monero (XMR)</strong> por su
+          <strong> privacidad por defecto, minería RandomX y resistencia a la censura</strong>.
+          Aquí explicamos exactamente qué es, por qué la usamos y cómo convertirla a dinero real.
         </p>
       </div>
 
@@ -25,7 +25,7 @@ export function MoneroTransparency() {
           <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-3">
             <p className="font-bold text-slate-900">🔐 Privacidad por defecto</p>
             <ul className="text-sm text-slate-700 space-y-1">
-              <li>✓ Las transacciones son anónimas por defecto</li>
+              <li>✓ Privacidad reforzada por defecto</li>
               <li>✓ El remitente está oculto (Ring Signatures)</li>
               <li>✓ El monto es oculto (Confidential Transactions)</li>
               <li>✓ El receptor es oculto (Stealth Addresses)</li>
@@ -57,7 +57,7 @@ export function MoneroTransparency() {
 
         <div className="bg-blue-100 rounded-lg p-4 border-l-4 border-blue-600 text-sm text-slate-700">
           <strong>Comparación con Bitcoin:</strong> Bitcoin es pseudónimo pero todas las transacciones son públicas.
-          Con análisis blockchain se pueden identificar patrones. Monero es anónimo por defecto: incluso
+          Con análisis blockchain se pueden identificar patrones. Monero oculta por defecto los importes y las partes: incluso
           los investigadores que reciben XMR pueden mantener privacidad financiera.
         </div>
       </div>
@@ -135,7 +135,7 @@ export function MoneroTransparency() {
               <p>Copiar dirección de depósito XMR en CoinEx (dirección pública diferente a tu billetera)</p>
               <p>Enviar 0.5 XMR desde tu billetera personal a CoinEx</p>
               <p className="text-xs text-slate-500 italic">Tiempo: ~10 minutos (confirmación blockchain Monero)</p>
-              <p><strong>Fee estimado: 0.001 XMR (~$0.16 USD)</strong></p>
+              <p><strong>La comisión de red se muestra en XMR y varía según la transacción.</strong></p>
             </div>
           </div>
 
@@ -148,7 +148,7 @@ export function MoneroTransparency() {
             <div className="text-sm text-slate-700 ml-13 space-y-2">
               <p><strong>En CoinEx:</strong> Ir a "Trading" → Buscar par XMR/USDT</p>
               <p>Hacer "market order" o "limit order" para vender 0.5 XMR</p>
-              <p className="font-bold">Resultado: Recibes ~$158 USDT (precio actual XMR ~$316)</p>
+              <p className="font-bold">Resultado: el monto recibido en USDT depende de la cotización y las comisiones vigentes.</p>
               <p className="text-xs text-slate-500 italic">Fee de trading: ~0.2% (comisión de CoinEx)</p>
             </div>
           </div>
@@ -188,7 +188,7 @@ export function MoneroTransparency() {
               <h4 className="text-lg font-bold text-slate-900">✅ Dinero en cuenta bancaria</h4>
             </div>
             <div className="text-sm text-slate-700 ml-13 space-y-2">
-              <p><strong>Resultado final:</strong> ~$155-157 MXN en tu cuenta bancaria mexicana</p>
+              <p><strong>Resultado final:</strong> el monto en moneda local depende de la cotización, las comisiones y el tipo de cambio.</p>
               <p>Desde CoinEx puedes hacer transferencias a cualquier otro banco (BBVA, Santander, Oxxo, etc)</p>
               <p className="font-bold">Tiempo total: 1-2 horas (DolarApp) o 24-48 hrs (Bitso)</p>
             </div>
@@ -224,27 +224,27 @@ export function MoneroTransparency() {
               </tr>
               <tr className="border-t">
                 <td className="p-3">3. Venta en CoinEx (XMR/USDT)</td>
-                <td className="text-right p-3">0.499 XMR @ $316</td>
+                <td className="text-right p-3">0.499 XMR al precio vigente</td>
                 <td className="text-right p-3">-0.2%</td>
-                <td className="text-right p-3 font-bold">$157.62 USDT</td>
+                <td className="text-right p-3 font-bold">Variable</td>
               </tr>
               <tr className="bg-slate-50 border-t">
                 <td className="p-3">4. Transferencia a DolarApp</td>
-                <td className="text-right p-3">$157.62 USDT</td>
+                <td className="text-right p-3">Monto variable en USDT</td>
                 <td className="text-right p-3">~0%</td>
-                <td className="text-right p-3 font-bold">$157.62 USDT</td>
+                <td className="text-right p-3 font-bold">Variable</td>
               </tr>
               <tr className="border-t">
-                <td className="p-3">5. Conversión a MXN (1 USDT = 20 MXN)</td>
-                <td className="text-right p-3">$157.62 USDT</td>
+                <td className="p-3">5. Conversión a moneda local al tipo de cambio vigente</td>
+                <td className="text-right p-3">Monto variable en USDT</td>
                 <td className="text-right p-3">-1%</td>
-                <td className="text-right p-3 font-bold">$3,050 MXN</td>
+                <td className="text-right p-3 font-bold">Variable</td>
               </tr>
               <tr className="bg-green-50 border-t border-green-600">
                 <td className="p-3 font-bold">6. ✅ EN TU BANCO</td>
                 <td className="text-right p-3"></td>
                 <td className="text-right p-3"></td>
-                <td className="text-right p-3 font-bold">$3,050 MXN</td>
+                <td className="text-right p-3 font-bold">Monto variable</td>
               </tr>
             </tbody>
           </table>
@@ -302,7 +302,7 @@ export function MoneroTransparency() {
         <p className="text-sm text-slate-200">
           En PROYECTA usamos Monero porque <strong>es la única forma de garantizar privacidad, descentralización y resistencia a censura</strong>.
           Cada investigador controla su propia billetera, recibe XMR directo, y puede convertirlo a dinero real como explicamos arriba.
-          <strong> PROYECTA nunca toca los fondos</strong> — solo registra transacciones públicas en blockchain.
+          <strong> PROYECTA nunca toca los fondos</strong> — muestra datos del pool y la información que cada investigador decide publicar.
         </p>
       </div>
     </div>

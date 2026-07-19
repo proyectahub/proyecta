@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { Bold, Heading2, ImageIcon, Italic, Link2, List, Wand2 } from 'lucide-react'
+import { sanitizeRichHtml } from '../utils/sanitizeRichHtml'
 
 interface RichTextEditorProps {
   value: string
@@ -256,7 +257,7 @@ export function RichTextEditor({
           </div>
           <div
             className="prose prose-slate max-w-none prose-h1:mb-3 prose-h1:text-3xl prose-h1:font-black prose-h1:text-slate-900 prose-h2:mb-2 prose-h2:mt-5 prose-h2:text-xl prose-h2:font-black prose-h2:text-slate-900 prose-p:my-2 prose-p:leading-7 prose-strong:text-slate-900 prose-code:rounded prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-xs"
-            dangerouslySetInnerHTML={{ __html: previewHtml || `<p class="text-slate-400">${escapeHtml(placeholder)}</p>` }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(previewHtml || `<p>${escapeHtml(placeholder)}</p>`) }}
           />
         </div>
       </div>

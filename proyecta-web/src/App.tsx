@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { lazy, Suspense } from "react"
 import {
   BrowserRouter as Router,
   Navigate,
@@ -8,37 +8,58 @@ import {
 } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 
-import { ComputeDonationPopupContainer } from "./components/ComputeDonationPopupContainer"
-import { ComputeDonationWidget } from "./components/ComputeDonationWidget"
-import { LocalNetworkBanner } from "./components/LocalNetworkBanner"
 import Navbar from "./components/layout/Navbar"
 import { AuthProvider, useAuth } from "./context/AuthContext"
-import { WalletAuthProvider } from "./context/WalletAuthContext"
 import { TraditionalAuthProvider, useTraditionalAuth } from "./context/TraditionalAuthContext"
-import { seedTestProjects } from "./utils/testProjects"
-import ArticleView from "./pages/ArticleExperience"
-import {
-  OpenReviewFeedExperience,
-  ReviewedFeedExperience,
-} from "./pages/CommunityFeedExperience"
-import { ComputeDonationExperience } from "./pages/ComputeDonationExperience"
-import Editor from "./pages/EditorExperience"
-import Home from "./pages/HomeExperience"
-import { LoginExperience } from "./pages/LoginExperience"
-import { LoginWithEmailExperience } from "./pages/LoginWithEmailExperience"
-import { SignUpExperience } from "./pages/SignUpExperience"
-import { CreateProjectExperience } from "./pages/CreateProjectExperience"
-import { ProjectsExperience } from "./pages/ProjectsExperience"
-import { ProjectDetailsExperience } from "./pages/ProjectDetailsExperience"
-import { MoneroEducationExperience } from "./pages/MoneroEducationExperience"
-import { UserProfileExperience } from "./pages/UserProfileExperience"
-import { CompleteProfileExperience } from "./pages/CompleteProfileExperience"
-import { WalletWebExperience } from "./pages/WalletWebExperience"
-import OrcidCallback from "./pages/OrcidCallback"
-import PasswordRecovery from "./pages/PasswordRecoveryExperience"
-import PasswordReset from "./pages/PasswordResetExperience"
-import PrivacyNotice from "./pages/PrivacyNoticeExperience"
-import Profile from "./pages/ProfileExperience"
+const ArticleView = lazy(() => import("./pages/ArticleExperience"))
+const OpenReviewFeedExperience = lazy(() =>
+  import("./pages/CommunityFeedExperience").then((module) => ({ default: module.OpenReviewFeedExperience })),
+)
+const ReviewedFeedExperience = lazy(() =>
+  import("./pages/CommunityFeedExperience").then((module) => ({ default: module.ReviewedFeedExperience })),
+)
+const ComputeDonationExperience = lazy(() =>
+  import("./pages/ComputeDonationExperience").then((module) => ({ default: module.ComputeDonationExperience })),
+)
+const Editor = lazy(() => import("./pages/EditorExperience"))
+const Home = lazy(() => import("./pages/HomeExperience"))
+const LoginWithEmailExperience = lazy(() =>
+  import("./pages/LoginWithEmailExperience").then((module) => ({ default: module.LoginWithEmailExperience })),
+)
+const SignUpExperience = lazy(() =>
+  import("./pages/SignUpExperience").then((module) => ({ default: module.SignUpExperience })),
+)
+const CreateProjectExperience = lazy(() =>
+  import("./pages/CreateProjectExperience").then((module) => ({ default: module.CreateProjectExperience })),
+)
+const ProjectsExperience = lazy(() =>
+  import("./pages/ProjectsExperience").then((module) => ({ default: module.ProjectsExperience })),
+)
+const ProjectDetailsExperience = lazy(() =>
+  import("./pages/ProjectDetailsExperience").then((module) => ({ default: module.ProjectDetailsExperience })),
+)
+const MoneroEducationExperience = lazy(() =>
+  import("./pages/MoneroEducationExperience").then((module) => ({ default: module.MoneroEducationExperience })),
+)
+const UserProfileExperience = lazy(() =>
+  import("./pages/UserProfileExperience").then((module) => ({ default: module.UserProfileExperience })),
+)
+const WalletWebExperience = lazy(() =>
+  import("./pages/WalletWebExperience").then((module) => ({ default: module.WalletWebExperience })),
+)
+const OrcidCallback = lazy(() => import("./pages/OrcidCallback"))
+const PasswordRecovery = lazy(() => import("./pages/PasswordRecoveryExperience"))
+const PasswordReset = lazy(() => import("./pages/PasswordResetExperience"))
+const PrivacyNotice = lazy(() => import("./pages/PrivacyNoticeExperience"))
+const Profile = lazy(() => import("./pages/ProfileExperience"))
+
+function RouteFallback() {
+  return (
+    <div className="nova-card mx-auto flex min-h-[35vh] max-w-xl items-center justify-center px-8 text-center">
+      <p className="text-sm font-semibold text-slate-600">Cargando contenido...</p>
+    </div>
+  )
+}
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user, loading } = useAuth()
@@ -92,9 +113,6 @@ function LayoutWrapper() {
         <div className="absolute bottom-[-8%] left-1/3 h-72 w-72 rounded-full bg-rose-200/25 blur-3xl" />
       </div>
 
-      <ComputeDonationPopupContainer />
-      <ComputeDonationWidget />
-
       <Navbar />
 
       <main className="relative mx-auto max-w-[1440px] px-4 pb-14 pt-28 sm:px-6 md:pt-32 lg:px-8 lg:pt-32">
@@ -122,7 +140,6 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginWithEmailExperience />} />
       <Route path="/signup" element={<SignUpExperience />} />
-      <Route path="/complete-profile" element={<CompleteProfileExperience />} />
 
       <Route element={<LayoutWrapper />}>
         <Route path="/" element={<Home />} />
@@ -184,18 +201,14 @@ function AppRoutes() {
 }
 
 function App() {
-  useEffect(() => {
-    seedTestProjects()
-  }, [])
-
   return (
     <TraditionalAuthProvider>
       <AuthProvider>
-        <WalletAuthProvider>
-          <Router>
+        <Router>
+          <Suspense fallback={<RouteFallback />}>
             <AppRoutes />
-          </Router>
-        </WalletAuthProvider>
+          </Suspense>
+        </Router>
       </AuthProvider>
     </TraditionalAuthProvider>
   )

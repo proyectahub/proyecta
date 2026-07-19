@@ -5,7 +5,6 @@ import net from "net"
 import { WebSocketServer } from "ws"
 import orcidRoutes from "./orcid.js"
 import moneroRoutes from "./moneroRoutes.js"
-import { initializeMoneroConnection } from "./monero.js"
 import { readStore as readMiningStore, recordMiningTelemetry, buildUnifiedMiningSummary } from "./moneroStore.js"
 
 function parseDecimalLike(value) {
@@ -126,6 +125,27 @@ function buildProjectMiningSummary(wallet, projectId) {
   }
 }
 
+const telemetryRateLimits = new Map()
+
+function allowTelemetry(req) {
+  const forwarded = typeof req.headers["x-forwarded-for"] === "string" ? req.headers["x-forwarded-for"].split(",")[0].trim() : ""
+  const key = forwarded || req.headers["cf-connecting-ip"] || req.ip || "unknown"
+  const current = Date.now()
+  const entry = telemetryRateLimits.get(key)
+
+  if (!entry || entry.resetAt <= current) {
+    telemetryRateLimits.set(key, { count: 1, resetAt: current + 60 * 1000 })
+    return { allowed: true, retryAfterSeconds: 0 }
+  }
+
+  if (entry.count >= 120) {
+    return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((entry.resetAt - current) / 1000)) }
+  }
+
+  entry.count += 1
+  return { allowed: true, retryAfterSeconds: 0 }
+}
+
 function createMiningCompatibilityRouter() {
   const router = express.Router()
 
@@ -134,6 +154,12 @@ function createMiningCompatibilityRouter() {
   })
 
   router.post("/submit", (req, res) => {
+    const rateLimit = allowTelemetry(req)
+    if (!rateLimit.allowed) {
+      res.set("Retry-After", String(rateLimit.retryAfterSeconds))
+      return res.status(429).json({ error: "Demasiadas actualizaciones de telemetría." })
+    }
+
     const wallet = String(req.body?.walletAddress || req.body?.wallet || "").trim()
     const hashes = Number(req.body?.hashes || 0)
     const hashRate = Number(req.body?.hashRate || req.body?.localHashRate || 0)
@@ -155,6 +181,7 @@ function createMiningCompatibilityRouter() {
         sessionId,
         poolConnected,
         source: req.body?.source || "browser",
+        miningIntent: req.body?.miningIntent === true,
       })
     }
 
@@ -222,6 +249,8 @@ function createMiningCompatibilityRouter() {
 
 const POOL_HOST = process.env.MONERO_POOL_HOST ?? "pool.supportxmr.com"
 const POOL_PORT = Number(process.env.MONERO_POOL_PORT ?? "3333")
+const MAX_POOL_CONNECTIONS = Number(process.env.MAX_POOL_CONNECTIONS ?? "100")
+const MAX_SUBSCRIBERS_PER_WALLET = Number(process.env.MAX_SUBSCRIBERS_PER_WALLET ?? "16")
 const pools = new Map()
 
 class PoolConnection {
@@ -231,6 +260,7 @@ class PoolConnection {
     this.connected = false
     this.authed = false
     this.rpcId = 1
+    this.pendingRequests = new Map()
     this.minerId = null
     this.currentJob = null
     this.buffer = ""
@@ -261,7 +291,7 @@ class PoolConnection {
           algo: ["rx/0"],
           difficulty: 50,
         },
-      })
+      }, "login")
     })
 
     socket.setEncoding("utf8")
@@ -285,8 +315,9 @@ class PoolConnection {
     this.socket = socket
   }
 
-  send(payload) {
+  send(payload, requestType = null) {
     if (this.socket && this.connected) {
+      if (requestType && payload.id != null) this.pendingRequests.set(payload.id, requestType)
       this.socket.write(`${JSON.stringify(payload)}\n`)
     }
   }
@@ -309,6 +340,9 @@ class PoolConnection {
       return
     }
 
+    const requestType = msg.id != null ? this.pendingRequests.get(msg.id) : null
+    if (msg.id != null) this.pendingRequests.delete(msg.id)
+
     if (msg.result && msg.result.id && msg.result.job) {
       this.authed = true
       this.minerId = msg.result.id
@@ -320,7 +354,7 @@ class PoolConnection {
           jsonrpc: "2.0",
           method: "keepalived",
           params: { id: this.minerId },
-        })
+        }, "keepalive")
       }, 30000)
       return
     }
@@ -330,7 +364,7 @@ class PoolConnection {
       return
     }
 
-    if (msg.result && typeof msg.result.status === "string") {
+    if (requestType === "submit" && msg.result && typeof msg.result.status === "string") {
       if (msg.result.status === "OK") {
         this.acceptedShares += 1
         this.broadcast({
@@ -342,7 +376,7 @@ class PoolConnection {
       return
     }
 
-    if (msg.error) {
+    if (requestType === "submit" && msg.error) {
       this.rejectedShares += 1
       const errorMessage = msg.error.message || JSON.stringify(msg.error)
       if (!errorMessage.includes("block template") && !errorMessage.includes("duplicate")) {
@@ -373,7 +407,7 @@ class PoolConnection {
         nonce,
         result,
       },
-    })
+    }, "submit")
   }
 
   addSubscriber(ws) {
@@ -447,6 +481,10 @@ wss.on("connection", (ws) => {
   let pool = null
 
   ws.on("message", (raw) => {
+    if (raw.length > 4096) {
+      ws.close(1009, "Mensaje demasiado grande")
+      return
+    }
     let msg
     try {
       msg = JSON.parse(raw.toString())
@@ -455,17 +493,29 @@ wss.on("connection", (ws) => {
     }
 
     if (msg.type === "subscribe" && msg.wallet) {
+      if (pool) return
       if (!/^[48][0-9A-Za-z]{94}$/.test(msg.wallet)) {
         ws.send(JSON.stringify({ type: "error", error: "Dirección Monero inválida" }))
         return
       }
 
+      if (!pools.has(msg.wallet) && pools.size >= MAX_POOL_CONNECTIONS) {
+        ws.send(JSON.stringify({ type: "error", error: "Capacidad temporal de minería alcanzada" }))
+        return
+      }
+
       pool = getOrCreatePool(msg.wallet)
+      if (pool.subscribers.size >= MAX_SUBSCRIBERS_PER_WALLET) {
+        ws.send(JSON.stringify({ type: "error", error: "Demasiados mineros conectados para esta wallet" }))
+        pool = null
+        return
+      }
       pool.addSubscriber(ws)
       return
     }
 
     if (msg.type === "share" && pool) {
+      if (typeof msg.job_id !== "string" || msg.job_id.length > 256 || !/^[0-9a-f]{8}$/i.test(msg.nonce) || !/^[0-9a-f]{64}$/i.test(msg.result)) return
       pool.submitShare(msg.job_id, msg.nonce, msg.result)
     }
   })
@@ -483,9 +533,6 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" })
 })
 
-void initializeMoneroConnection()
-  .then(() => console.log("[Server] Monero RPC initialized"))
-  .catch((error) => console.warn("[Server] Monero RPC not available:", error))
 
 server.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`)

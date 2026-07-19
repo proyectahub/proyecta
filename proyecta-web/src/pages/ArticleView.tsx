@@ -6,6 +6,7 @@ import {
   MoreVertical, UserPlus, Info
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { sanitizeRichHtml } from '../utils/sanitizeRichHtml';
 
 const ArticleView = () => {
   const { id } = useParams();
@@ -125,7 +126,7 @@ const ArticleView = () => {
 
           <div 
             className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-600 prose-p:leading-relaxed prose-blockquote:border-fuchsia-500 prose-blockquote:bg-fuchsia-50 prose-blockquote:py-2 prose-blockquote:rounded-r-xl"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(article.content) }}
           />
 
           {/* Engagement Footer */}

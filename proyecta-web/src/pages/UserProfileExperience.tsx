@@ -43,17 +43,9 @@ export function UserProfileExperience() {
     setOrcidLoading(true)
 
     try {
-      const token = window.localStorage.getItem('proyecta_auth_session_token')
-      if (!token) {
-        navigate('/login')
-        return
-      }
-
       const response = await fetch(`/cf-api/auth/orcid-link`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'same-origin',
       })
 
       const data = await response.json()

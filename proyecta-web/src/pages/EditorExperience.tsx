@@ -50,7 +50,7 @@ const editorialValues = [
   },
   {
     title: "Rigor sin distorsion",
-    copy: "Divulgar no significa exagerar hallazgos ni prometer lo que la evidencia no sostiene. Aquííí importa explicar con claridad sin sacrificar precisión.",
+    copy: "Divulgar no significa exagerar hallazgos ni prometer lo que la evidencia no sostiene. Aquí importa explicar con claridad sin sacrificar precisión.",
   },
   {
     title: "Fuentes y contexto",
@@ -82,7 +82,7 @@ const articleTemplateSections = [
     copy: "Destaca los hallazgos más importantes con lenguaje sobrio, entendible y verificable.",
   },
   {
-    title: "L?mites y cautelas",
+    title: "Límites y cautelas",
     copy: "Aclara que no puede concluirse todavía, que falta revisar o en que condiciones aplica.",
   },
   {
@@ -104,7 +104,7 @@ const articleTemplateHtml = `
   <h2>Resultados clave</h2>
   <p>Presenta los hallazgos principales con lenguaje claro, sin exageraciones ni promesas que la evidencia no sostenga.</p>
 
-  <h2>L?mites y cautelas</h2>
+  <h2>Límites y cautelas</h2>
   <p>Señala que límites tiene el estudio, que preguntas siguen abiertas o que contexto conviene tener presente.</p>
 
   <h2>Conclusion</h2>
@@ -212,7 +212,6 @@ export default function EditorExperience() {
       return
     }
 
-    const token = window.localStorage.getItem("proyecta-session-token")
     const controller = new AbortController()
 
     async function loadArticle() {
@@ -260,32 +259,24 @@ export default function EditorExperience() {
 
     try {
       if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-        const reader = new FileReader()
-        reader.onload = async (readerEvent) => {
-          const arrayBuffer = readerEvent.target.result as ArrayBuffer
-          const result = await mammoth.convertToHtml({ arrayBuffer })
-          editor.commands.setContent(result.value)
-          toast.success("Documento DOCX importado correctamente", { id: toastId })
-        }
-        reader.readAsArrayBuffer(file)
+        const arrayBuffer = await file.arrayBuffer()
+        const result = await mammoth.convertToHtml({ arrayBuffer })
+        editor.commands.setContent(result.value)
+        toast.success("Documento DOCX importado correctamente", { id: toastId })
       } else if (file.type === "application/pdf") {
-        const reader = new FileReader()
-        reader.onload = async (readerEvent) => {
-          const typedarray = new Uint8Array(readerEvent.target.result as ArrayBuffer)
-          const pdf = await pdfjsLib.getDocument(typedarray).promise
-          let fullText = ""
+        const typedarray = new Uint8Array(await file.arrayBuffer())
+        const pdf = await pdfjsLib.getDocument(typedarray).promise
+        let fullText = ""
 
-          for (let index = 1; index <= pdf.numPages; index += 1) {
-            const page = await pdf.getPage(index)
-            const textContent = await page.getTextContent()
-            const pageText = textContent.items.map((item) => ("str" in item ? item.str : "")).join(" ")
-            fullText += `<p>${pageText}</p>`
-          }
-
-          editor.commands.setContent(fullText)
-          toast.success("Texto de PDF extraido correctamente", { id: toastId })
+        for (let index = 1; index <= pdf.numPages; index += 1) {
+          const page = await pdf.getPage(index)
+          const textContent = await page.getTextContent()
+          const pageText = textContent.items.map((item) => ("str" in item ? item.str : "")).join(" ")
+          fullText += `<p>${pageText}</p>`
         }
-        reader.readAsArrayBuffer(file)
+
+        editor.commands.setContent(fullText)
+        toast.success("Texto de PDF extraído correctamente", { id: toastId })
       } else {
         toast.error("Formato no soportado. Usa PDF o DOCX.", { id: toastId })
       }
@@ -540,7 +531,7 @@ export default function EditorExperience() {
       const articleId = data.id
 
       toast.success(
-        id ? "Artículo actualizado." : "?Art?culo publicado! Aparecer? en el feed 'Por revisar'.",
+        id ? "Artículo actualizado." : "¡Artículo publicado! Aparecerá en el feed 'Por revisar'.",
         { id: loadingToast, duration: 5000 }
       )
 
@@ -605,7 +596,7 @@ export default function EditorExperience() {
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
               className="nova-button-soft px-4 py-2.5 disabled:opacity-50"
             >
@@ -667,7 +658,7 @@ export default function EditorExperience() {
               />
               <button
                 type="button"
-                onClick={() => figureInputRef.current.click()}
+                onClick={() => figureInputRef.current?.click()}
                 disabled={isReadingFigure}
                 className="nova-button-soft justify-center px-4 py-3 disabled:opacity-60"
               >
@@ -713,7 +704,7 @@ export default function EditorExperience() {
                     <div className="flex flex-wrap gap-3">
                       <button
                         type="button"
-                        onClick={() => figureInputRef.current.click()}
+                        onClick={() => figureInputRef.current?.click()}
                         className="nova-button-soft px-4 py-2.5"
                       >
                         <ImageIcon size={16} />
@@ -890,7 +881,7 @@ export default function EditorExperience() {
               </button>
               <button
                 type="button"
-                onClick={() => figureInputRef.current.click()}
+                onClick={() => figureInputRef.current?.click()}
                 className="rounded-2xl p-2 text-slate-600 transition hover:bg-white"
               >
                 <ImageIcon size={20} />
@@ -907,7 +898,7 @@ export default function EditorExperience() {
                     Referencias reales para fortalecer el artículo
                   </h2>
                   <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                    Puedes citar artículos científicos, DOIs, repositorios, preprints, datos abiertos, sitios institucionales o informes t?cnicos. Estas fuentes viajarán con la publicación y ayudarán a una futura salida en PDF con estilo académico.
+                    Puedes citar artículos científicos, DOIs, repositorios, preprints, datos abiertos, sitios institucionales o informes técnicos. Estas fuentes viajarán con la publicación y ayudarán a una futura salida en PDF con estilo académico.
                   </p>
                 </div>
 

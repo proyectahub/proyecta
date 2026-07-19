@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, useParams } from "react-router-dom"
+import { sanitizeRichHtml } from "../utils/sanitizeRichHtml"
 import {
   ArrowDown,
   ArrowRight,
@@ -11,8 +12,6 @@ import {
   FileDown,
   FlaskConical,
   Info,
-  Lightbulb,
-  type LucideIcon,
   MessageSquare,
   Share2,
   ShieldCheck,
@@ -24,7 +23,7 @@ import {
   UserPlus,
 } from "lucide-react"
 import { toast } from "react-hot-toast"
-import { feedArticles, type ArticleSource, type FeedArticle } from "../data/mockData"
+import { feedArticles, type FeedArticle } from "../data/mockData"
 import { useAuth } from "../context/AuthContext"
 import { API_BASE } from "../lib/api"
 import { ProyectaMark } from "../components/brand/ProyectaBrand"
@@ -33,14 +32,6 @@ import { useCommunityFeedData } from "../hooks/useCommunityFeedData"
 type ReviewRecommendation = "Aprobar" | "Solicitar mejoras" | "Abrir discusión"
 
 type ReviewCriterionKey = "clarity" | "rigor" | "utility" | "novelty" | "reproducibility"
-
-type ReviewCriterionDefinition = {
-  key: ReviewCriterionKey
-  label: string
-  description: string
-  accent: "blue" | "indigo" | "amber" | "emerald" | "slate"
-  icon: LucideIcon
-}
 
 type ReviewDraft = {
   rating: number
@@ -88,155 +79,15 @@ type CommentEntry = {
   timeAgo: string
 }
 
-type ApiArticle = {
-  id: string
-  title: string
-  excerpt: string
-  category: string
-  createdAt: string
-  doi: string
-  contentHtml: string
-  figureImage: string
-  figureCaption: string
-  sources: ArticleSource[]
-  readTime: string
-  metrics: {
-    votes: number
-    comments: number
-    peerScore: number
-  }
-  author: {
-    id: string
-    name: string
-    image: string
-    role: string
-    affiliation: string
-    orcidId: string
-    reputation: number
-    bio: string
-    location: string
-  }
-  viewerState: {
-    vote: number
-    review: {
-      rating: number
-      clarity: number
-      rigor: number
-      utility: number
-      novelty: number
-      reproducibility: number
-      recommendation: string
-      strengths: string
-      improvements: string
-      openQuestions: string
-      comment: string
-    } | null
-  }
-  reviews: ReviewEntry[]
-  comments: CommentEntry[]
+type NormalizedReviewEntry = Omit<ReviewEntry, "author"> & { author: ReviewAuthor }
+type NormalizedCommentEntry = Omit<CommentEntry, "author"> & { author: ReviewAuthor }
+
+const anonymousCommunityAuthor: ReviewAuthor = {
+  id: "anonymous-community-member",
+  name: "Miembro de la comunidad",
+  image: "",
+  role: "Comunidad Proyecta",
 }
-
-const accentClasses = {
-  blue: {
-    bar: "bg-fuchsia-500",
-    pill: "border-fuchsia-100 bg-fuchsia-50 text-fuchsia-700",
-    text: "text-fuchsia-600",
-    button: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:border-fuchsia-300 hover:bg-fuchsia-100",
-    selected: "border-fuchsia-500 bg-fuchsia-600 text-white shadow-sm shadow-fuchsia-200",
-  },
-  indigo: {
-    bar: "bg-purple-500",
-    pill: "border-purple-100 bg-purple-50 text-purple-700",
-    text: "text-purple-600",
-    button: "border-purple-200 bg-purple-50 text-purple-700 hover:border-purple-300 hover:bg-purple-100",
-    selected: "border-purple-500 bg-purple-600 text-white shadow-sm shadow-purple-200",
-  },
-  amber: {
-    bar: "bg-amber-500",
-    pill: "border-amber-100 bg-amber-50 text-amber-700",
-    text: "text-amber-600",
-    button: "border-amber-200 bg-amber-50 text-amber-700 hover:border-amber-300 hover:bg-amber-100",
-    selected: "border-amber-500 bg-amber-500 text-slate-950 shadow-sm shadow-amber-200",
-  },
-  emerald: {
-    bar: "bg-emerald-500",
-    pill: "border-emerald-100 bg-emerald-50 text-emerald-700",
-    text: "text-emerald-600",
-    button: "border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100",
-    selected: "border-emerald-500 bg-emerald-600 text-white shadow-sm shadow-emerald-200",
-  },
-  slate: {
-    bar: "bg-slate-500",
-    pill: "border-slate-200 bg-slate-100 text-slate-700",
-    text: "text-slate-600",
-    button: "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100",
-    selected: "border-slate-600 bg-slate-700 text-white shadow-sm shadow-slate-200",
-  },
-} as const
-
-const peerReviewCriteria: ReviewCriterionDefinition[] = [
-  {
-    key: "clarity",
-    label: "Claridad",
-    description: "Evalua si el hallazgo se entiende, se contextualiza y puede ser seguido por la comunidad.",
-    accent: "blue",
-    icon: Target,
-  },
-  {
-    key: "rigor",
-    label: "Rigor",
-    description: "Valora si la metodología, la evidencia y los límites del trabajo estan bien expuestos.",
-    accent: "indigo",
-    icon: FlaskConical,
-  },
-  {
-    key: "utility",
-    label: "Utilidad",
-    description: "Mide cuánto ayuda este artículo a otros investigadores, divulgadores o lectores especializados.",
-    accent: "amber",
-    icon: Lightbulb,
-  },
-  {
-    key: "novelty",
-    label: "Novedad",
-    description: "Permite valorar si el aporte agrega una idea, enfoque o combinacion que vale la pena destacar.",
-    accent: "emerald",
-    icon: Sparkles,
-  },
-  {
-    key: "reproducibility",
-    label: "Reproducibilidad",
-    description: "Evalua si hay suficiente detalle para que otra persona pueda revisar, contrastar o replicar el trabajo.",
-    accent: "slate",
-    icon: ClipboardList,
-  },
-]
-
-const reviewRecommendations: Array<{
-  value: ReviewRecommendation
-  label: string
-  hint: string
-  tone: string
-}> = [
-  {
-    value: "Aprobar",
-    label: "Aprobar",
-    hint: "El artículo ya aporta con suficiente claridad y solidez.",
-    tone: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  {
-    value: "Solicitar mejoras",
-    label: "Solicitar mejoras",
-    hint: "El trabajo es valioso, pero necesita ajustes o mayor precisión.",
-    tone: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  {
-    value: "Abrir discusión",
-    label: "Abrir discusión",
-    hint: "Hay dudas importantes que ameritan debate abierto antes de destacar el artículo.",
-    tone: "border-rose-200 bg-rose-50 text-rose-700",
-  },
-]
 
 const emptyReviewDraft: ReviewDraft = {
   rating: 0,
@@ -250,22 +101,6 @@ const emptyReviewDraft: ReviewDraft = {
   improvements: "",
   openQuestions: "",
   comment: "",
-}
-
-function formatPublishedLabel(value: string) {
-  if (!value) return "Publicado recientemente"
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return "Publicado recientemente"
-  }
-
-  const formatter = new Intl.DateTimeFormat("es-MX", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
-  return `Publicado el ${formatter.format(date)}`
 }
 
 function formatLongDate(value: string) {
@@ -342,54 +177,7 @@ function getCriterionValue(source: Partial<Record<ReviewCriterionKey, number>>, 
   return Number(source[key] ?? fallback ?? 0)
 }
 
-function mapApiArticleToFeed(article: ApiArticle): FeedArticle {
-  return {
-    id: article.id ?? "article",
-    title: article.title ?? "Publicación Proyecta",
-    excerpt: article.excerpt ?? "Este artículo aún no tiene extracto disponible.",
-    heroKicker: "",
-    category: article.category ?? "General",
-    timeAgo: "Reciente",
-    publishedLabel: formatPublishedLabel(article.createdAt),
-    readTime: article.readTime ?? "3 min de lectura",
-    contentHtml: article.contentHtml ?? "",
-    figureImage: article.figureImage ?? "",
-    figureCaption: article.figureCaption ?? "",
-    sources: Array.isArray(article.sources) ? article.sources : [],
-    tags: [],
-    metrics: {
-      votes: article.metrics.votes ?? 0,
-      comments: article.metrics.comments ?? 0,
-      peerScore: article.metrics.peerScore ?? 0,
-    },
-    author: {
-      id: article.author.id ?? "author-nova",
-      name: article.author.name ?? "Autor Proyecta",
-      image:
-        article.author.image ??
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop&crop=faces",
-      role: article.author.role ?? "Divulgador/a",
-      affiliation: article.author.affiliation ?? "Comunidad Proyecta",
-      orcidId: article.author.orcidId ?? "",
-      reputation: article.author.reputation ?? 0,
-      bio: article.author.bio ?? "",
-      location: article.author.location ?? "LatAm",
-    },
-  }
-}
-
-function getRecommendationTone(recommendation: string) {
-  switch (recommendation) {
-    case "Aprobar":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700"
-    case "Abrir discusion":
-      return "border-rose-200 bg-rose-50 text-rose-700"
-    default:
-      return "border-amber-200 bg-amber-50 text-amber-700"
-  }
-}
-
-function normalizeReview(review: ReviewEntry): Required<Pick<ReviewEntry, "rating">> & ReviewEntry {
+function normalizeReview(review: ReviewEntry): NormalizedReviewEntry {
   const clarity = getCriterionValue(review, "clarity", review.rating)
   const rigor = getCriterionValue(review, "rigor", review.rating)
   const utility = getCriterionValue(review, "utility", review.rating)
@@ -406,53 +194,8 @@ function normalizeReview(review: ReviewEntry): Required<Pick<ReviewEntry, "ratin
     novelty,
     reproducibility,
     recommendation: review.recommendation ?? "Solicitar mejoras",
+    author: review.author ?? anonymousCommunityAuthor,
   }
-}
-
-function ScoreSelector({
-  criterion,
-  value,
-  onChange,
-}: {
-  criterion: ReviewCriterionDefinition
-  value: number
-  onChange: (value: number) => void
-}) {
-  const palette = accentClasses[criterion.accent]
-  const Icon = criterion.icon
-
-  return (
-    <div className="rounded-[24px] border border-slate-200 bg-white/90 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-900">
-            <span className={`rounded-full border px-2.5 py-1 text-xs ${palette.pill}`}>
-              <Icon size={14} />
-            </span>
-            {criterion.label}
-          </p>
-          <p className="max-w-xl text-sm leading-6 text-slate-500">{criterion.description}</p>
-        </div>
-        <div className={`rounded-full border px-3 py-1 text-sm font-bold ${palette.pill}`}>{value ? `${value}/5` : "Sin evaluar"}</div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {[1, 2, 3, 4, 5].map((score) => (
-          <button
-            key={`${criterion.key}-${score}`}
-            type="button"
-            onClick={() => onChange(score)}
-            className={`flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-bold transition ${
-              score === value ? palette.selected : palette.button
-            }`}
-            aria-label={`${criterion.label} ${score} de 5`}
-          >
-            {score}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
 }
 
 export default function ArticleExperience() {
@@ -534,15 +277,15 @@ export default function ArticleExperience() {
   const normalizedReviews = useMemo(() => articleReviews.map((review) => normalizeReview(review)), [articleReviews])
 
   const currentUserReview = useMemo(
-    () => normalizedReviews.find((review) => review.author.id === user.id) ?? null,
-    [normalizedReviews, user.id],
+    () => (user?.id ? normalizedReviews.find((review) => review.author.id === user.id) ?? null : null),
+    [normalizedReviews, user?.id],
   )
 
   const peerReviewSummary = useMemo(() => {
     if (!normalizedReviews.length) {
       return {
         count: 0,
-        overall: article.metrics.peerScore ?? 0,
+        overall: article?.metrics.peerScore ?? 0,
         clarity: 0,
         rigor: 0,
         utility: 0,
@@ -590,9 +333,12 @@ export default function ArticleExperience() {
       reproducibility: Number((totals.reproducibility / normalizedReviews.length).toFixed(1)),
       dominantRecommendation,
     }
-  }, [article.metrics.peerScore, normalizedReviews])
+  }, [article?.metrics.peerScore, normalizedReviews])
 
-  const renderedComments = useMemo<CommentEntry[]>(() => articleComments, [articleComments])
+  const renderedComments = useMemo<NormalizedCommentEntry[]>(
+    () => articleComments.map((comment) => ({ ...comment, author: comment.author ?? anonymousCommunityAuthor })),
+    [articleComments],
+  )
 
   const reviewInsightCards = useMemo(
     () => [
@@ -634,7 +380,7 @@ export default function ArticleExperience() {
   if (!article) {
     return (
       <div className="nova-shell p-8 md:p-10">
-        <p className="nova-eyebrow">{articleNotFound ? "Art?culo no disponible" : "Sin conexión"}</p>
+        <p className="nova-eyebrow">{articleNotFound ? "Artículo no disponible" : "Sin conexión"}</p>
         <h1 className="nova-title mt-3 text-3xl font-extrabold text-slate-900">
           {articleNotFound
             ? "Este artículo no está disponible en Proyecta."
@@ -934,7 +680,7 @@ export default function ArticleExperience() {
                   </div>
                   <div>
                     <p class="eyebrow">Proyecta</p>
-                    <p class="brand-title">DIVUL<span>GAR?A</span></p>
+                    <p class="brand-title">DIVUL<span>GARÍA</span></p>
                     <p class="tagline">Divulgación científica con identidad visible, lectura abierta y formato editorial Proyecta</p>
                   </div>
                 </div>
@@ -963,7 +709,7 @@ export default function ArticleExperience() {
 
                 ${figureMarkup}
 
-                <section class="prose">${article.contentHtml}</section>
+                <section class="prose">${sanitizeRichHtml(article.contentHtml)}</section>
 
                 ${sourcesMarkup}
 
@@ -1035,19 +781,12 @@ export default function ArticleExperience() {
           ? "Guardamos tu voto positivo."
           : newVote === -1
             ? "Guardamos tu señal crítica."
-            : "Se retir? tu voto.",
+            : "Se retiró tu voto.",
       )
     } catch (error) {
       const message = error instanceof Error ? error.message : "No fue posible registrar tu voto."
       toast.error(message)
     }
-  }
-
-  const handleReviewScoreChange = (key: ReviewCriterionKey, value: number) => {
-    setReviewDraft((current) => ({
-      ...current,
-      [key]: value,
-    }))
   }
 
   const handleReviewRatingChange = (value: number) => {
@@ -1118,7 +857,7 @@ export default function ArticleExperience() {
   }
 
   const handleDeleteReview = async () => {
-    if (!id || !token) {
+    if (!id || !token || !user?.id) {
       toast.error("Inicia sesión para gestionar tu revisión.")
       return
     }
@@ -1136,7 +875,7 @@ export default function ArticleExperience() {
         throw new Error(data.error ?? "No fue posible eliminar tu revisión.")
       }
 
-      setArticleReviews((current) => current.filter((review) => review.author.id !== user.id))
+      setArticleReviews((current) => current.filter((review) => review.author?.id !== user.id))
       setRemoteArticle((prev) =>
         prev
           ? {
@@ -1160,12 +899,12 @@ export default function ArticleExperience() {
   }
 
   const handleToggleFollow = async () => {
-    if (!token || !article.author.id) {
+    if (!token || !article.author.id || !user?.id) {
       toast.error("Necesitas iniciar sesión para seguir perfiles.")
       return
     }
 
-    if (user.id && article.author.id === user.id) {
+    if (article.author.id === user.id) {
       toast.error("Este es tu propio perfil.")
       return
     }
@@ -1377,7 +1116,7 @@ export default function ArticleExperience() {
                   </div>
                 </div>
 
-                {user.id !== article.author.id ? (
+                {user?.id !== article.author.id ? (
                   <button onClick={() => void handleToggleFollow()} className="nova-button-soft md:min-w-[150px]">
                     {isFollowingAuthor ? <UserCheck size={16} /> : <UserPlus size={16} />}
                     {isFollowingAuthor ? "Siguiendo" : "Seguir"}
@@ -1386,7 +1125,7 @@ export default function ArticleExperience() {
               </div>
             </header>
 
-            <div className="nova-prose" dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
+            <div className="nova-prose" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(article.contentHtml) }} />
 
             {article.sources.length ? (
               <section className="rounded-[32px] border border-fuchsia-100 bg-fuchsia-50/45 p-6 md:p-7">
@@ -1471,7 +1210,7 @@ export default function ArticleExperience() {
                   <div className="mt-5 rounded-[24px] border border-white/80 bg-white p-5">
                     <p className="text-sm font-bold text-slate-900">{getReviewLabel(peerReviewSummary.overall)}</p>
                     <p className="mt-2 text-sm leading-7 text-slate-600">
-                      {peerReviewSummary.count ? `La comunidad lo está leyendo como un artículo de ${formatScore(peerReviewSummary.overall)}/5. Aquííé importa qué tan bien comunica, qué tan útil resulta y si invita a seguir la conversación.` : "Todavía no hay valoraciones. La primera lectura de la comunidad ayudará a decir si este artículo se entiende, aporta y merece circular más."}
+                  {peerReviewSummary.count ? `La comunidad lo está leyendo como un artículo de ${formatScore(peerReviewSummary.overall)}/5. Aquí importa qué tan bien comunica, qué tan útil resulta y si invita a seguir la conversación.` : "Todavía no hay valoraciones. La primera lectura de la comunidad ayudará a decir si este artículo se entiende, aporta y merece circular más."}
                     </p>
                   </div>
                 </div>
@@ -1610,7 +1349,7 @@ export default function ArticleExperience() {
               <div className="nova-card-soft p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">S?mate a la conversación</p>
+                    <p className="text-sm font-bold text-slate-900">Súmate a la conversación</p>
                     <p className="mt-1 text-sm leading-6 text-slate-500">
                       Los comentarios sirven para preguntas, lecturas complementarias y debate abierto. La revisión comunitaria queda arriba, en su propio espacio.
                     </p>

@@ -35,6 +35,10 @@ function asNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+function containsHtml(value) {
+  return /<\/?[a-z][^>]*>/i.test(value)
+}
+
 function parseHitos(value) {
   if (Array.isArray(value)) return value
   if (typeof value !== 'string' || !value.trim()) return []
@@ -104,16 +108,34 @@ export async function getProject(db, id) {
   return mapProjectRow(row)
 }
 
-export async function saveProject(db, input) {
+export async function saveProject(db, input, owner) {
   await ensureProjectsSchema(db)
-  const project = normalizeProjectPayload(input)
+  if (!owner?.id) {
+    return json({ error: 'No autorizado.' }, { status: 401 })
+  }
 
-  if (!project.title || !project.description || !project.fundingGoal || !project.fundraisingAddress) {
+  const project = normalizeProjectPayload({
+    ...input,
+    id: `proj_${crypto.randomUUID()}`,
+    author: owner.id,
+    authorName: owner.fullName || owner.name || 'Investigador',
+    raised: 0,
+    status: 'active',
+    hitos: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  })
+
+  if (!project.title || !project.description || project.fundingGoal <= 0 || !/^[48][a-zA-Z0-9]{94}$/.test(project.fundraisingAddress)) {
     return json({ error: 'Faltan datos del proyecto.' }, { status: 400 })
   }
 
+  if (containsHtml(project.description)) {
+    return json({ error: 'La descripción debe contener solo texto plano.' }, { status: 400 })
+  }
+
   await db.prepare(`
-    INSERT OR REPLACE INTO projects (
+    INSERT INTO projects (
       id, title, description, category, funding_goal, fundraising_address, monero_address,
       author, author_name, raised, status, hitos_json, cover_image, created_at, updated_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

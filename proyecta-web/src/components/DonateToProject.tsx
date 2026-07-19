@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { resolveMiningApiBase } from '../lib/api'
 import { ProjectMiningWidget } from './ProjectMiningWidget'
 import { MiningOptionsModal } from './MiningOptionsModal'
 
@@ -9,15 +10,15 @@ interface DonateToProjectProps {
   projectGoal: number
   projectTitle: string
   projectRaised?: number
+  onMiningOptionSelected?: (option: 'browser' | 'app') => void
 }
 
 export function DonateToProject({
   projectId,
   fundraisingAddress,
   moneroAddress,
-  projectGoal,
   projectTitle,
-  projectRaised = 0,
+  onMiningOptionSelected,
 }: DonateToProjectProps) {
   const [showMiningModal, setShowMiningModal] = useState(false)
   const [selectedMiningOption, setSelectedMiningOption] = useState<'browser' | 'app' | null>(null)
@@ -34,7 +35,27 @@ export function DonateToProject({
 
   const handleSelectMiningOption = (option: 'browser' | 'app') => {
     setSelectedMiningOption(option)
+    onMiningOptionSelected?.(option)
     setShowMiningModal(false)
+
+    if (option === 'browser') {
+      void fetch(`${resolveMiningApiBase()}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress,
+          projectId,
+          hashes: 0,
+          hashRate: 0,
+          elapsedSeconds: 0,
+          acceptedShares: 0,
+          rejectedShares: 0,
+          poolConnected: false,
+          source: 'browser-intent',
+          miningIntent: true,
+        }),
+      }).catch(() => undefined)
+    }
   }
 
   if (selectedMiningOption) {
@@ -47,6 +68,7 @@ export function DonateToProject({
           projectId={projectId}
           projectMoneroAddress={walletAddress}
           projectTitle={projectTitle}
+          initialMiningMode={selectedMiningOption}
         />
       </div>
     )
@@ -128,7 +150,6 @@ export function DonateToProject({
       <MiningOptionsModal
         isOpen={showMiningModal}
         onClose={handleCloseMiningModal}
-        projectWallet={walletAddress}
         onSelectOption={handleSelectMiningOption}
       />
     </>

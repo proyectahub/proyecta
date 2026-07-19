@@ -2,8 +2,6 @@ import { useState, useCallback } from 'react'
 
 // Configuración de nodos/APIs
 const MONERO_EXPLORER_API = 'https://xmrchain.net/api'
-const MONERO_RPC_ENDPOINT = 'https://stagenet.xmrchain.net/json_rpc'
-
 export interface MoneroTransaction {
   txHash: string
   from: string
@@ -13,12 +11,6 @@ export interface MoneroTransaction {
   confirmations: number
   isConfirmed: boolean
   blockHeight: number
-}
-
-export interface AddressBalance {
-  total: number
-  unlocked: number
-  locked: number
 }
 
 export function useMoneroBlockchain() {
@@ -78,43 +70,6 @@ export function useMoneroBlockchain() {
     [isValidAddress]
   )
 
-  // Obtener balance de una dirección (requiere view key)
-  const getAddressBalance = useCallback(
-    async (address: string, viewKey: string): Promise<AddressBalance | null> => {
-      if (!isValidAddress(address)) {
-        setError('Dirección Monero inválida')
-        return null
-      }
-
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `${MONERO_EXPLORER_API}/balance?address=${address}&viewkey=${viewKey}`
-        )
-
-        if (!response.ok) throw new Error('Error fetching balance')
-
-        const data = await response.json()
-
-        const balance: AddressBalance = {
-          total: (data.data?.balance || 0) / 1e12,
-          unlocked: (data.data?.unlocked || 0) / 1e12,
-          locked: ((data.data?.balance || 0) - (data.data?.unlocked || 0)) / 1e12,
-        }
-
-        setError(null)
-        return balance
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Error fetching balance'
-        setError(errorMsg)
-        return null
-      } finally {
-        setLoading(false)
-      }
-    },
-    [isValidAddress]
-  )
-
   // Monitorear una dirección continuamente
   const watchAddress = useCallback(
     (
@@ -147,7 +102,6 @@ export function useMoneroBlockchain() {
 
   return {
     getAddressTransactions,
-    getAddressBalance,
     watchAddress,
     isValidAddress,
     verifyAddress,

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useMoneroBlockchain } from './useMoneroBlockchain'
 import { useIPFSVita } from './useIPFSVita'
 import { useWalletAuth } from '../context/WalletAuthContext'
@@ -13,7 +13,7 @@ interface BlockchainEvent {
 
 export function useBlockchainMonitoring() {
   const { user, updateVitaBalance } = useWalletAuth()
-  const { watchAddress, getAddressTransactions } = useMoneroBlockchain()
+  const { watchAddress } = useMoneroBlockchain()
   const { recordVita } = useIPFSVita()
   
   const [events, setEvents] = useState<BlockchainEvent[]>([])
@@ -36,7 +36,7 @@ export function useBlockchainMonitoring() {
 
       if (projectId) {
         const vita = Math.floor(amount * 1000)
-        await recordVita({
+        const vitaRecord = await recordVita({
           type: 'donation',
           user: user?.wallet.userVitaAddress || 'unknown',
           amount: vita,
@@ -45,19 +45,21 @@ export function useBlockchainMonitoring() {
           description: `Donacion a proyecto ${projectId}`,
         })
 
+        if (!vitaRecord) {
+          return
+        }
+
         await updateVitaBalance()
 
-        setEvents((prev) =>
-          [
-            {
-              type: 'vita_created',
-              amount: vita,
-              txHash,
-              timestamp: Date.now(),
-            },
-            ...prev,
-          ].slice(0, 100)
-        )
+        setEvents((prev) => {
+          const vitaEvent: BlockchainEvent = {
+            type: 'vita_created',
+            amount: vita,
+            txHash,
+            timestamp: Date.now(),
+          }
+          return [vitaEvent, ...prev].slice(0, 100)
+        })
       }
     },
     [user, recordVita, updateVitaBalance]

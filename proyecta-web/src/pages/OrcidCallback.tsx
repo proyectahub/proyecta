@@ -26,8 +26,10 @@ export default function OrcidCallback() {
       return
     }
 
+    const sessionToken = token
+
     async function completeOAuthLogin() {
-      window.localStorage.setItem(SESSION_STORAGE_KEY, token)
+      window.localStorage.setItem(SESSION_STORAGE_KEY, sessionToken)
       await refreshUser()
       toast.success('Sesión iniciada con ORCID.')
       navigate('/profile')

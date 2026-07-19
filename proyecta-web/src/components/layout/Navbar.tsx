@@ -1,11 +1,9 @@
 import { Link, useLocation } from "react-router-dom"
 import {
-  ArrowUpRight,
   BookOpen,
   BookOpenText,
   LogOut,
   PlusSquare,
-  Search,
   Sparkles,
   User,
   ChevronDown,
@@ -25,6 +23,11 @@ function Navbar() {
   // Usar usuario de cualquier contexto
   const currentUser = traditionalUser || user
   const isAuthenticated = !!currentUser
+  const displayName = traditionalUser?.fullName || user?.name || traditionalUser?.email?.split('@')[0] || 'Usuario'
+  const displayEmail = traditionalUser?.email || ''
+  const displayInstitution = traditionalUser?.institution || user?.affiliation || 'Investigador'
+  const displayResearchArea = traditionalUser?.researchArea || user?.role || ''
+  const displayOrcid = traditionalUser?.orcidId || user?.orcidId || ''
 
   const handleLogout = async () => {
     if (traditionalUser) {
@@ -33,11 +36,6 @@ function Navbar() {
       await logout()
     }
   }
-
-  const isAccessRoute =
-    location.pathname === "/login" ||
-    location.pathname === "/recuperar-contraseña" ||
-    location.pathname === "/restablecer-contraseña"
 
   const pageLabel =
     location.pathname === "/login"
@@ -116,10 +114,10 @@ function Navbar() {
               >
                 <div className="text-right">
                   <p className="text-sm font-bold text-slate-900">
-                    {currentUser?.fullName || currentUser?.name || currentUser?.email?.split('@')[0] || 'Usuario'}
+                    {displayName}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {currentUser?.institution || 'Investigador'}
+                    {displayInstitution}
                   </p>
                 </div>
                 <ChevronDown size={18} className={`text-slate-600 transition ${showDropdown ? 'rotate-180' : ''}`} />
@@ -130,14 +128,14 @@ function Navbar() {
                   {/* Info del usuario */}
                   <div className="border-b border-slate-200 p-4 space-y-2">
                     <p className="font-bold text-slate-900 text-base">
-                      {currentUser?.fullName || currentUser?.name || 'Usuario'}
+                      {displayName}
                     </p>
-                    <p className="text-sm text-slate-600">{currentUser?.email || ''}</p>
-                    {currentUser?.researchArea && (
-                      <p className="text-sm text-slate-600">🔬 {currentUser.researchArea}</p>
+                    {displayEmail ? <p className="text-sm text-slate-600">{displayEmail}</p> : null}
+                    {displayResearchArea && (
+                      <p className="text-sm text-slate-600">Área: {displayResearchArea}</p>
                     )}
-                    {currentUser?.orcidId && (
-                      <p className="text-sm text-blue-600">ORCID: {currentUser.orcidId}</p>
+                    {displayOrcid && (
+                      <p className="text-sm text-blue-600">ORCID: {displayOrcid}</p>
                     )}
                   </div>
 

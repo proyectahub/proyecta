@@ -69,35 +69,9 @@ export function useBlockchainMonitor(moneroAddress: string, pollInterval: number
       setError(null)
       setLastUpdate(Date.now())
     } catch (err) {
-      // Si falla xmrchain.net, usar simulación para desarrollo
-      console.warn('xmrchain.net offline, usando datos simulados')
-
-      // Simulación realista para desarrollo
-      const simulatedTxs: BlockchainTransaction[] = [
-        {
-          txHash: 'abc123def456...verified',
-          amount: 0.5,
-          confirmations: 15,
-          timestamp: Date.now() - 3600000,
-          isConfirmed: true,
-        },
-        {
-          txHash: 'xyz789uvw012...confirmed',
-          amount: 0.25,
-          confirmations: 8,
-          timestamp: Date.now() - 1800000,
-          isConfirmed: false,
-        },
-      ]
-
-      setTransactions(simulatedTxs)
-      setAddressInfo({
-        totalReceived: 0.75,
-        totalSent: 0,
-        balance: 0.75,
-        transactionCount: 2,
-      })
-      setError(null)
+      setTransactions([])
+      setAddressInfo(null)
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar datos de la blockchain')
     } finally {
       setLoading(false)
     }
@@ -139,7 +113,6 @@ export function useActiveMinerCount(projectId: string) {
     // Simulación: leer de localStorage cuántos minadores están activos
     const checkActiveMiners = () => {
       try {
-        const key = `mining_session_${projectId}`
         const sessions = JSON.parse(localStorage.getItem(`active_mining_sessions`) || '{}')
         const count = Object.keys(sessions).filter(
           (id) => sessions[id].projectId === projectId && Date.now() - sessions[id].lastActive < 60000
@@ -153,8 +126,8 @@ export function useActiveMinerCount(projectId: string) {
           { timestamp: Date.now(), count },
         ])
       } catch (err) {
-        // Fallback
-        setActiveMiners(Math.floor(Math.random() * 5))
+        console.error('Unable to read active mining sessions:', err)
+        setActiveMiners(0)
       }
     }
 

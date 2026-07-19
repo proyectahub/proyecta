@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from "vite"
+import { fileURLToPath, URL } from "node:url"
 import react from "@vitejs/plugin-react"
 
 // Build ID único por deploy: fuerza cache-bust en browsers con bundle viejo en caché
@@ -22,6 +23,30 @@ export default defineConfig({
   worker: {
     // Necesario para que el worker de minería use import() dinámico (randomx.js)
     format: "es",
+  },
+  resolve: {
+    alias: {
+      os: fileURLToPath(new URL('./src/shims/os.ts', import.meta.url)),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'editor-vendor': [
+            '@tiptap/react',
+            '@tiptap/starter-kit',
+            '@tiptap/extension-image',
+            '@tiptap/extension-link',
+            '@tiptap/extension-table',
+          ],
+          'pdf-vendor': ['pdfjs-dist'],
+          'docx-vendor': ['mammoth'],
+          'icon-vendor': ['lucide-react'],
+        },
+      },
+    },
   },
   server: {
     host: true,

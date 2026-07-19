@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Square, Zap, AlertCircle, CheckCircle2, Download } from 'lucide-react'
-import { useValidateMoneroAddress } from '../hooks/useMoneroMining'
+import { isValidProjectWalletAddress } from '../utils/projectWallet'
 import { useRandomXMining } from '../hooks/useRandomXMining'
 import { useSupportXMRStats } from '../hooks/useSupportXMRMining'
 import { MiningOptionsModal } from './MiningOptionsModal'
@@ -9,6 +9,7 @@ interface ProjectMiningWidgetProps {
   projectMoneroAddress: string
   projectTitle: string
   projectId?: string
+  initialMiningMode?: 'browser' | 'app' | null
 }
 
 function hasVisibleCommunityState(poolStats: any) {
@@ -21,13 +22,13 @@ function formatAmount(value: unknown) {
   return Number.isFinite(numeric) ? numeric.toFixed(4) : '0.0000'
 }
 
-export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projectId }: ProjectMiningWidgetProps) {
-  const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(null)
-  const [showOptionsModal, setShowOptionsModal] = useState(true)
+export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projectId, initialMiningMode = null }: ProjectMiningWidgetProps) {
+  const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(initialMiningMode)
+  const [showOptionsModal, setShowOptionsModal] = useState(!initialMiningMode)
   const [miningEnabled, setMiningEnabled] = useState(false)
   const [cpuPercentage, setCpuPercentage] = useState(50)
 
-  const isValidAddress = useValidateMoneroAddress(projectMoneroAddress)
+  const isValidAddress = isValidProjectWalletAddress(projectMoneroAddress)
 
   const { stats, error: miningError, poolUrl } = useRandomXMining(
     projectMoneroAddress,
@@ -39,10 +40,8 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   const { poolStats } = useSupportXMRStats(projectMoneroAddress, projectId)
   const localActive = Boolean(poolStats?.isLocalActive)
   const poolConfirmed = Boolean(poolStats?.isPoolConfirmed)
-  const visibleBalance = Number(poolStats?.visibleBalance ?? poolStats?.balance ?? 0)
-  const confirmedBalance = Number(poolStats?.confirmedBalance ?? 0)
-  const localBalance = Number(poolStats?.localBalance ?? 0)
-  const visibleHashes = Number(poolStats?.visibleTotalHashes ?? poolStats?.totalHashes ?? 0)
+  const visibleBalance = Number(poolStats?.confirmedBalance ?? 0)
+  const visibleHashes = Number(poolStats?.confirmedTotalHashes ?? 0)
   const confirmedValidShares = Number(poolStats?.confirmedValidShares ?? poolStats?.validShares ?? 0)
   const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares)
 
@@ -70,11 +69,11 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   }
 
   const communityLabel = poolConfirmed && localActive
-    ? 'Pool confirmado + aporte local visible'
+    ? 'Pool confirmado + telemetría local'
     : poolConfirmed
       ? 'Pool confirmado'
       : localActive
-        ? 'Aporte local visible'
+        ? 'Telemetría local sin acreditar'
         : 'Esperando confirmación del pool'
 
   return (
@@ -82,7 +81,6 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
       <MiningOptionsModal
         isOpen={showOptionsModal && !miningMode}
         onClose={() => setShowOptionsModal(false)}
-        projectWallet={projectMoneroAddress}
         onSelectOption={handleSelectOption}
       />
 
@@ -144,11 +142,11 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                   </div>
                   <p className="mt-1 text-xs leading-6">
                     {poolConfirmed && localActive
-                      ? 'SupportXMR ya confirmó la dirección y el navegador sigue sumando actividad local visible.'
+                      ? 'SupportXMR ya confirmó la dirección. La actividad local se muestra aparte y no incrementa el saldo.'
                       : poolConfirmed
                         ? 'SupportXMR ya confirmó actividad para esta dirección.'
                         : localActive
-                          ? 'El navegador sigue calculando RandomX. El estado visible del proyecto suma el aporte local mientras llega la confirmación.'
+                          ? 'El navegador sigue calculando RandomX. Los hashes locales no son XMR ni recaudación hasta que el pool los acredite.'
                           : 'El navegador puede iniciar una prueba local mientras llega la confirmación del pool.'}
                   </p>
                 </div>
@@ -213,10 +211,10 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
             {hasVisibleCommunityState(poolStats) ? (
               <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
                 <p>
-                  <strong>Resumen visible:</strong> {formatAmount(visibleHashes / 1e6)}M hashes · {formatAmount(visibleBalance)} XMR
+                  <strong>Confirmado por el pool:</strong> {formatAmount(visibleHashes / 1e6)}M hashes · {formatAmount(visibleBalance)} XMR
                 </p>
                 <p className="mt-1">
-                  Confirmado: {formatAmount(confirmedBalance)} XMR · Local: {formatAmount(localBalance)} XMR · {communityLabel}
+                  Telemetría local: {stats.hashRate.toFixed(2)} H/s · {stats.totalHashes.toLocaleString('es-ES')} hashes · {communityLabel}
                 </p>
               </div>
             ) : null}

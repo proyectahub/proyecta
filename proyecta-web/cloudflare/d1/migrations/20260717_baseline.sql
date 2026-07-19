@@ -103,4 +103,5 @@ CREATE TABLE IF NOT EXISTS project_comments (
   created_at INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_project_comments_project ON project_comments(project_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_project_comments_project
+ON project_comments(project_id, created_at DESC);

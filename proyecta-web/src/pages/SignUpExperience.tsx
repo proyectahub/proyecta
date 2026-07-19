@@ -32,8 +32,8 @@ export function SignUpExperience() {
       return
     }
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+    if (password.length < 10) {
+      setError('La contraseña debe tener al menos 10 caracteres')
       return
     }
 
@@ -105,7 +105,7 @@ export function SignUpExperience() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 10 caracteres"
               className="nova-field"
               disabled={loading}
             />

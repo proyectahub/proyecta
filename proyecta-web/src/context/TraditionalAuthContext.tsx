@@ -42,65 +42,6 @@ interface AuthContextType {
 export const TraditionalAuthContext = createContext<AuthContextType | null>(null)
 
 const AUTH_API_BASE = '/cf-api/auth'
-const SESSION_STORAGE_KEY = 'proyecta_auth_session_token'
-const LEGACY_USER_CACHE_KEY = 'proyecta_user'
-const LEGACY_ALL_USERS_KEY = 'proyecta_all_profiles'
-
-function getStoredSessionToken() {
-  try {
-    return window.localStorage.getItem(SESSION_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
-function storeSessionToken(token: string) {
-  try {
-    window.localStorage.setItem(SESSION_STORAGE_KEY, token)
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function clearSessionToken() {
-  try {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY)
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function cacheUser(user: UserProfile) {
-  try {
-    window.localStorage.setItem(LEGACY_USER_CACHE_KEY, JSON.stringify(user))
-
-    const allProfilesRaw = window.localStorage.getItem(LEGACY_ALL_USERS_KEY) || '{}'
-    const allProfiles = JSON.parse(allProfilesRaw)
-    allProfiles[user.email] = user
-    window.localStorage.setItem(LEGACY_ALL_USERS_KEY, JSON.stringify(allProfiles))
-  } catch {
-    // Ignore cache failures.
-  }
-}
-
-function removeCachedUser() {
-  window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
-}
-
-function readLegacyUser(): UserProfile | null {
-  try {
-    const saved = window.localStorage.getItem(LEGACY_USER_CACHE_KEY)
-    if (!saved) return null
-
-    return JSON.parse(saved) as UserProfile
-  } catch {
-    try {
-      window.localStorage.removeItem(LEGACY_USER_CACHE_KEY)
-    } catch {}
-    return null
-  }
-}
-
 async function parseAuthResponse(response: Response) {
   const raw = await response.text()
 
@@ -123,15 +64,8 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const boot = async () => {
-      const token = getStoredSessionToken()
-
-      if (token) {
-        try {
-          const response = await fetch(`${AUTH_API_BASE}/me`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
+      try {
+          const response = await fetch(`${AUTH_API_BASE}/me`)
 
           const data = await parseAuthResponse(response)
 
@@ -140,17 +74,10 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
           }
 
           setUser(data.user)
-          cacheUser(data.user)
           setInitialized(true)
           return
-        } catch {
-          clearSessionToken()
-        }
-      }
-
-      const legacyUser = readLegacyUser()
-      if (legacyUser) {
-        setUser(legacyUser)
+      } catch {
+        setUser(null)
       }
 
       setInitialized(true)
@@ -184,13 +111,8 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Error en registro')
       }
 
-      if (data.token) {
-        storeSessionToken(data.token)
-      }
-
       if (data.user) {
         setUser(data.user)
-        cacheUser(data.user)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error en registro'
@@ -220,13 +142,8 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Error en login')
       }
 
-      if (data.token) {
-        storeSessionToken(data.token)
-      }
-
       if (data.user) {
         setUser(data.user)
-        cacheUser(data.user)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error en login'
@@ -238,22 +155,11 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    const token = getStoredSessionToken()
-
     try {
-      if (token) {
-        await fetch(`${AUTH_API_BASE}/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-      }
+      await fetch(`${AUTH_API_BASE}/logout`, { method: 'POST' })
     } catch (err) {
       console.error('Logout error:', err)
     } finally {
-      clearSessionToken()
-      removeCachedUser()
       setUser(null)
     }
   }
@@ -261,16 +167,10 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) throw new Error('No user')
 
-    const token = getStoredSessionToken()
-    if (!token) {
-      throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
-    }
-
     const response = await fetch(`${AUTH_API_BASE}/profile`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updates),
     })
@@ -283,7 +183,6 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
 
     if (data.user) {
       setUser(data.user)
-      cacheUser(data.user)
     }
   }
 
@@ -295,16 +194,10 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Dirección Monero inválida')
     }
 
-    const token = getStoredSessionToken()
-    if (!token) {
-      throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
-    }
-
     const response = await fetch(`${AUTH_API_BASE}/wallet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         mainAddress: normalizedAddress,
@@ -321,7 +214,6 @@ export function TraditionalAuthProvider({ children }: { children: ReactNode }) {
 
     if (data.user) {
       setUser(data.user)
-      cacheUser(data.user)
     }
   }
 

@@ -56,7 +56,7 @@ const feedModeMeta: Record<
     eyebrow: "Feed de proyectos",
     title: "Proyectos para apoyar dentro de Proyecta",
     description:
-      "Aquíí? ves juntos los proyectos ya financiados y los que aún buscan apoyo comunitario. Usa los filtros si quieres concentrarte en una sola vista.",
+      "Aquí ves juntos los proyectos ya financiados y los que aún buscan apoyo comunitario. Usa los filtros si quieres concentrarte en una sola vista.",
     helper:
       "Primero ves todo el feed. Si luego quieres afinar tu búsqueda, usa los filtros de estado, categoría o búsqueda.",
     badge: "Todo el feed",
@@ -68,7 +68,7 @@ const feedModeMeta: Record<
     eyebrow: "Proyectos financiados",
     title: "Proyectos ya financiados por la comunidad",
     description:
-      "Aquíí? descubres proyectos que ya recibieron apoyo comunitario. El objetivo es explorar investigación que fue posible gracias a la colaboración colectiva, comparar logros y seguir conversaciones ya activas.",
+      "Aquí descubres proyectos que ya recibieron apoyo comunitario. El objetivo es explorar investigación que fue posible gracias a la colaboración colectiva, comparar logros y seguir conversaciones ya activas.",
     helper: "Explora cada proyecto por lo que ya tiene financiamiento visible y vuelve al inicio si quieres cambiar de ruta.",
     badge: "Financiados",
     emptyTitle: "Todavía no hay proyectos financiados en esta vista.",
@@ -79,8 +79,8 @@ const feedModeMeta: Record<
     eyebrow: "Proyectos en desarrollo",
     title: "Proyectos disponibles para apoyo comunitario",
     description:
-      "Aquíí? encuentras proyectos nuevos o todavía sin apoyo. Es el espacio para explorar primero, comentar y ayudar a que cada proyecto gane el apoyo que necesita para avanzar.",
-    helper: "Si un proyecto te importa, entra, expl?ralo y deja un comentario amable, claro y útil para el investigador.",
+      "Aquí encuentras proyectos nuevos o todavía sin apoyo. Es el espacio para explorar primero, comentar y ayudar a que cada proyecto gane el apoyo que necesita para avanzar.",
+    helper: "Si un proyecto te importa, entra, explóralo y deja un comentario amable, claro y útil para el investigador.",
     badge: "En desarrollo",
     emptyTitle: "No hay proyectos sin apoyo en esta vista.",
     emptyDescription:

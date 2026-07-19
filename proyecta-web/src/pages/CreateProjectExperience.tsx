@@ -1,12 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Wand2 } from 'lucide-react'
 import { RichTextEditor } from '../components/RichTextEditor'
 import { useNavigate } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
-import { useWalletAuth } from '../context/WalletAuthContext'
-import { generateMoneroAddress } from '../utils/moneroAddress'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
 import { PROJECTS_API_BASE } from '../lib/api'
+import { useMoneroPrice } from '../hooks/useMoneroPrice'
 
 const CATEGORIES: Record<string, string> = {
   biology: 'Biología',
@@ -22,7 +21,7 @@ const CATEGORIES: Record<string, string> = {
 export function CreateProjectExperience() {
   const navigate = useNavigate()
   const { user: traditionalUser, initialized } = useTraditionalAuth()
-  const { user: walletUser } = useWalletAuth()
+  const { xmrPrice } = useMoneroPrice()
 
   const [step, setStep] = useState('info')
   const [title, setTitle] = useState('')
@@ -30,31 +29,24 @@ export function CreateProjectExperience() {
   const [coverImage, setCoverImage] = useState<string | null>(null)
   const [category, setCategory] = useState('biology')
   const [fundingGoal, setFundingGoal] = useState('')
-  const [useOwnWallet, setUseOwnWallet] = useState(true)
   const [personalWalletAddress, setPersonalWalletAddress] = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
   const [publishedProjectId, setPublishedProjectId] = useState('')
 
-  const linkedWalletAddress =
-    traditionalUser?.moneroWallet?.mainAddress || walletUser?.wallet?.mainAddress || ''
+  const linkedWalletAddress = traditionalUser?.moneroWallet?.mainAddress || ''
   const walletMode = traditionalUser?.walletMode || 'external'
   const walletWebUrl = traditionalUser?.walletWebUrl || ''
 
-  const generatedAddress = useMemo(
-    () => generateMoneroAddress(`proyecto_${Date.now()}_${Math.random()}`),
-    []
-  )
-
   const resolvedPersonalWallet = normalizeProjectWalletAddress(personalWalletAddress)
   const projectMoneroAddress =
-    useOwnWallet && isValidProjectWalletAddress(resolvedPersonalWallet)
+    isValidProjectWalletAddress(resolvedPersonalWallet)
       ? resolvedPersonalWallet
-      : useOwnWallet && linkedWalletAddress
+      : isValidProjectWalletAddress(linkedWalletAddress)
         ? linkedWalletAddress
-        : generatedAddress
+        : ''
 
-  const isAuthenticated = !!(traditionalUser || walletUser)
+  const isAuthenticated = !!traditionalUser
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -126,10 +118,7 @@ export function CreateProjectExperience() {
       if (parseFloat(fundingGoal) <= 0) {
         return false
       }
-      if (useOwnWallet) {
-        return isValidProjectWalletAddress(resolvedPersonalWallet) || isValidProjectWalletAddress(linkedWalletAddress)
-      }
-      return true
+      return isValidProjectWalletAddress(projectMoneroAddress)
     }
     return true
   }
@@ -274,7 +263,7 @@ export function CreateProjectExperience() {
 
   if (step === 'funding') {
     const goal = parseFloat(fundingGoal) || 0
-    const usdValue = (goal * 316.12).toFixed(0)
+    const usdValue = xmrPrice === null ? null : (goal * xmrPrice).toFixed(0)
     const maxXMR = 10
     const progressPercent = (goal / maxXMR) * 100
 
@@ -294,7 +283,7 @@ export function CreateProjectExperience() {
               </div>
               <div className="space-y-2">
                 <p className="text-2xl font-bold text-slate-900">XMR</p>
-                <p className="text-lg text-slate-600"> ${usdValue} USD</p>
+                <p className="text-lg text-slate-600">{usdValue === null ? 'Cotización USD no disponible' : ` $${usdValue} USD`}</p>
                 <p className="text-xs text-slate-500">(máximo {maxXMR} XMR por ahora)</p>
               </div>
             </div>
@@ -369,44 +358,9 @@ export function CreateProjectExperience() {
 
             {/* Selección de dirección de recaudación */}
             {linkedWalletAddress && (
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-700">
-                  Dirección de recaudación
-                </label>
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setUseOwnWallet(true)}
-                    className={`text-left rounded-lg border-2 p-3 transition ${
-                      useOwnWallet
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <p className="font-bold text-slate-900 text-sm">
-                       Mi wallet personal vinculada (recomendado)
-                    </p>
-                    <code className="text-xs text-slate-500 break-all">
-                      {linkedWalletAddress.substring(0, 32)}...
-                    </code>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUseOwnWallet(false)}
-                    className={`text-left rounded-lg border-2 p-3 transition ${
-                      !useOwnWallet
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <p className="font-bold text-slate-900 text-sm">
-                       Generar dirección nueva
-                    </p>
-                    <code className="text-xs text-slate-500 break-all">
-                      {generatedAddress.substring(0, 32)}...
-                    </code>
-                  </button>
-                </div>
+              <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
+                <p className="text-sm font-bold text-slate-900">Wallet vinculada al perfil</p>
+                <code className="mt-2 block break-all text-xs text-slate-600">{linkedWalletAddress}</code>
               </div>
             )}
 
@@ -434,7 +388,7 @@ export function CreateProjectExperience() {
                 className="nova-field font-mono text-sm"
               />
               <p className="text-xs text-slate-500">
-                Si la dirección es válida, se usará como destino del pool para este proyecto. Si la dejas vacía, se usará la wallet vinculada o una dirección generada.
+                Debe ser una dirección pública real creada en una wallet externa. Si la dejas vacía, se usará la wallet vinculada a tu perfil. PROYECTA nunca genera ni custodia claves.
               </p>
             </div>
 
@@ -444,7 +398,7 @@ export function CreateProjectExperience() {
                 <span></span> Tu dirección de recaudación
               </p>
               <code className="text-xs break-all font-mono bg-white p-3 rounded border border-amber-200 block">
-                {projectMoneroAddress}
+                {projectMoneroAddress || 'Agrega una dirección Monero pública para continuar.'}
               </code>
               <p className="text-xs text-amber-800">
                  Los minadores donarán XMR aquí. PROYECTA nunca toca los fondos.
@@ -475,14 +429,7 @@ export function CreateProjectExperience() {
       setPublishing(true)
       setPublishError('')
 
-      const authorId =
-        traditionalUser?.id ||
-        walletUser?.wallet?.userVitaAddress ||
-        'anonymous'
-
-      const projectId = `proj_${Date.now()}`
       const projectData = {
-        id: projectId,
         title,
         description,
         coverImage,
@@ -490,12 +437,6 @@ export function CreateProjectExperience() {
         fundingGoal: parseFloat(fundingGoal),
         fundraisingAddress: projectMoneroAddress,
         moneroAddress: projectMoneroAddress,
-        author: authorId,
-        authorName: traditionalUser?.fullName || 'Investigador',
-        raised: 0,
-        status: 'active',
-        hitos: [] as Array<{ name: string; payout: number; completed: boolean }>,
-        createdAt: Date.now(),
       }
 
       try {
@@ -505,6 +446,7 @@ export function CreateProjectExperience() {
             Accept: 'application/json',
             'Content-Type': 'application/json',
           },
+          credentials: 'same-origin',
           body: JSON.stringify(projectData),
         })
 
@@ -520,29 +462,10 @@ export function CreateProjectExperience() {
         }
 
         const savedProject = await response.json()
-        const existingProjects = JSON.parse(
-          localStorage.getItem('proyecta_projects') || '[]'
-        )
-        const syncedProjects = [
-          savedProject,
-          ...existingProjects.filter((item: { id?: string }) => item.id !== savedProject.id),
-        ]
-        localStorage.setItem('proyecta_projects', JSON.stringify(syncedProjects))
-        setPublishedProjectId(savedProject.id || projectId)
+        setPublishedProjectId(savedProject.id || '')
         setStep('success')
       } catch (error) {
         console.warn('No se pudo publicar el proyecto en D1:', error)
-        const pendingProjects = JSON.parse(
-          localStorage.getItem('proyecta_projects_pending') || '[]'
-        )
-        const pendingProject = { ...projectData, syncStatus: 'pending' }
-        localStorage.setItem(
-          'proyecta_projects_pending',
-          JSON.stringify([
-            pendingProject,
-            ...pendingProjects.filter((item: { id?: string }) => item.id !== pendingProject.id),
-          ]),
-        )
         setPublishError(
           error instanceof Error
             ? error.message
@@ -593,7 +516,7 @@ export function CreateProjectExperience() {
             <div>
               <p className="text-xs font-bold uppercase text-slate-500">Meta de financiamiento</p>
               <p className="font-bold text-blue-600 text-2xl">
-                {parseFloat(fundingGoal).toFixed(2)} XMR  ${(parseFloat(fundingGoal) * 316.12).toFixed(0)}
+                {parseFloat(fundingGoal).toFixed(2)} XMR{ xmrPrice === null ? '' : `  $${(parseFloat(fundingGoal) * xmrPrice).toFixed(0)}` }
               </p>
             </div>
 

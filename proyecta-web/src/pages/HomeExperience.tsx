@@ -1,334 +1,259 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpenText, Clock3, ExternalLink, FileText, MessageSquare, PenSquare, ShieldCheck, Star, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react'
-import { toast } from 'react-hot-toast'
+import {
+  ArrowRight,
+  Cpu,
+  ExternalLink,
+  FlaskConical,
+  Network,
+  Search,
+  ShieldCheck,
+  WalletCards,
+} from 'lucide-react'
 
 import { ProyectaBrandLockup, ProyectaMark } from '../components/brand/ProyectaBrand'
-import { ComputeDonationPopup } from '../components/ComputeDonationPopup'
-import { useAuth } from '../context/AuthContext'
-import { useComputeDonation } from '../hooks/useComputeDonation'
-import type { CommunityOverview } from '../hooks/useCommunityFeedData'
-import { useCommunityFeedData } from '../hooks/useCommunityFeedData'
-import type { FeedArticle } from '../data/mockData'
+import { useTraditionalAuth } from '../context/TraditionalAuthContext'
+import { useMoneroPrice } from '../hooks/useMoneroPrice'
+import { PROJECTS_API_BASE } from '../lib/api'
+import { normalizeProjects } from '../utils/projectWallet'
 
-const purposeStatements = [
-  {
-    title: 'Hacer legible la ciencia',
-    copy: 'Convertir hallazgos, preguntas y avances en artículos que puedan leerse con claridad sin perder seriedad académica.',
-  },
-  {
-    title: 'Construir confianza pública',
-    copy: 'Dar identidad visible, valoración abierta y trazabilidad para que la conversación científica sea más clara y más confiable.',
-  },
-  {
-    title: 'Mover comunidad en LatAm',
-    copy: 'Conectar divulgadores, investigadores y lectores en un espacio donde compartir ciencia se sienta estimulante y profesional.',
-  },
-]
-
-const communityJourney = [
-  { title: '1. Crea tu identidad', copy: 'Registra tu cuenta, personaliza tu perfil y, si quieres, sincroniza ORCID para enriquecer tu trayectoria.', icon: Users },
-  { title: '2. Publica con claridad', copy: 'Comparte artículos, hallazgos o preguntas con una escritura seria, legible y bien situada.', icon: PenSquare },
-  { title: '3. Lee y valora', copy: 'Deja estrellas y comentarios que ayuden a otras personas a reconocer qué artículo comunica mejor su aporte.', icon: BookOpenText },
-  { title: '4. Conversa en comunidad', copy: 'Sigue perfiles, responde ideas y ayuda a que la ciencia circule con criterio, cercanía y trazabilidad.', icon: MessageSquare },
-]
-
-const publicationScope = [
-  'Artículos de divulgación científica con lectura clara y fundamento verificable.',
-  'Preguntas abiertas, síntesis de avances y cruces entre ciencia, sociedad y tecnología.',
-  'Textos que aporten conversación pública sin perder rigor ni atribución de fuentes.',
-]
-
-function getIsoWeekSeed() {
-  const now = new Date()
-  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
-  const day = utcDate.getUTCDay() || 7
-  utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1))
-  return Math.ceil(((utcDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+type Project = {
+  id: string
+  title: string
+  description: string
+  category: string
+  fundingGoal: number
+  fundraisingAddress: string
+  authorName?: string
+  raised: number
+  status: string
+  coverImage?: string
+  createdAt: number
 }
 
-function rotateWeeklyTopArticles(articles: FeedArticle[], voteOverrides: Record<string, number>) {
-  const sorted = [...articles].sort((left, right) => {
-    const rightVotes = voteOverrides[right.id] ?? right.metrics.votes
-    const leftVotes = voteOverrides[left.id] ?? left.metrics.votes
-    if (rightVotes !== leftVotes) return rightVotes - leftVotes
-    return right.timeAgo.localeCompare(left.timeAgo, 'es')
-  })
-
-  if (sorted.length <= 1) return sorted
-  const offset = getIsoWeekSeed() % sorted.length
-  return [...sorted.slice(offset), ...sorted.slice(0, offset)]
+const categoryLabels: Record<string, string> = {
+  biology: 'Biología',
+  chemistry: 'Química',
+  physics: 'Física',
+  mathematics: 'Matemáticas',
+  medicine: 'Medicina',
+  'computer-science': 'Informática',
+  ecology: 'Ecología',
+  other: 'Otra área',
 }
 
-function getCommunityStats(communityOverview: CommunityOverview, articles: FeedArticle[]) {
-  const fallbackAuthors = new Set(articles.map((article) => article.author.id)).size
-  const fallbackReviews = (communityOverview.recentReviews ?? []).length
-  const fallbackComments = (communityOverview.recentComments ?? []).length
-  return [
-    { value: String(fallbackAuthors), label: 'Investigadores' },
-    { value: String(fallbackReviews), label: 'Validaciones' },
-    { value: String(fallbackComments), label: 'Comentarios' },
-  ]
-}
+const processSteps = [
+  {
+    title: 'Elige una investigación',
+    copy: 'Consulta su objetivo, meta en XMR y dirección pública antes de aportar.',
+    icon: Search,
+  },
+  {
+    title: 'Aporta CPU voluntariamente',
+    copy: 'Usa la opción web o el minero nativo con el porcentaje de CPU que decidas.',
+    icon: Cpu,
+  },
+  {
+    title: 'RandomX trabaja en comunidad',
+    copy: 'El puente coordina jobs reales con SupportXMR y registra cada proyecto por separado.',
+    icon: Network,
+  },
+  {
+    title: 'XMR llega a la wallet',
+    copy: 'El pool paga a la dirección pública del investigador; PROYECTA no custodia fondos.',
+    icon: WalletCards,
+  },
+]
 
 export default function HomeExperience() {
-  const { user, isAuthenticated } = useAuth()
-  const { apiBaseUrl, articles, communityOverview, isSyncing } = useCommunityFeedData()
-  const { shouldShowPopup, getDonationStatus } = useComputeDonation()
-  const sessionToken = typeof window !== 'undefined' ? window.localStorage.getItem('proyecta-session-token') : null
-
-  const [voteOverrides, setVoteOverrides] = useState<Record<string, 0 | 1>>({})
-  const [voteCountOverrides, setVoteCountOverrides] = useState<Record<string, number>>({})
-  const [followOverrides, setFollowOverrides] = useState<Record<string, boolean>>({})
-  const [busyActionId, setBusyActionId] = useState<string | null>(null)
-  const [showComputeDonationPopup, setShowComputeDonationPopup] = useState(false)
+  const { user, initialized } = useTraditionalAuth()
+  const { xmrPrice } = useMoneroPrice()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
-    const donationStatus = getDonationStatus()
-    const isAlreadyDonating = donationStatus.enabled && donationStatus.percentage > 0
-    if (isAuthenticated && !isAlreadyDonating && shouldShowPopup('interactions')) {
-      setShowComputeDonationPopup(true)
-    }
-  }, [isAuthenticated, shouldShowPopup, getDonationStatus])
+    const controller = new AbortController()
 
-  const reviewedArticles = useMemo(() => articles.filter((article) => Number(article.metrics.peerScore ?? 0) > 0), [articles])
-  const openArticles = useMemo(() => articles.filter((article) => Number(article.metrics.peerScore ?? 0) <= 0), [articles])
-  const reviewedPreview = useMemo(() => rotateWeeklyTopArticles(reviewedArticles, voteCountOverrides).slice(0, 3), [reviewedArticles, voteCountOverrides])
-  const openPreview = useMemo(() => rotateWeeklyTopArticles(openArticles, voteCountOverrides).slice(0, 3), [openArticles, voteCountOverrides])
-  const publicationStats = useMemo(() => [
-    { value: String(articles.length), label: "Total de proyectos" },
-    { value: String(reviewedArticles.length), label: "Financiados" },
-    { value: String(openArticles.length), label: "En desarrollo" },
-  ], [articles.length, reviewedArticles.length, openArticles.length])
-  const communityStats = useMemo(() => getCommunityStats(communityOverview, articles), [articles, communityOverview])
+    async function loadProjects() {
+      try {
+        const response = await fetch(`${PROJECTS_API_BASE}/projects`, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          throw new Error('No fue posible cargar los proyectos.')
+        }
 
-  const heroRoutes = [
-    { title: 'Explorar', copy: 'Descubre proyectos de investigación que necesitan tu apoyo.', to: '/revisadas', icon: BookOpenText },
-    { title: 'Apoyar', copy: 'Comenta, valida y financia proyectos que te importan.', to: isAuthenticated ? '/por-revisar' : '/login?intent=review', icon: MessageSquare },
-    { title: 'Publicar Proyecto', copy: 'Comparte tu investigación, fija una meta y recibe apoyo directo de la comunidad.', to: isAuthenticated ? '/editor' : '/login?intent=publish', icon: PenSquare },
-  ]
-
-  const userGuide = [
-    { title: 'Explorar', copy: 'Descubre proyectos de investigación financiados y apoyados por la comunidad.', icon: BookOpenText },
-    { title: 'Apoyar', copy: 'Comenta, valida y aporta tu apoyo a proyectos en desarrollo.', icon: MessageSquare },
-    { title: 'Publicar Proyecto', copy: 'Comparte tu investigación con una meta de financiamiento y busca apoyo comunitario.', icon: PenSquare },
-  ]
-
-  const handleFeedUpvote = async (articleId: string, currentVote: 0 | 1) => {
-    if (!isAuthenticated || !sessionToken) {
-      toast('Regístrate para votar y ayudar a mover el feed.')
-      window.location.href = '/login?intent=review'
-      return
+        const payload = await response.json()
+        const normalized = normalizeProjects(Array.isArray(payload) ? payload : []) as Project[]
+        if (!controller.signal.aborted) {
+          setProjects(normalized.filter((project) => project.status !== 'archived'))
+          setLoadError('')
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setLoadError(error instanceof Error ? error.message : 'No fue posible cargar los proyectos.')
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
     }
 
-    const nextVote = currentVote === 1 ? 0 : 1
-    const actionId = `vote-${articleId}`
-    setBusyActionId(actionId)
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/articles/${articleId}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify({ value: nextVote }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error ?? 'No fue posible registrar tu voto.')
-      setVoteOverrides((prev) => ({ ...prev, [articleId]: nextVote as 0 | 1 }))
-      setVoteCountOverrides((prev) => ({ ...prev, [articleId]: Number(data.metrics.votes ?? prev[articleId] ?? 0) }))
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No fue posible registrar tu voto.')
-    } finally {
-      setBusyActionId((prev) => (prev === actionId ? null : prev))
-    }
-  }
+    void loadProjects()
+    return () => controller.abort()
+  }, [])
 
-  const handleToggleFollow = async (authorId: string, isFollowing: boolean) => {
-    if (!isAuthenticated || !sessionToken) {
-      toast('Crea tu cuenta para seguir perfiles.')
-      window.location.href = '/login?intent=review'
-      return
-    }
-
-    const actionId = `follow-${authorId}`
-    setBusyActionId(actionId)
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/users/${authorId}/follow`, {
-        method: isFollowing ? 'DELETE' : 'POST',
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error ?? 'No fue posible actualizar este seguimiento.')
-      setFollowOverrides((prev) => ({ ...prev, [authorId]: Boolean(data.following) }))
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No fue posible actualizar este seguimiento.')
-    } finally {
-      setBusyActionId((prev) => (prev === actionId ? null : prev))
-    }
-  }
-
-  const renderHomeFeedCard = (article: FeedArticle, status: 'reviewed' | 'open') => {
-    const isReviewed = status === 'reviewed'
-    const currentVote = voteOverrides[article.id] ?? Number(article.viewerState?.vote ?? 0)
-    const currentVotes = voteCountOverrides[article.id] ?? article.metrics.votes
-    const isFollowingAuthor = followOverrides[article.author.id] ?? Boolean(article.viewerState?.followingAuthor)
-    const canFollowAuthor = !user || user.id !== article.author.id
-    const sources = article.sources ?? []
-    const tags = article.tags ?? []
-
-    return (
-      <article key={article.id} className="rounded-[30px] border border-slate-200 bg-white/85 p-5 shadow-[0_18px_48px_-30px_rgba(15,23,42,0.35)]">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="nova-pill">{article.category}</span>
-              <span className={`rounded-full px-3 py-1 ${isReviewed ? 'border border-emerald-100 bg-emerald-50 text-emerald-700' : 'border border-amber-100 bg-amber-50 text-amber-700'}`}>
-                {isReviewed ? 'Revisado' : 'Por revisar'}
-              </span>
-              <span>{article.timeAgo}</span>
-              <span>•</span>
-              <span>{article.readTime}</span>
-            </div>
-            <button type="button" onClick={() => void handleFeedUpvote(article.id, currentVote as 0 | 1)} disabled={busyActionId === `vote-${article.id}`} className={`nova-button-soft min-w-[120px] justify-center ${currentVote === 1 ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' : ''}`}>
-              <TrendingUp size={16} />
-              {currentVote === 1 ? 'Upvotado' : 'Upvote'}
-            </button>
-          </div>
-
-          <div className={`gap-5 ${article.figureImage ? 'grid md:grid-cols-[minmax(0,1fr)_240px] md:items-start' : 'space-y-4'}`}>
-            <div className="space-y-4">
-              <Link to={`/article/${article.id}`} className="group block"><h3 className="nova-title text-3xl font-extrabold tracking-tight text-slate-900 transition-colors group-hover:text-fuchsia-600 md:text-[2.15rem]">{article.title}</h3></Link>
-              <p className="max-w-3xl text-lg leading-9 text-slate-600 md:text-[1.08rem]">{article.excerpt}</p>
-            </div>
-            {article.figureImage ? <Link to={`/article/${article.id}`} className="group overflow-hidden rounded-[26px] border border-slate-200 bg-slate-50/80 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)]"><img src={article.figureImage} alt={article.figureCaption || article.title} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.03]" /></Link> : null}
-          </div>
-
-          {sources.length > 0 ? (
-            <div className="rounded-[26px] border border-fuchsia-100 bg-fuchsia-50/45 p-5">
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-fuchsia-700"><FileText size={15} />Fuentes consultables</div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {sources.slice(0, 2).map((source) => (
-                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="group rounded-[22px] border border-fuchsia-100 bg-white/90 p-4 transition hover:-translate-y-0.5 hover:border-fuchsia-200">
-                    <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{source.title}</p><p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{source.publisher}</p></div><ExternalLink size={16} className="mt-0.5 text-fuchsia-500 transition group-hover:text-fuchsia-700" /></div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="rounded-[26px] border border-slate-200 bg-slate-50/90 p-5">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <Link to={`/profile/${article.author.id}`} className="flex min-w-0 items-center gap-4 rounded-[22px] transition hover:bg-white/80 hover:px-2 hover:py-1">
-                  <img src={article.author.image} alt={article.author.name} className="h-14 w-14 rounded-2xl object-cover" />
-                  <div className="min-w-0"><p className="truncate font-bold text-slate-900">{article.author.name}</p><p className="text-sm text-slate-500">{article.author.role} · {article.author.affiliation}</p></div>
-                </Link>
-                <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                  {tags.slice(0, 3).map((tag) => (<span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-500">{tag}</span>))}
-                  {canFollowAuthor ? (<button type="button" onClick={() => void handleToggleFollow(article.author.id, isFollowingAuthor)} disabled={busyActionId === `follow-${article.author.id}`} className={`nova-button-soft min-w-[132px] justify-center ${isFollowingAuthor ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : ''}`}>{isFollowingAuthor ? <UserCheck size={16} /> : <UserPlus size={16} />}{isFollowingAuthor ? 'Siguiendo' : 'Seguir'}</button>) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5">
-            <div className="flex flex-wrap items-center gap-5 text-sm font-semibold text-slate-500">
-              <span className="inline-flex items-center gap-2"><TrendingUp size={16} className="text-fuchsia-500" />{currentVotes} votos</span>
-              <span className="inline-flex items-center gap-2"><Star size={16} className="text-amber-500" />{isReviewed ? `${article.metrics.peerScore.toFixed(1)} score comunitario` : 'Sin valoraciones aún'}</span>
-              <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-purple-500" />{article.metrics.comments} comentarios</span>
-            </div>
-            <Link to={`/article/${article.id}`} className="nova-button-soft">{isReviewed ? 'Leer y conversar' : 'Leer y revisar'}<ArrowRight size={16} /></Link>
-          </div>
-        </div>
-      </article>
-    )
-  }
+  const visibleProjects = useMemo(
+    () => [...projects].sort((left, right) => right.createdAt - left.createdAt).slice(0, 3),
+    [projects],
+  )
+  const totalRaised = projects.reduce((sum, project) => sum + Number(project.raised || 0), 0)
+  const totalGoal = projects.reduce((sum, project) => sum + Number(project.fundingGoal || 0), 0)
+  const isAuthenticated = initialized && Boolean(user)
 
   return (
-    <div className="space-y-6">
-      <ComputeDonationPopup visible={showComputeDonationPopup} triggerSource="interactions" onClose={() => setShowComputeDonationPopup(false)} />
-
-      {isSyncing ? (
-        <div className="flex items-center gap-3 rounded-full border border-fuchsia-100 bg-fuchsia-50/80 px-4 py-3 text-sm font-medium text-fuchsia-700"><ShieldCheck size={16} />Sincronizando artículos reales de la comunidad para mantener el feed al día.</div>
-      ) : null}
-
-      <div className="relative overflow-hidden rounded-[28px] border border-rose-100 bg-gradient-to-r from-[#21131f] via-[#7a1e6e] to-[#c026d3] px-6 py-5 md:px-8 md:py-6">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-purple-500/15 blur-2xl" />
-        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex-1">
-            <div className="mb-2 flex items-center gap-2"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-[10px] font-black">CPU</span><p className="nova-eyebrow text-rose-200">Apoyo voluntario</p></div>
-            <h3 className="nova-title mb-2 text-lg font-extrabold text-white">Muchas computadoras pequeñas pueden sostener una investigación real</h3>
-            <p className="max-w-2xl text-sm leading-relaxed text-rose-50/85">Proyecta nace desde la comunidad científica y vuelve a ella. Puedes aportar poder de cómputo de forma voluntaria para que, entre muchas personas conectadas por una causa, ese esfuerzo se convierta en apoyo verificable para proyectos de investigación.</p>
-            <Link to="/computacion-donada" className="mt-2 inline-block text-xs font-semibold text-rose-100 transition-colors hover:text-white">Entender cómo funciona →</Link>
-          </div>
-          <Link to="/computacion-donada" className="nova-button-solid whitespace-nowrap self-start px-6 py-2.5 text-sm font-bold md:self-center">Cómo apoyar</Link>
-        </div>
-      </div>
-
-      <section className="relative min-h-[320px] overflow-hidden rounded-[34px] border border-rose-100 bg-slate-950 shadow-[0_30px_85px_-45px_rgba(120,30,95,0.55)] md:min-h-[430px]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,114,182,0.24),transparent_38%),linear-gradient(135deg,rgba(32,19,29,0.98),rgba(122,30,110,0.9)_48%,rgba(15,23,42,0.98))]" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.08]" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" />
-        <div className="relative flex min-h-[320px] flex-col justify-end p-6 text-white md:min-h-[430px] md:p-8">
-          <div className="mb-auto flex justify-end"><ProyectaMark size={48} /></div>
-          <div className="space-y-4">
-            <h2 className="nova-title max-w-3xl text-base font-extrabold leading-tight md:text-[1.625rem]">Una red comunitaria para financiar la ciencia que nace cerca de nosotros</h2>
-            <div className="grid gap-3 md:grid-cols-3">{heroRoutes.map((route) => { const Icon = route.icon; return (<Link key={route.title} to={route.to} className="rounded-[24px] border border-white/15 bg-white/10 px-4 py-4 text-left backdrop-blur transition hover:bg-white/18"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/75"><Icon size={16} />{route.title}</div><p className="mt-3 text-sm leading-6 text-white/90">{route.copy}</p></Link>) })}</div>
-          </div>
-        </div>
-      </section>
-
-      <div className="nova-shell p-6 md:p-8">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="space-y-4">
-            <div className="inline-flex rounded-[28px] border border-white/80 bg-white/82 p-3 shadow-sm backdrop-blur"><ProyectaBrandLockup compact markSize={46} /></div>
-            <div className="max-w-4xl space-y-4">
-              <h1 className="nova-title text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl xl:text-6xl">La ciencia también puede sostenerse desde la comunidad.</h1>
-              <p className="max-w-3xl text-base leading-8 text-slate-600 md:text-lg">Proyecta es un espacio de <strong>apoyo mutuo</strong> para investigación real: conecta proyectos con personas que quieren ayudar desde donde están. La idea es simple: si muchas computadoras aportan una pequeña parte de su capacidad, ese esfuerzo colectivo puede convertirse en financiamiento transparente para la ciencia que la comunidad necesita.</p>
-              <div className="inline-flex items-center gap-3 rounded-full border border-fuchsia-100 bg-fuchsia-50/80 px-4 py-3 text-sm font-semibold text-fuchsia-700"><ProyectaMark size={26} glow={false} />Apoyo colectivo, voluntario y verificable</div>
-              <div className="flex flex-wrap gap-3 pt-2"><Link to="/computacion-donada" className="nova-button-solid">Apoyar la ciencia<ArrowRight size={16} /></Link><Link to="/revisadas" className="nova-button-soft">Explorar proyectos</Link></div>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-[38px] border border-rose-100 bg-slate-950 text-white shadow-[0_36px_90px_-48px_rgba(92,20,78,0.75)]">
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(244,114,182,0.28),transparent_34%),radial-gradient(circle_at_88%_20%,rgba(14,165,233,0.2),transparent_30%),linear-gradient(135deg,#170f1b_0%,#481441_48%,#0f172a_100%)]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.08]" />
+        <div className="relative grid min-h-[520px] gap-10 p-7 md:p-11 lg:grid-cols-[minmax(0,1.2fr)_420px] lg:items-end">
+          <div className="space-y-7">
+            <ProyectaBrandLockup compact markSize={52} tone="light" />
+            <div className="max-w-4xl space-y-5">
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-rose-100 backdrop-blur">
+                <Cpu size={15} /> Crowdfunding científico con minería Monero
+              </p>
+              <h1 className="nova-title text-4xl font-black leading-[1.02] tracking-tight md:text-6xl">
+                Muchas computadoras. Una investigación que puede avanzar.
+              </h1>
+              <p className="max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+                PROYECTA convierte aportes voluntarios de CPU en minería RandomX para financiar proyectos científicos. Cada proyecto publica su wallet y recibe XMR directamente desde el pool.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/projects" className="nova-button-solid px-6 py-3">
+                Explorar proyectos <ArrowRight size={17} />
+              </Link>
+              <Link to={isAuthenticated ? '/create-project' : '/login?intent=publish'} className="nova-button-soft border-white/20 bg-white/10 px-6 py-3 text-white hover:bg-white/20">
+                Publicar investigación
+              </Link>
             </div>
           </div>
-          <aside className="nova-card flex h-full flex-col justify-between p-6">
-            <div className="space-y-4"><p className="nova-eyebrow text-fuchsia-600">Guía rápida</p><h2 className="nova-title text-3xl font-extrabold text-slate-900">Lo esencial para confiar y participar.</h2><p className="text-sm leading-7 text-slate-600">Proyecta explica cada aporte con claridad: qué proyecto recibe apoyo, cómo se participa, qué control conserva tu equipo y por qué muchas contribuciones pequeñas pueden abrir oportunidades reales de investigación.</p></div>
-            <div className="mt-6 space-y-3">{userGuide.map((item) => { const Icon = item.icon; return (<article key={item.title} className="rounded-[24px] bg-slate-50/90 p-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-600"><Icon size={18} /></span><p className="text-sm font-bold text-slate-900">{item.title}</p></div><p className="mt-3 text-sm leading-6 text-slate-500">{item.copy}</p></article>) })}</div>
+
+          <aside className="rounded-[30px] border border-white/15 bg-white/10 p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-200">Estado público</p>
+                <p className="mt-2 text-2xl font-black">Red abierta</p>
+              </div>
+              <ProyectaMark size={54} />
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-slate-950/35 p-4">
+                <p className="text-3xl font-black">{projects.length}</p>
+                <p className="mt-1 text-xs text-slate-300">proyectos visibles</p>
+              </div>
+              <div className="rounded-2xl bg-slate-950/35 p-4">
+                <p className="text-3xl font-black">{totalGoal.toFixed(2)}</p>
+                <p className="mt-1 text-xs text-slate-300">XMR en metas</p>
+              </div>
+              <div className="col-span-2 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4">
+                <p className="flex items-center gap-2 text-sm font-bold text-emerald-100"><ShieldCheck size={17} /> Sin custodia</p>
+                <p className="mt-2 text-xs leading-6 text-emerald-50/75">Las claves privadas nunca entran al portal. Solo se registra la dirección pública elegida por el investigador.</p>
+              </div>
+            </div>
           </aside>
         </div>
-      </div>
+      </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <div className="nova-card overflow-hidden p-6 md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2"><p className="nova-eyebrow text-emerald-700">Proyectos Financiados</p><h2 className="nova-title text-3xl font-extrabold text-slate-900">Investigación apoyada por la comunidad</h2><p className="max-w-2xl text-base leading-8 text-slate-600">Aquííí aparecen primero los proyectos que han alcanzado o superado su meta de financiamiento. El orden se mueve por apoyo comunitario y rota cada semana entre los proyectos más respaldados para repartir mejor la visibilidad.</p></div>
-            <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-sm font-semibold text-emerald-700">{reviewedArticles.length} proyectos financiados</div>
+      <section className="nova-shell p-6 md:p-8">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div className="max-w-3xl">
+            <p className="nova-eyebrow">Proyectos reales</p>
+            <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900 md:text-4xl">Investigación que busca poder computacional</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">Estos datos vienen de la base compartida del portal, no de artículos de demostración.</p>
           </div>
-          <div className="mt-6 space-y-5">{reviewedPreview.length ? reviewedPreview.map((article) => renderHomeFeedCard(article, 'reviewed')) : <div className="rounded-[28px] border border-emerald-100 bg-emerald-50/70 px-6 py-8 text-sm leading-7 text-slate-600">No hay proyectos financiados en este momento. Cuando proyectos alcancen su meta, aparecerán aquí.</div>}</div>
-          <div className="mt-6 flex justify-end"><Link to="/revisadas" className="nova-button-soft">Ver proyectos financiados<ArrowRight size={16} /></Link></div>
+          <Link to="/projects" className="nova-button-soft">Ver todos <ArrowRight size={16} /></Link>
         </div>
 
-        <div className="nova-card overflow-hidden p-6 md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2"><p className="nova-eyebrow text-amber-700">Proyectos en Desarrollo</p><h2 className="nova-title text-3xl font-extrabold text-slate-900">Investigación que necesita tu apoyo</h2><p className="max-w-2xl text-base leading-8 text-slate-600">Este bloque muestra proyectos nuevos o que aún no alcanzan su meta de financiamiento. Se ordena por progreso hacia la meta, pero la rotación semanal evita que siempre permanezcan los mismos proyectos al inicio.</p></div>
-            <div className="rounded-[24px] border border-amber-100 bg-amber-50/80 px-4 py-3 text-sm font-semibold text-amber-700">{openArticles.length} proyectos en desarrollo</div>
+        {loading ? (
+          <div className="mt-8 rounded-[28px] border border-slate-200 bg-slate-50 p-8 text-sm text-slate-600">Cargando proyectos...</div>
+        ) : loadError ? (
+          <div className="mt-8 rounded-[28px] border border-red-200 bg-red-50 p-8 text-sm text-red-700">{loadError}</div>
+        ) : visibleProjects.length ? (
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+            {visibleProjects.map((project) => {
+              const goal = Number(project.fundingGoal || 0)
+              const raised = Number(project.raised || 0)
+              const progress = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0
+              return (
+                <article key={project.id} className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_22px_55px_-38px_rgba(15,23,42,0.5)] transition hover:-translate-y-1 hover:border-fuchsia-200">
+                  {project.coverImage ? <img src={project.coverImage} alt="" className="h-44 w-full object-cover" /> : <div className="flex h-44 items-center justify-center bg-[linear-gradient(135deg,#fdf2f8,#eef2ff)] text-fuchsia-600"><FlaskConical size={42} /></div>}
+                  <div className="space-y-5 p-5">
+                    <div>
+                      <div className="flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                        <span>{categoryLabels[project.category] || project.category}</span>
+                        <span>{progress.toFixed(0)}%</span>
+                      </div>
+                      <h3 className="nova-title mt-3 text-2xl font-extrabold text-slate-900">{project.title}</h3>
+                      <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">{project.description}</p>
+                    </div>
+                    <div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-rose-500" style={{ width: `${progress}%` }} /></div>
+                      <div className="mt-3 flex items-center justify-between text-sm"><span className="font-bold text-slate-900">{raised.toFixed(4)} XMR</span><span className="text-slate-500">Meta {goal.toFixed(2)} XMR</span></div>
+                    </div>
+                    <Link to={`/projects/${project.id}`} className="nova-button-soft w-full justify-center">Abrir proyecto <ArrowRight size={16} /></Link>
+                  </div>
+                </article>
+              )
+            })}
           </div>
-          <div className="mt-6 space-y-5">{openPreview.length ? openPreview.map((article) => renderHomeFeedCard(article, 'open')) : <div className="rounded-[28px] border border-amber-100 bg-amber-50/70 px-6 py-8 text-sm leading-7 text-slate-600">No hay proyectos en desarrollo en este momento. Cuando nuevos proyectos busquen financiamiento, aparecerán aquí.</div>}</div>
-          <div className="mt-6 flex justify-end"><Link to={isAuthenticated ? '/por-revisar' : '/login?intent=review'} className="nova-button-soft">Ver proyectos en desarrollo<ArrowRight size={16} /></Link></div>
+        ) : (
+          <div className="mt-8 rounded-[28px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <p className="font-bold text-slate-900">Aún no hay proyectos publicados.</p>
+            <Link to={isAuthenticated ? '/create-project' : '/login?intent=publish'} className="nova-button-solid mt-5 inline-flex">Publicar el primero</Link>
+          </div>
+        )}
+      </section>
+
+      <section className="nova-card p-6 md:p-8">
+        <p className="nova-eyebrow">Flujo verificable</p>
+        <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">Del CPU a la wallet del investigador</h2>
+        <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {processSteps.map((step, index) => {
+            const Icon = step.icon
+            return (
+              <article key={step.title} className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-5">
+                <div className="flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-fuchsia-600 shadow-sm"><Icon size={20} /></span><span className="text-xs font-black text-slate-300">0{index + 1}</span></div>
+                <h3 className="mt-5 font-bold text-slate-900">{step.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{step.copy}</p>
+              </article>
+            )
+          })}
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="nova-card p-6 md:p-8"><h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Publicaciones en Proyecta</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{publicationStats.map((stat) => (<div key={stat.label} className="rounded-[24px] bg-slate-50/80 p-5 text-center"><p className="nova-title text-4xl font-extrabold text-slate-900">{stat.value}</p><p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{stat.label}</p></div>))}</div></div>
-        <div className="nova-card p-6 md:p-8"><h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Comunidad Proyecta</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{communityStats.map((stat) => (<div key={stat.label} className="rounded-[24px] bg-slate-50/80 p-5 text-center"><p className="nova-title text-4xl font-extrabold text-slate-900">{stat.value}</p><p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{stat.label}</p></div>))}</div></div>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_0.9fr]">
-        <div className="space-y-6">
-          <section className="nova-card p-6"><p className="nova-eyebrow">Propósito</p><h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900 md:text-4xl">Proyecta existe para que divulgar ciencia se sienta serio, legible y estimulante.</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{purposeStatements.map((statement) => (<article key={statement.title} className="rounded-[24px] bg-slate-50/80 p-5"><h3 className="font-bold text-slate-900">{statement.title}</h3><p className="mt-3 text-sm leading-7 text-slate-500">{statement.copy}</p></article>))}</div></section>
-          <section className="nova-card p-6"><p className="nova-eyebrow">Cómo funciona</p><h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">Cuatro pasos para entrar a la comunidad.</h2><div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">{communityJourney.map((step) => { const Icon = step.icon; return (<article key={step.title} className="rounded-[24px] bg-slate-50/85 p-5"><div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-fuchsia-600 shadow-sm"><Icon size={20} /></div><h3 className="mt-4 font-bold text-slate-900">{step.title}</h3><p className="mt-3 text-sm leading-7 text-slate-500">{step.copy}</p></article>) })}</div></section>
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
+        <div className="nova-card p-6 md:p-8">
+          <p className="nova-eyebrow">Transparencia operativa</p>
+          <h2 className="nova-title mt-2 text-3xl font-extrabold text-slate-900">Qué confirma el portal y qué no inventa</h2>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {['Saldo confirmado por SupportXMR', 'Hashes y shares reportados por el pool', 'Telemetría local separada del saldo', 'Dirección pública visible por proyecto'].map((item) => <div key={item} className="rounded-2xl bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">✓ {item}</div>)}
+            {['No convierte hashes locales a XMR', 'No genera wallets ni conserva seeds'].map((item) => <div key={item} className="rounded-2xl bg-slate-100 px-4 py-4 text-sm font-semibold text-slate-700">• {item}</div>)}
+          </div>
         </div>
-        <aside className="space-y-6">
-          <section className="nova-card p-6"><p className="nova-eyebrow">Qué tiene sentido publicar aquí</p><div className="mt-5 space-y-3">{publicationScope.map((item) => (<div key={item} className="rounded-[22px] bg-slate-50/80 px-4 py-4 text-sm leading-7 text-slate-600">{item}</div>))}</div></section>
-          <section className="nova-card p-6"><p className="nova-eyebrow">Mapa rápido</p><div className="mt-5 space-y-4">{heroRoutes.map((route) => { const Icon = route.icon; return (<Link key={route.title} to={route.to} className="flex items-center justify-between rounded-[22px] bg-slate-50/80 px-4 py-4 text-sm leading-7 text-slate-700 transition hover:bg-slate-100"><span className="inline-flex items-center gap-2 font-semibold"><Icon size={16} className="text-fuchsia-600" />{route.title}</span><ArrowRight size={16} className="text-slate-400" /></Link>) })}</div></section>
+        <aside className="nova-card flex flex-col justify-between p-6 md:p-8">
+          <div>
+            <p className="nova-eyebrow">Resumen</p>
+            <p className="nova-title mt-4 text-5xl font-black text-slate-900">{totalRaised.toFixed(4)}</p>
+            <p className="mt-2 text-sm text-slate-500">XMR registrados como recaudados</p>
+            <p className="mt-4 text-sm font-semibold text-slate-700">{xmrPrice === null ? 'Conversión USD no disponible' : `≈ $${(totalRaised * xmrPrice).toFixed(2)} USD al precio actual`}</p>
+          </div>
+          <div className="mt-8 space-y-3">
+            <Link to="/sobre-monero" className="nova-button-soft w-full justify-center">Conocer Monero <ExternalLink size={15} /></Link>
+            <Link to="/computacion-donada" className="nova-button-solid w-full justify-center">Cómo aportar CPU</Link>
+          </div>
         </aside>
       </section>
     </div>

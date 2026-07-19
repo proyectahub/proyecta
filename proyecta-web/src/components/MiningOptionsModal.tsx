@@ -5,14 +5,12 @@ import { Download, Zap, Monitor, X } from 'lucide-react'
 interface MiningOptionsModalProps {
   isOpen: boolean
   onClose: () => void
-  projectWallet: string
   onSelectOption: (option: 'browser' | 'app') => void
 }
 
 export function MiningOptionsModal({
   isOpen,
   onClose,
-  projectWallet,
   onSelectOption,
 }: MiningOptionsModalProps) {
   const [selectedTab, setSelectedTab] = useState<'browser' | 'app' | null>(null)
@@ -188,7 +186,7 @@ export function MiningOptionsModal({
             <ul className="space-y-1 text-sm text-amber-800">
               <li>✓ El código de PROYECTA es abierto (open source)</li>
               <li>✓ Los XMR van directo a la billetera del proyecto: PROYECTA nunca los toca</li>
-              <li>✓ Puedes ver en tiempo real en cualquier explorador de Monero</li>
+              <li>✓ Puedes verificar hashrate, shares y pagos reportados por SupportXMR</li>
               <li>✓ No hay intermediarios: dinero directo a investigación</li>
             </ul>
           </div>

@@ -14,7 +14,7 @@ const guideSteps = [
     image: '/page-assets/banners/monero-web-guide-hero.png',
     alt: 'Pantalla inicial de Monero Web con el botón Open Wallet',
     detail:
-      'Aquííí solo estás entrando al panel. Verifica el dominio y después pulsa Open Wallet. No copies nada todavía.',
+      'Aquí solo estás entrando al panel. Verifica el dominio y después pulsa Open Wallet. No copies nada todavía.',
   },
   {
     step: '02',
@@ -41,7 +41,7 @@ const guideSteps = [
     image: '/page-assets/banners/monero-web-guide-dashboard.png',
     alt: 'Wallet dashboard de Monero Web con balance, enviar y recibir',
     detail:
-      'Aquííí no necesitas copiar nada nuevo. Solo confirma que ves tu dirección, el saldo y los accesos de enviar o recibir. Desde PROYECTA, lo que te interesa conservar es la dirección pública.',
+      'Aquí no necesitas copiar nada nuevo. Solo confirma que ves tu dirección, el saldo y los accesos de enviar o recibir. Desde PROYECTA, lo que te interesa conservar es la dirección pública.',
   },
 ]
 

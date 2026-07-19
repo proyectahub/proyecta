@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useWalletAuth } from '../context/WalletAuthContext'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { MessageCircle, Trash2, Reply } from 'lucide-react'
+import { PROJECTS_API_BASE } from '../lib/api'
 
 interface Comment {
   id: string
@@ -12,93 +12,68 @@ interface Comment {
   replies: Comment[]
 }
 
+interface CommentApiRow extends Omit<Comment, 'timestamp' | 'replies'> {
+  parentId: string | null
+  createdAt: number
+}
+
 interface ProjectCommentsProps {
   projectId: string
   projectAuthor: string
 }
 
 export function ProjectComments({ projectId, projectAuthor }: ProjectCommentsProps) {
-  const { user: walletUser } = useWalletAuth()
   const { user: traditionalUser } = useTraditionalAuth()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
 
-  const currentUserId = traditionalUser?.id || walletUser?.wallet?.userVitaAddress || 'anonymous'
-  const currentUserName = traditionalUser?.fullName || walletUser?.wallet?.userVitaAddress?.slice(0, 16) || 'Anónimo'
+  const currentUserId = traditionalUser?.id || 'anonymous'
+  const currentUserName = traditionalUser?.fullName || 'Anónimo'
 
-  // Cargar comentarios del localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(`project_comments_${projectId}`)
-    if (stored) {
-      try {
-        setComments(JSON.parse(stored))
-      } catch (err) {
-        console.error('Error loading comments:', err)
-      }
+  const loadComments = async () => {
+    const response = await fetch(`${PROJECTS_API_BASE}/projects/${encodeURIComponent(projectId)}/comments`)
+    if (!response.ok) return
+    const rows = await response.json() as CommentApiRow[]
+    const byId = new Map(rows.map((comment) => [comment.id, { ...comment, timestamp: Number(comment.createdAt), replies: [] as Comment[] }]))
+    const roots: Comment[] = []
+    for (const comment of byId.values()) {
+      const parentId = comment.parentId
+      const parent = parentId ? byId.get(parentId) : null
+      if (parent) parent.replies.push(comment)
+      else roots.push(comment)
     }
-  }, [projectId])
-
-  // Guardar comentarios en localStorage
-  const saveComments = (newComments: Comment[]) => {
-    setComments(newComments)
-    localStorage.setItem(`project_comments_${projectId}`, JSON.stringify(newComments))
+    setComments(roots)
   }
 
-  const handleAddComment = () => {
+  useEffect(() => { void loadComments() }, [projectId])
+
+  const postComment = async (content: string, parentId: string | null = null) => {
+    const response = await fetch(`${PROJECTS_API_BASE}/projects/${encodeURIComponent(projectId)}/comments`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, parentId }),
+    })
+    if (!response.ok) throw new Error('No fue posible publicar el comentario.')
+    await loadComments()
+  }
+
+  const handleAddComment = async () => {
     if (!newComment.trim()) return
-
-    const comment: Comment = {
-      id: `comment_${Date.now()}`,
-      author: currentUserName,
-      authorId: currentUserId,
-      content: newComment,
-      timestamp: Date.now(),
-      replies: [],
-    }
-
-    saveComments([comment, ...comments])
+    await postComment(newComment)
     setNewComment('')
   }
 
-  const handleAddReply = (commentId: string) => {
+  const handleAddReply = async (commentId: string) => {
     if (!replyText.trim()) return
-
-    const reply: Comment = {
-      id: `reply_${Date.now()}`,
-      author: currentUserName,
-      authorId: currentUserId,
-      content: replyText,
-      timestamp: Date.now(),
-      replies: [],
-    }
-
-    const updateCommentReplies = (items: Comment[]): Comment[] => {
-      return items.map((item) => {
-        if (item.id === commentId) {
-          return { ...item, replies: [reply, ...item.replies] }
-        }
-        return { ...item, replies: updateCommentReplies(item.replies) }
-      })
-    }
-
-    saveComments(updateCommentReplies(comments))
+    await postComment(replyText, commentId)
     setReplyingTo(null)
     setReplyText('')
   }
 
-  const handleDeleteComment = (commentId: string) => {
-    const deleteComment = (items: Comment[]): Comment[] => {
-      return items
-        .filter((item) => item.id !== commentId)
-        .map((item) => ({
-          ...item,
-          replies: deleteComment(item.replies),
-        }))
-    }
-
-    saveComments(deleteComment(comments))
+  const handleDeleteComment = async (commentId: string) => {
+    const response = await fetch(`${PROJECTS_API_BASE}/projects/${encodeURIComponent(projectId)}/comments?commentId=${encodeURIComponent(commentId)}`, { method: 'DELETE' })
+    if (response.ok) await loadComments()
   }
 
   const formatDate = (timestamp: number) => {
@@ -116,7 +91,7 @@ export function ProjectComments({ projectId, projectAuthor }: ProjectCommentsPro
     return date.toLocaleDateString('es-ES')
   }
 
-  const CommentItem = ({ comment, level = 0, isReply = false }: { comment: Comment; level?: number; isReply?: boolean }) => {
+  const CommentItem = ({ comment, level = 0 }: { comment: Comment; level?: number }) => {
     const isAuthor = currentUserId === comment.authorId
     const isProjectAuthor = currentUserId === projectAuthor
 
@@ -162,7 +137,7 @@ export function ProjectComments({ projectId, projectAuthor }: ProjectCommentsPro
         {comment.replies.length > 0 && (
           <div className="space-y-3">
             {comment.replies.map((reply) => (
-              <CommentItem key={reply.id} comment={reply} level={level + 1} isReply={true} />
+              <CommentItem key={reply.id} comment={reply} level={level + 1} />
             ))}
           </div>
         )}

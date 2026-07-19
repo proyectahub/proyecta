@@ -97,8 +97,12 @@ function normalizeTelemetry(wallet, telemetry = {}) {
   const acceptedShares = Math.max(0, Math.trunc(Number(telemetry.acceptedShares ?? 0) || 0))
   const rejectedShares = Math.max(0, Math.trunc(Number(telemetry.rejectedShares ?? 0) || 0))
   const poolConnected = Boolean(telemetry.poolConnected)
+  const source = typeof telemetry.source === "string" ? telemetry.source : ""
+  const miningIntent = telemetry.miningIntent === true || source.endsWith("-intent")
   const active = telemetry.active !== false && (poolConnected || hashRate > 0 || totalHashes > 0)
-  const localVisibleBalance = active ? Math.max(totalHashes / 10000000000, 0.0001) : 0
+  // Browser and app telemetry is self-reported. It must never be converted into XMR
+  // or presented as funds until the pool independently confirms it.
+  const localVisibleBalance = 0
 
   return {
     wallet,
@@ -110,6 +114,7 @@ function normalizeTelemetry(wallet, telemetry = {}) {
     rejectedShares,
     poolConnected,
     active,
+    miningIntent,
     localVisibleBalance,
     lastSeenAt: new Date().toISOString(),
   }
@@ -169,17 +174,48 @@ function recordMiningTelemetry(wallet, telemetry = {}) {
 function getMiningTelemetry(wallet) {
   const store = readStore()
   const sessions = store.miningTelemetrySessions?.[wallet] || {}
-  const cutoff = Date.now() - ACTIVE_SESSION_TTL_MS
-  const activeSessions = Object.values(sessions).filter((session) => {
+  const activeCutoff = Date.now() - ACTIVE_SESSION_TTL_MS
+  const intentCutoff = Date.now() - STORED_SESSION_TTL_MS
+  const recentSessions = Object.values(sessions).filter((session) => {
     const lastSeen = new Date(session.updatedAt || session.lastSeenAt || 0).getTime()
-    return Number.isFinite(lastSeen) && lastSeen >= cutoff && session.active !== false
+    return Number.isFinite(lastSeen) && lastSeen >= intentCutoff
   })
+  const activeSessions = recentSessions.filter((session) => {
+    const lastSeen = new Date(session.updatedAt || session.lastSeenAt || 0).getTime()
+    return Number.isFinite(lastSeen) && lastSeen >= activeCutoff && session.active !== false
+  })
+  const intentSessions = recentSessions.filter((session) => session.miningIntent === true)
 
   if (activeSessions.length === 0) {
+    if (intentSessions.length > 0) {
+      const browserIntent = intentSessions.some((session) => String(session.source || "").startsWith("browser"))
+      const nativeIntent = intentSessions.some((session) => String(session.source || "") === "app-intent" || String(session.source || "") === "native-intent")
+      return {
+        wallet,
+        totalHashes: 0,
+        hashRate: 0,
+        elapsedSeconds: 0,
+        acceptedShares: 0,
+        rejectedShares: 0,
+        poolConnected: false,
+        localVisibleBalance: 0,
+        active: false,
+        miningIntent: true,
+        browserMiningSelected: browserIntent,
+        nativeMiningSelected: nativeIntent,
+        activeSessions: 0,
+        browserSessions: 0,
+        nativeSessions: 0,
+        browserHashrate: 0,
+        nativeHashrate: 0,
+        lastSeenAt: intentSessions.map((session) => session.updatedAt || session.lastSeenAt).filter(Boolean).sort().at(-1) || new Date().toISOString(),
+      }
+    }
+
     const legacy = store.miningTelemetry[wallet] || null
     if (!legacy) return null
     const lastSeen = new Date(legacy.updatedAt || legacy.lastSeenAt || 0).getTime()
-    return Number.isFinite(lastSeen) && lastSeen >= cutoff ? legacy : null
+    return Number.isFinite(lastSeen) && lastSeen >= activeCutoff ? legacy : null
   }
 
   const totals = activeSessions.reduce(
@@ -217,6 +253,9 @@ function getMiningTelemetry(wallet) {
   return {
     ...totals,
     active: true,
+    miningIntent: intentSessions.length > 0,
+    browserMiningSelected: intentSessions.some((session) => String(session.source || "").startsWith("browser")),
+    nativeMiningSelected: intentSessions.some((session) => String(session.source || "") === "app-intent" || String(session.source || "") === "native-intent"),
     activeSessions: activeSessions.length,
     browserSessions: totals.sources.browser,
     nativeSessions: totals.sources.native,
@@ -238,6 +277,9 @@ function isConfirmedPoolStats(stats) {
 function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const telemetry = getMiningTelemetry(wallet)
   const isLocalActive = Boolean(telemetry?.active)
+  const miningIntent = Boolean(telemetry?.miningIntent)
+  const browserMiningSelected = Boolean(telemetry?.browserMiningSelected)
+  const nativeMiningSelected = Boolean(telemetry?.nativeMiningSelected)
   const localVisibleBalance = Number(telemetry?.localVisibleBalance || 0)
   const localHashrate = Number(telemetry?.hashRate || 0)
   const localTotalHashes = Math.max(0, Math.trunc(Number(telemetry?.totalHashes || 0)))
@@ -255,12 +297,16 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const localNativeMiners = Math.max(0, Math.trunc(Number(telemetry?.nativeSessions || 0)))
   const localBrowserHashrate = Number(telemetry?.browserHashrate || 0)
   const localNativeHashrate = Number(telemetry?.nativeHashrate || 0)
-  const visibleBalance = confirmedBalance + localVisibleBalance
-  const visibleHashrate = confirmedHashrate + localHashrate
-  const visibleTotalHashes = confirmedTotalHashes + localTotalHashes
+  // Only pool data is an economic or cumulative source of truth. Local telemetry
+  // remains available in separate fields for an active miner's own feedback.
+  const visibleBalance = confirmedBalance
+  const visibleHashrate = confirmedHashrate
+  const visibleTotalHashes = confirmedTotalHashes
   const status = isLocalActive
-    ? (isPoolConfirmed ? "Pool confirmado + aporte local activo" : "Aporte local activo del proyecto")
-    : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmación del pool")
+    ? (isPoolConfirmed ? "Pool confirmado + telemetria local" : "Telemetria local sin acreditar")
+    : miningIntent
+      ? "Minería web seleccionada"
+      : (isPoolConfirmed ? "Pool confirmado" : "Esperando confirmación del pool")
 
   return {
     wallet,
@@ -281,6 +327,7 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     localBalance: localVisibleBalance,
     localHashrate,
     localTotalHashes,
+    localTelemetryUnverified: isLocalActive,
     localMiners,
     localBrowserMiners,
     localNativeMiners,
@@ -291,6 +338,9 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     visibleTotalHashes,
     isLocalActive,
     isPoolConfirmed,
+    miningIntent,
+    browserMiningSelected,
+    nativeMiningSelected,
     status,
     externalMiningActive: isPoolConfirmed,
     lastSeenAt: telemetry?.lastSeenAt || null,

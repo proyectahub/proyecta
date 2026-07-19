@@ -1,28 +1,4 @@
 /**
- * Genera una dirección Monero válida basada en un seed
- * En producción, esto vendría de una wallet real
- */
-export function generateMoneroAddress(seed: string): string {
-  // Generador determinista de formato Monero para desarrollo y datos legacy.
-  // No intenta crear una wallet real, pero mantiene el formato esperado por la UI.
-  const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-  let state = 0
-
-  for (let i = 0; i < seed.length; i += 1) {
-    state = (state * 31 + seed.charCodeAt(i)) >>> 0
-  }
-
-  let address = '4' // Mainnet address starts with 4
-
-  for (let i = 0; i < 94; i++) {
-    state = (state * 1664525 + 1013904223) >>> 0
-    address += chars[state % chars.length]
-  }
-
-  return address
-}
-
-/**
  * Valida que una dirección sea un Monero address válido
  */
 export function isValidMoneroAddress(address: string): boolean {

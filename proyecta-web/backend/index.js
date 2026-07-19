@@ -115,7 +115,51 @@ app.use(
     credentials: true,
   }),
 )
-app.use(express.json({ limit: "25mb" }))
+app.use(express.json({ limit: "128kb" }))
+
+const requestRateLimits = new Map()
+
+function getRequestClientKey(req) {
+  const forwarded = typeof req.headers["x-forwarded-for"] === "string" ? req.headers["x-forwarded-for"].split(",")[0].trim() : ""
+  return forwarded || req.headers["cf-connecting-ip"] || req.ip || "unknown"
+}
+
+function takeRequestRateLimit(req, scope, limit, windowMs) {
+  const key = `${scope}:${getRequestClientKey(req)}`
+  const current = Date.now()
+  const entry = requestRateLimits.get(key)
+
+  if (!entry || entry.resetAt <= current) {
+    requestRateLimits.set(key, { count: 1, resetAt: current + windowMs })
+    return { allowed: true, retryAfterSeconds: 0 }
+  }
+
+  const retryAfterSeconds = Math.max(1, Math.ceil((entry.resetAt - current) / 1000))
+  if (entry.count >= limit) {
+    return { allowed: false, retryAfterSeconds }
+  }
+
+  entry.count += 1
+  return { allowed: true, retryAfterSeconds: 0 }
+}
+
+app.use((req, res, next) => {
+  const rules = {
+    "/api/register": ["register", 5, 60 * 60 * 1000],
+    "/api/login": ["login", 8, 15 * 60 * 1000],
+    "/api/password/forgot": ["password-forgot", 5, 60 * 60 * 1000],
+    "/api/password/reset": ["password-reset", 10, 60 * 60 * 1000],
+  }
+  const rule = rules[req.path]
+  if (!rule || req.method !== "POST") return next()
+
+  const [scope, limit, windowMs] = rule
+  const result = takeRequestRateLimit(req, scope, limit, windowMs)
+  if (result.allowed) return next()
+
+  res.set("Retry-After", String(result.retryAfterSeconds))
+  return res.status(429).json({ error: "Demasiadas solicitudes. Intenta más tarde." })
+})
 
 const defaultStore = {
   users: [],
