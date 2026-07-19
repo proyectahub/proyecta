@@ -39,6 +39,41 @@ function containsHtml(value) {
   return /<\/?[a-z][^>]*>/i.test(value)
 }
 
+const LEGACY_ENCODING_REPLACEMENTS = new Map([
+  ['\u00c3\u00a1', '\u00e1'], ['\u00c3\u00a9', '\u00e9'], ['\u00c3\u00ad', '\u00ed'],
+  ['\u00c3\u00b3', '\u00f3'], ['\u00c3\u00ba', '\u00fa'], ['\u00c3\u0081', '\u00c1'],
+  ['\u00c3\u0089', '\u00c9'], ['\u00c3\u008d', '\u00cd'], ['\u00c3\u0093', '\u00d3'],
+  ['\u00c3\u009a', '\u00da'], ['\u00c3\u00b1', '\u00f1'], ['\u00c3\u0091', '\u00d1'],
+  ['\u00c2\u00bf', '\u00bf'], ['\u00c2\u00a1', '\u00a1'], ['\u00c2', ''],
+  ['\u00e2\u20ac\u201c', '-'], ['\u00e2\u20ac\u201d', '-'],
+  ['\u00e2\u20ac\u0153', '"'], ['\u00e2\u20ac\u009d', '"'], ['\u00e2\u20ac\u2122', "'"],
+])
+
+function repairLegacyEncoding(value) {
+  let repaired = asText(value)
+  for (const [damaged, replacement] of LEGACY_ENCODING_REPLACEMENTS) {
+    repaired = repaired.replaceAll(damaged, replacement)
+  }
+  return repaired
+}
+
+function legacyPlainText(value) {
+  return repairLegacyEncoding(value)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<\/(p|div|li|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(?:39|x27);/gi, "'")
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function parseHitos(value) {
   if (Array.isArray(value)) return value
   if (typeof value !== 'string' || !value.trim()) return []
@@ -79,14 +114,14 @@ export function mapProjectRow(row) {
   if (!row) return null
   return {
     id: row.id,
-    title: row.title,
-    description: row.description,
+    title: legacyPlainText(row.title),
+    description: legacyPlainText(row.description),
     category: row.category,
     fundingGoal: Number(row.funding_goal || 0),
     fundraisingAddress: row.fundraising_address,
     moneroAddress: row.monero_address || row.fundraising_address,
     author: row.author,
-    authorName: row.author_name,
+    authorName: legacyPlainText(row.author_name),
     raised: Number(row.raised || 0),
     status: row.status || 'active',
     hitos: parseHitos(row.hitos_json),
