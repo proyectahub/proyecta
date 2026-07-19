@@ -2,24 +2,20 @@ import { defineConfig, type Plugin } from "vite"
 import { fileURLToPath, URL } from "node:url"
 import react from "@vitejs/plugin-react"
 
-// Build ID único por deploy: fuerza cache-bust en browsers con bundle viejo en caché
+// A unique build ID forces browsers to discard a previously loaded bundle.
 const BUILD_ID = Date.now().toString(36)
 
-// Plugin que inyecta el BUILD_ID en el index.html durante el build
-function novaCacheBusterPlugin(): Plugin {
+function proyectaCacheBusterPlugin(): Plugin {
   return {
-    name: "nova-cache-buster",
+    name: "proyecta-cache-buster",
     transformIndexHtml(html) {
-      return html.replace(/%%NOVA_BUILD_ID%%/g, BUILD_ID)
+      return html.replace(/%%PROYECTA_BUILD_ID%%/g, BUILD_ID)
     },
   }
 }
 
 export default defineConfig({
-  plugins: [react(), novaCacheBusterPlugin()],
-  define: {
-    __NOVA_BUILD_ID__: JSON.stringify(BUILD_ID),
-  },
+  plugins: [react(), proyectaCacheBusterPlugin()],
   worker: {
     // Necesario para que el worker de minería use import() dinámico (randomx.js)
     format: "es",
