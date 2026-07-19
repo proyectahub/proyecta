@@ -40,6 +40,7 @@ let mining = false
 let totalHashes = 0
 let hashesSinceReport = 0
 let lastReport = Date.now()
+let assignedNonceStart: number | null = null
 
 function hexToBytes(hex: string): Uint8Array {
   const out = new Uint8Array(hex.length / 2)
@@ -119,8 +120,10 @@ async function mineLoop() {
       continue
     }
 
-    // Nonce inicial aleatorio para no colisionar con otros mineros del mismo job
-    let nonce = Math.floor(Math.random() * 0xffffffff) >>> 0
+    // Railway assigns each browser/thread a separate 24-bit nonce lane. The
+    // random fallback keeps standalone/self-test use safe when no bridge exists.
+    let nonce = assignedNonceStart ?? (Math.floor(Math.random() * 0xffffffff) >>> 0)
+    const nonceLanePrefix = assignedNonceStart === null ? null : nonce & 0xff000000
 
     // Minar este job hasta que llegue uno nuevo
     while (mining && job === activeJob) {
@@ -148,7 +151,9 @@ async function mineLoop() {
           })
         }
 
-        nonce = (nonce + 1) >>> 0
+        nonce = nonceLanePrefix === null
+          ? (nonce + 1) >>> 0
+          : (nonceLanePrefix | ((nonce + 1) & 0x00ffffff)) >>> 0
       }
 
       // Reportar hashrate ~ cada segundo
@@ -223,6 +228,7 @@ self.onmessage = (e: MessageEvent) => {
   const msg = e.data
   if (msg.type === 'job') {
     job = msg.job
+    assignedNonceStart = Number.isInteger(msg.nonceStart) ? Number(msg.nonceStart) >>> 0 : null
   } else if (msg.type === 'start') {
     if (!mining) {
       mining = true
@@ -235,5 +241,7 @@ self.onmessage = (e: MessageEvent) => {
     if (!mining) benchmark()
   } else if (msg.type === 'stop') {
     mining = false
+    job = null
+    assignedNonceStart = null
   }
 }

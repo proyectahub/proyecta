@@ -22,6 +22,13 @@ function formatAmount(value: unknown) {
   return Number.isFinite(numeric) ? numeric.toFixed(4) : '0.0000'
 }
 
+function formatDuration(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return 'calculando...'
+  if (value < 60) return `${Math.max(1, Math.round(value))} s`
+  if (value < 3600) return `${Math.round(value / 60)} min`
+  return `${(value / 3600).toFixed(1)} h`
+}
+
 export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projectId, initialMiningMode = null }: ProjectMiningWidgetProps) {
   const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(initialMiningMode)
   const [showOptionsModal, setShowOptionsModal] = useState(!initialMiningMode)
@@ -39,11 +46,23 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
 
   const { poolStats } = useSupportXMRStats(projectMoneroAddress, projectId)
   const localActive = Boolean(poolStats?.isLocalActive)
-  const poolConfirmed = Boolean(poolStats?.isPoolConfirmed)
+  const supportXmrConfirmed = Boolean(poolStats?.isPoolConfirmed)
   const visibleBalance = Number(poolStats?.confirmedBalance ?? 0)
   const visibleHashes = Number(poolStats?.confirmedTotalHashes ?? 0)
   const confirmedValidShares = Number(poolStats?.confirmedValidShares ?? poolStats?.validShares ?? 0)
-  const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares)
+  const bridgeAcceptedShares = Number(poolStats?.bridgeAcceptedShares ?? 0)
+  const displayedAcceptedShares = Math.max(stats.acceptedShares, confirmedValidShares, bridgeAcceptedShares)
+  const hasAcceptedShare = displayedAcceptedShares > 0
+  const communityHashrate = Math.max(
+    stats.hashRate,
+    Number(poolStats?.localBrowserHashrate ?? 0) + Number(poolStats?.localNativeHashrate ?? 0),
+  )
+  const communityMiners = Math.max(Number(poolStats?.localMiners ?? 0), stats.coordinatedMiners)
+  const coordinatedMiners = Math.max(Number(poolStats?.bridgeMiners ?? 0), stats.coordinatedMiners)
+  const poolDifficulty = Math.max(Number(poolStats?.poolDifficulty ?? 0), stats.poolDifficulty)
+  const expectedShareSeconds = poolDifficulty > 0 && communityHashrate > 0 ? poolDifficulty / communityHashrate : 0
+  const shareProbability95Seconds = expectedShareSeconds * -Math.log(0.05)
+  const bridgeConnected = stats.poolConnected || Boolean(poolStats?.bridgeConnected)
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -68,12 +87,16 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
     )
   }
 
-  const communityLabel = poolConfirmed && localActive
+  const communityLabel = supportXmrConfirmed && localActive
     ? 'Pool confirmado + telemetría local'
-    : poolConfirmed
+    : supportXmrConfirmed
       ? 'Pool confirmado'
+      : hasAcceptedShare
+        ? 'Share aceptado por Stratum; esperando actualización de SupportXMR'
       : localActive
-        ? 'Telemetría local sin acreditar'
+        ? bridgeConnected
+          ? 'Potencia comunitaria coordinada; esperando share'
+          : 'Telemetría local sin acreditar'
         : 'Esperando confirmación del pool'
 
   return (
@@ -116,7 +139,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                     <p className="mt-2 text-2xl font-black text-blue-600">{stats.totalHashes.toLocaleString()}</p>
                   </div>
                   <div className="rounded-lg bg-white p-4">
-                    <p className="text-xs font-bold uppercase text-slate-600">H/s</p>
+                    <p className="text-xs font-bold uppercase text-slate-600">H/s este equipo</p>
                     <p className="mt-2 text-2xl font-black text-purple-600">{stats.hashRate}</p>
                   </div>
                   <div className="rounded-lg bg-white p-4">
@@ -135,16 +158,37 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                   </div>
                 </div>
 
-                <div className={`rounded-lg border p-3 text-sm ${poolConfirmed ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : localActive ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+                <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-cyan-950">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.12em] text-cyan-700">Potencia comunitaria coordinada</p>
+                      <p className="mt-1 text-2xl font-black">{communityHashrate.toFixed(2)} H/s</p>
+                      <p className="mt-1 text-xs text-cyan-800">{communityMiners} equipo(s) activos · {coordinatedMiners} navegador(es) coordinados por Railway</p>
+                    </div>
+                    <div className="text-right text-xs leading-5 text-cyan-800">
+                      <p>Dificultad: {poolDifficulty > 0 ? Math.round(poolDifficulty).toLocaleString('es-ES') : 'pendiente'}</p>
+                      <p>Promedio al share: {formatDuration(expectedShareSeconds)}</p>
+                    </div>
+                  </div>
+                  {expectedShareSeconds > 0 ? (
+                    <p className="mt-3 border-t border-cyan-200 pt-3 text-xs leading-5">
+                      Todos los navegadores trabajan para la misma wallet en espacios de nonce separados. Hay 95% de probabilidad de encontrar al menos un share en {formatDuration(shareProbability95Seconds)}; también puede tardar más.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className={`rounded-lg border p-3 text-sm ${supportXmrConfirmed || hasAcceptedShare ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : localActive ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
                     <p className="font-bold">{communityLabel}</p>
                   </div>
                   <p className="mt-1 text-xs leading-6">
-                    {poolConfirmed && localActive
+                    {supportXmrConfirmed && localActive
                       ? 'SupportXMR ya confirmó la dirección. La actividad local se muestra aparte y no incrementa el saldo.'
-                      : poolConfirmed
+                      : supportXmrConfirmed
                         ? 'SupportXMR ya confirmó actividad para esta dirección.'
+                        : hasAcceptedShare
+                          ? 'Stratum aceptó el share. SupportXMR puede tardar en reflejarlo en sus estadísticas públicas.'
                         : localActive
                           ? 'El navegador sigue calculando RandomX. Los hashes locales no son XMR ni recaudación hasta que el pool los acredite.'
                           : 'El navegador puede iniciar una prueba local mientras llega la confirmación del pool.'}

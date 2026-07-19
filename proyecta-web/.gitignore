@@ -7,3 +7,4 @@ _worker.bundle
 *.log
 .env.production
 backend/.env.production
+backend/monero-addresses.json

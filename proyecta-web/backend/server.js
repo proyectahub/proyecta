@@ -125,6 +125,74 @@ function buildProjectMiningSummary(wallet, projectId) {
   }
 }
 
+const PUBLIC_APP_URL = (process.env.PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://proyecta.pages.dev").replace(/\/$/, "")
+const projectConfirmedStatsCache = new Map()
+
+async function fetchProjectConfirmedStats(projectId, wallet) {
+  const cacheKey = `${projectId}::${wallet}`
+  const cached = projectConfirmedStatsCache.get(cacheKey)
+  if (cached?.expiresAt > Date.now()) return cached.value
+
+  try {
+    const response = await fetch(`${PUBLIC_APP_URL}/cf-api/projects/${encodeURIComponent(projectId)}/mining-stats`, {
+      headers: { "User-Agent": "PROYECTA-Mining/1.0", "Cache-Control": "no-cache", "Accept": "application/json" },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!response.ok) throw new Error(`Project mining stats ${response.status}`)
+
+    const stats = await response.json()
+    const value = stats?.wallet === wallet ? stats : null
+    if (projectConfirmedStatsCache.size >= 500 && !projectConfirmedStatsCache.has(cacheKey)) {
+      projectConfirmedStatsCache.delete(projectConfirmedStatsCache.keys().next().value)
+    }
+    projectConfirmedStatsCache.set(cacheKey, { value, expiresAt: Date.now() + 8000 })
+    return value
+  } catch (error) {
+    console.warn(`[MINING] No fue posible consultar la linea base de ${projectId}: ${error instanceof Error ? error.message : String(error)}`)
+    return null
+  }
+}
+
+function mergeProjectConfirmedStats(localSummary, confirmedStats) {
+  if (!confirmedStats) return localSummary
+
+  const confirmedBalance = Math.max(0, Number(confirmedStats.confirmedBalance || 0))
+  const confirmedHashrate = Math.max(0, Number(confirmedStats.confirmedHashrate || 0))
+  const confirmedTotalHashes = Math.max(0, Math.trunc(Number(confirmedStats.confirmedTotalHashes || 0)))
+  const confirmedTotalPaid = Math.max(0, Number(confirmedStats.confirmedTotalPaid || 0))
+  const confirmedValidShares = Math.max(0, Math.trunc(Number(confirmedStats.confirmedValidShares || 0)))
+  const confirmedInvalidShares = Math.max(0, Math.trunc(Number(confirmedStats.confirmedInvalidShares || 0)))
+  const isPoolConfirmed = Boolean(confirmedStats.isPoolConfirmed)
+  const status = localSummary.isLocalActive
+    ? (isPoolConfirmed ? "SupportXMR confirmado + potencia comunitaria coordinada" : "Potencia comunitaria coordinada; esperando el primer share")
+    : confirmedStats.status || localSummary.status
+
+  return {
+    ...localSummary,
+    hashrate: confirmedHashrate,
+    totalHashes: confirmedTotalHashes,
+    balance: confirmedBalance,
+    totalPaid: confirmedTotalPaid,
+    lastHash: Number(confirmedStats.lastHash || localSummary.lastHash),
+    minPayout: Number(confirmedStats.minPayout || localSummary.minPayout),
+    confirmedBalance,
+    confirmedHashrate,
+    confirmedTotalHashes,
+    confirmedTotalPaid,
+    confirmedValidShares,
+    confirmedInvalidShares,
+    visibleBalance: confirmedBalance,
+    visibleHashrate: confirmedHashrate,
+    visibleTotalHashes: confirmedTotalHashes,
+    isPoolConfirmed,
+    externalMiningActive: isPoolConfirmed,
+    poolIdentifier: typeof confirmedStats.poolIdentifier === "string" ? confirmedStats.poolIdentifier : null,
+    poolExpiry: Number(confirmedStats.poolExpiry || 0) || null,
+    baselineCapturedAt: Number(confirmedStats.baselineCapturedAt || 0) || null,
+    status,
+  }
+}
+
 const telemetryRateLimits = new Map()
 
 function allowTelemetry(req) {
@@ -150,7 +218,7 @@ function createMiningCompatibilityRouter() {
   const router = express.Router()
 
   router.get("/health", (_req, res) => {
-    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-2026-07-17", hasWebSocketRoute: true })
+    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-coordination-2026-07-19", hasWebSocketRoute: true })
   })
 
   router.post("/submit", (req, res) => {
@@ -216,11 +284,24 @@ function createMiningCompatibilityRouter() {
     res.json(summary)
   })
 
-  router.get("/project-stats/:projectId/:wallet", (req, res) => {
+  router.get("/project-stats/:projectId/:wallet", async (req, res) => {
     const wallet = req.params.wallet
     const projectId = req.params.projectId
-    const summary = buildProjectMiningSummary(wallet, projectId)
-    res.json(summary)
+    const localSummary = buildProjectMiningSummary(wallet, projectId)
+    const confirmedStats = await fetchProjectConfirmedStats(projectId, wallet)
+    const summary = mergeProjectConfirmedStats(localSummary, confirmedStats)
+    const bridge = getMiningBridgeProjectSummary(wallet, projectId)
+    const communityHashrate = Math.max(0, Number(summary.localBrowserHashrate || 0) + Number(summary.localNativeHashrate || 0))
+    const expectedShareSeconds = bridge.poolDifficulty > 0 && communityHashrate > 0
+      ? bridge.poolDifficulty / communityHashrate
+      : null
+
+    res.json({
+      ...summary,
+      ...bridge,
+      expectedShareSeconds,
+      shareProbability95Seconds: expectedShareSeconds ? expectedShareSeconds * -Math.log(0.05) : null,
+    })
   })
 
   router.get("/pool-stats/:wallet", async (req, res) => {
@@ -250,8 +331,27 @@ function createMiningCompatibilityRouter() {
 const POOL_HOST = process.env.MONERO_POOL_HOST ?? "pool.supportxmr.com"
 const POOL_PORT = Number(process.env.MONERO_POOL_PORT ?? "3333")
 const MAX_POOL_CONNECTIONS = Number(process.env.MAX_POOL_CONNECTIONS ?? "100")
-const MAX_SUBSCRIBERS_PER_WALLET = Number(process.env.MAX_SUBSCRIBERS_PER_WALLET ?? "16")
+const configuredMaxSubscribers = Number(process.env.MAX_SUBSCRIBERS_PER_WALLET ?? "16")
+const MAX_SUBSCRIBERS_PER_WALLET = Number.isFinite(configuredMaxSubscribers)
+  ? Math.min(16, Math.max(1, Math.trunc(configuredMaxSubscribers)))
+  : 16
 const pools = new Map()
+
+function parsePoolDifficulty(targetHex) {
+  if (typeof targetHex !== "string" || !/^[0-9a-f]{1,8}$/i.test(targetHex)) return 0
+  const normalized = targetHex.padStart(8, "0")
+  const bytes = Buffer.from(normalized, "hex")
+  const target = bytes.readUInt32LE(0)
+  return target > 0 ? 0xffffffff / target : 0
+}
+
+function normalizeSubscriberMetadata(metadata = {}) {
+  return {
+    projectId: typeof metadata.projectId === "string" ? metadata.projectId.trim().slice(0, 160) : "",
+    sessionId: typeof metadata.sessionId === "string" ? metadata.sessionId.trim().slice(0, 160) : "",
+    workerCount: Math.max(1, Math.min(16, Math.trunc(Number(metadata.workerCount) || 1))),
+  }
+}
 
 class PoolConnection {
   constructor(wallet) {
@@ -263,8 +363,11 @@ class PoolConnection {
     this.pendingRequests = new Map()
     this.minerId = null
     this.currentJob = null
+    this.currentDifficulty = 0
     this.buffer = ""
     this.subscribers = new Set()
+    this.subscriberMetadata = new Map()
+    this.projectCounters = new Map()
     this.acceptedShares = 0
     this.rejectedShares = 0
     this.startedAt = Date.now()
@@ -364,39 +467,50 @@ class PoolConnection {
       return
     }
 
-    if (requestType === "submit" && msg.result && typeof msg.result.status === "string") {
+    if (requestType?.type === "submit" && msg.result && typeof msg.result.status === "string") {
       if (msg.result.status === "OK") {
         this.acceptedShares += 1
-        this.broadcast({
+        const counters = this.getProjectCounters(requestType.projectId)
+        counters.acceptedShares += 1
+        this.broadcastProject(requestType.projectId, {
           type: "share_result",
           accepted: true,
-          accepted_total: this.acceptedShares,
+          accepted_total: counters.acceptedShares,
+          bridge_accepted_total: counters.acceptedShares,
         })
+        this.broadcastCoordination(requestType.projectId)
       }
       return
     }
 
-    if (requestType === "submit" && msg.error) {
+    if (requestType?.type === "submit" && msg.error) {
       this.rejectedShares += 1
+      const counters = this.getProjectCounters(requestType.projectId)
+      counters.rejectedShares += 1
       const errorMessage = msg.error.message || JSON.stringify(msg.error)
       if (!errorMessage.includes("block template") && !errorMessage.includes("duplicate")) {
-        this.broadcast({
+        this.broadcastProject(requestType.projectId, {
           type: "share_result",
           accepted: false,
           error: errorMessage,
-          rejected_total: this.rejectedShares,
+          rejected_total: counters.rejectedShares,
+          bridge_rejected_total: counters.rejectedShares,
         })
       }
+      this.broadcastCoordination(requestType.projectId)
     }
   }
 
   setJob(job) {
     this.currentJob = job
-    this.broadcast({ type: "job", job, connected: true })
+    this.currentDifficulty = parsePoolDifficulty(job?.target)
+    this.broadcastCoordination()
+    this.broadcast({ type: "job", job, connected: true, difficulty: this.currentDifficulty })
   }
 
-  submitShare(jobId, nonce, result) {
+  submitShare(jobId, nonce, result, ws) {
     if (!this.authed) return
+    const metadata = this.subscriberMetadata.get(ws) || normalizeSubscriberMetadata()
     this.send({
       id: this.rpcId++,
       jsonrpc: "2.0",
@@ -407,19 +521,46 @@ class PoolConnection {
         nonce,
         result,
       },
-    }, "submit")
+    }, { type: "submit", projectId: metadata.projectId, sessionId: metadata.sessionId })
   }
 
-  addSubscriber(ws) {
+  getProjectCounters(projectId) {
+    const key = String(projectId || "")
+    let counters = this.projectCounters.get(key)
+    if (!counters) {
+      counters = { acceptedShares: 0, rejectedShares: 0 }
+      this.projectCounters.set(key, counters)
+    }
+    return counters
+  }
+
+  allocateNoncePrefix() {
+    const used = new Set(Array.from(this.subscriberMetadata.values(), (metadata) => metadata.noncePrefix))
+    for (let prefix = 0; prefix < 16; prefix += 1) {
+      if (!used.has(prefix)) return prefix
+    }
+    return Math.floor(Math.random() * 16)
+  }
+
+  addSubscriber(ws, rawMetadata = {}) {
+    const metadata = {
+      ...normalizeSubscriberMetadata(rawMetadata),
+      noncePrefix: this.allocateNoncePrefix(),
+    }
     this.subscribers.add(ws)
+    this.subscriberMetadata.set(ws, metadata)
     ws.send(JSON.stringify({ type: "status", connected: this.connected && this.authed }))
+    this.broadcastCoordination(metadata.projectId)
     if (this.currentJob) {
-      ws.send(JSON.stringify({ type: "job", job: this.currentJob, connected: true }))
+      ws.send(JSON.stringify({ type: "job", job: this.currentJob, connected: true, difficulty: this.currentDifficulty }))
     }
   }
 
   removeSubscriber(ws) {
+    const projectId = this.subscriberMetadata.get(ws)?.projectId || ""
     this.subscribers.delete(ws)
+    this.subscriberMetadata.delete(ws)
+    this.broadcastCoordination(projectId)
     if (this.subscribers.size === 0) {
       this.closedByUs = true
       if (this.keepAliveTimer) clearInterval(this.keepAliveTimer)
@@ -434,6 +575,51 @@ class PoolConnection {
       if (ws.readyState === 1) ws.send(data)
     }
   }
+
+  broadcastProject(projectId, payload) {
+    const data = JSON.stringify(payload)
+    for (const ws of this.subscribers) {
+      const metadata = this.subscriberMetadata.get(ws)
+      if (metadata?.projectId === String(projectId || "") && ws.readyState === 1) ws.send(data)
+    }
+  }
+
+  broadcastCoordination(projectId = null) {
+    for (const ws of this.subscribers) {
+      const metadata = this.subscriberMetadata.get(ws)
+      if (!metadata || (projectId !== null && metadata.projectId !== String(projectId || ""))) continue
+      const counters = this.getProjectCounters(metadata.projectId)
+      const coordinatedMiners = Array.from(this.subscriberMetadata.values())
+        .filter((candidate) => candidate.projectId === metadata.projectId).length
+      if (ws.readyState === 1) {
+        ws.send(JSON.stringify({
+          type: "coordination",
+          active: true,
+          noncePrefix: metadata.noncePrefix,
+          workerCount: metadata.workerCount,
+          coordinatedMiners,
+          poolDifficulty: this.currentDifficulty,
+          bridgeAcceptedShares: counters.acceptedShares,
+          bridgeRejectedShares: counters.rejectedShares,
+        }))
+      }
+    }
+  }
+
+  getProjectSummary(projectId) {
+    const normalizedProjectId = String(projectId || "")
+    const counters = this.getProjectCounters(normalizedProjectId)
+    const bridgeMiners = Array.from(this.subscriberMetadata.values())
+      .filter((metadata) => metadata.projectId === normalizedProjectId).length
+    return {
+      bridgeConnected: this.connected && this.authed,
+      bridgeMiners,
+      bridgeAcceptedShares: counters.acceptedShares,
+      bridgeRejectedShares: counters.rejectedShares,
+      poolDifficulty: this.currentDifficulty,
+      nonceCoordinationActive: bridgeMiners > 0,
+    }
+  }
 }
 
 function getOrCreatePool(wallet) {
@@ -444,6 +630,20 @@ function getOrCreatePool(wallet) {
     pool.connect()
   }
   return pool
+}
+
+function getMiningBridgeProjectSummary(wallet, projectId) {
+  const pool = pools.get(wallet)
+  return pool
+    ? pool.getProjectSummary(projectId)
+    : {
+        bridgeConnected: false,
+        bridgeMiners: 0,
+        bridgeAcceptedShares: 0,
+        bridgeRejectedShares: 0,
+        poolDifficulty: 0,
+        nonceCoordinationActive: false,
+      }
 }
 
 const PORT = Number(process.env.PORT || 3000)
@@ -510,13 +710,17 @@ wss.on("connection", (ws) => {
         pool = null
         return
       }
-      pool.addSubscriber(ws)
+      pool.addSubscriber(ws, {
+        projectId: msg.projectId,
+        sessionId: msg.sessionId,
+        workerCount: msg.workerCount,
+      })
       return
     }
 
     if (msg.type === "share" && pool) {
       if (typeof msg.job_id !== "string" || msg.job_id.length > 256 || !/^[0-9a-f]{8}$/i.test(msg.nonce) || !/^[0-9a-f]{64}$/i.test(msg.result)) return
-      pool.submitShare(msg.job_id, msg.nonce, msg.result)
+      pool.submitShare(msg.job_id, msg.nonce, msg.result, ws)
     }
   })
 

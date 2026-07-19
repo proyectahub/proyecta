@@ -43,7 +43,7 @@ export function useSupportXMRStats(walletAddress: string, projectId?: string) {
     }
 
     void fetchStats()
-    const interval = window.setInterval(() => void fetchStats(), 30000)
+    const interval = window.setInterval(() => void fetchStats(), 10000)
     return () => window.clearInterval(interval)
   }, [walletAddress, projectId])
 

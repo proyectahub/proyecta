@@ -104,3 +104,15 @@ CREATE TABLE IF NOT EXISTS project_comments (
 );
 
 CREATE INDEX IF NOT EXISTS idx_project_comments_project ON project_comments(project_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS project_mining_baselines (
+  project_id TEXT PRIMARY KEY,
+  wallet TEXT NOT NULL,
+  total_hashes REAL NOT NULL DEFAULT 0,
+  valid_shares INTEGER NOT NULL DEFAULT 0,
+  invalid_shares INTEGER NOT NULL DEFAULT 0,
+  amount_due_atomic REAL NOT NULL DEFAULT 0,
+  amount_paid_atomic REAL NOT NULL DEFAULT 0,
+  captured_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);

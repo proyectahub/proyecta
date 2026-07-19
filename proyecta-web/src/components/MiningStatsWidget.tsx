@@ -34,6 +34,14 @@ interface MiningStats {
   localBrowserHashrate?: number
   localNativeHashrate?: number
   localTelemetryUnverified?: boolean
+  bridgeConnected?: boolean
+  bridgeMiners?: number
+  bridgeAcceptedShares?: number
+  bridgeRejectedShares?: number
+  poolDifficulty?: number
+  expectedShareSeconds?: number | null
+  shareProbability95Seconds?: number | null
+  nonceCoordinationActive?: boolean
 }
 
 interface MiningStatsWidgetProps {
@@ -51,6 +59,14 @@ function hasVisibleMiningData(stats: MiningStats | null) {
 
 function formatXmr(value: number, decimals = 4) {
   return value.toFixed(decimals)
+}
+
+function formatDuration(value: number | null | undefined) {
+  const seconds = Number(value || 0)
+  if (!Number.isFinite(seconds) || seconds <= 0) return 'calculando...'
+  if (seconds < 60) return `${Math.max(1, Math.round(seconds))} s`
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min`
+  return `${(seconds / 3600).toFixed(1)} h`
 }
 
 function createEmptyProjectStats(): MiningStats {
@@ -124,7 +140,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
 
   useEffect(() => {
     fetchMiningStats()
-    const interval = setInterval(fetchMiningStats, 30000)
+    const interval = setInterval(fetchMiningStats, 10000)
     return () => clearInterval(interval)
   }, [wallet, projectId])
 
@@ -154,7 +170,19 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const localNativeMiners = Number(stats?.localNativeMiners ?? 0)
   const localBrowserHashrate = Number(stats?.localBrowserHashrate ?? 0)
   const localNativeHashrate = Number(stats?.localNativeHashrate ?? 0)
-  const confirmed = Boolean(stats?.isPoolConfirmed || confirmedValidShares > 0)
+  const communityHashrate = localBrowserHashrate + localNativeHashrate
+  const bridgeMiners = Number(stats?.bridgeMiners ?? 0)
+  const bridgeAcceptedShares = Number(stats?.bridgeAcceptedShares ?? 0)
+  const bridgeRejectedShares = Number(stats?.bridgeRejectedShares ?? 0)
+  const displayedAcceptedShares = Math.max(confirmedValidShares, bridgeAcceptedShares)
+  const displayedRejectedShares = Math.max(confirmedInvalidShares, bridgeRejectedShares)
+  const poolDifficulty = Number(stats?.poolDifficulty ?? 0)
+  const expectedShareSeconds = Number(stats?.expectedShareSeconds ?? 0) || null
+  const shareProbability95Seconds = Number(stats?.shareProbability95Seconds ?? 0) || null
+  const bridgeConnected = Boolean(stats?.bridgeConnected)
+  const coordinationActive = Boolean(stats?.nonceCoordinationActive)
+  const confirmed = Boolean(stats?.isPoolConfirmed)
+  const hasAcceptedShare = displayedAcceptedShares > 0
   const localActive = Boolean(stats?.isLocalActive)
   const webMiningSelected = selectedMiningOption === 'browser' || Boolean(stats?.browserMiningSelected || stats?.miningIntent)
   const projectHasMiningActivity = hasVisibleMiningData(stats)
@@ -166,8 +194,12 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
     ? 'Confirmado + telemetría local'
     : confirmed
       ? 'Saldo confirmado por SupportXMR'
+      : hasAcceptedShare
+        ? 'Share aceptado; esperando actualización de SupportXMR'
       : localActive
-        ? 'Telemetría local sin acreditar'
+        ? bridgeConnected
+          ? 'Minería coordinada; esperando share'
+          : 'Telemetría local sin acreditar'
         : webMiningSelected
           ? 'Minería web seleccionada'
           : 'Esperando confirmación del pool'
@@ -275,6 +307,29 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         {visibleStatusLabel}
       </div>
 
+      {localActive ? (
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-cyan-950">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Potencia comunitaria agregada</p>
+              <p className="mt-1 text-3xl font-black">{communityHashrate.toFixed(2)} H/s</p>
+              <p className="mt-1 text-xs text-cyan-800">
+                {localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app
+              </p>
+            </div>
+            <div className="text-right text-xs leading-5 text-cyan-800">
+              <p>{coordinationActive ? `${bridgeMiners} navegador(es) con nonces coordinados` : 'Esperando coordinación del puente'}</p>
+              <p>Dificultad del job: {poolDifficulty > 0 ? Math.round(poolDifficulty).toLocaleString('es-ES') : 'pendiente'}</p>
+            </div>
+          </div>
+          {poolDifficulty > 0 && communityHashrate > 0 ? (
+            <p className="mt-3 border-t border-cyan-200 pt-3 text-xs leading-5 text-cyan-900">
+              Tiempo estadístico al siguiente share: promedio {formatDuration(expectedShareSeconds)}. Hay 95% de probabilidad de encontrar al menos uno en {formatDuration(shareProbability95Seconds)}; también puede tardar más.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <span className="font-bold text-slate-900">{formatXmr(visibleBalance, 4)} XMR</span>
@@ -314,9 +369,11 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="mb-1 text-xs font-bold text-slate-600">Shares confirmados</p>
-          <p className="font-bold text-slate-900">{confirmedValidShares.toLocaleString('es-ES')}</p>
-          <p className="mt-1 text-xs text-slate-500">{confirmedInvalidShares.toLocaleString('es-ES')} inválidos</p>
+          <p className="mb-1 text-xs font-bold text-slate-600">Shares aceptados</p>
+          <p className="font-bold text-slate-900">{displayedAcceptedShares.toLocaleString('es-ES')}</p>
+          <p className="mt-1 text-xs text-slate-500">
+            {confirmedValidShares >= bridgeAcceptedShares ? 'confirmados por SupportXMR para este proyecto' : 'aceptados por Stratum en esta sesión'} · {displayedRejectedShares.toLocaleString('es-ES')} inválidos
+          </p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4">

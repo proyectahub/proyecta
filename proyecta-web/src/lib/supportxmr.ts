@@ -6,6 +6,9 @@ export interface SupportXMRNormalizedStats {
   lastHash: number
   minPayout: number
   confirmedBalance?: number
+  confirmedHashrate?: number
+  confirmedTotalHashes?: number
+  confirmedTotalPaid?: number
   localBalance?: number
   visibleBalance?: number
   localHashrate?: number
@@ -24,6 +27,16 @@ export interface SupportXMRNormalizedStats {
   localNativeMiners?: number
   localBrowserHashrate?: number
   localNativeHashrate?: number
+  bridgeConnected?: boolean
+  bridgeMiners?: number
+  bridgeAcceptedShares?: number
+  bridgeRejectedShares?: number
+  poolDifficulty?: number
+  expectedShareSeconds?: number | null
+  shareProbability95Seconds?: number | null
+  nonceCoordinationActive?: boolean
+  poolExpiry?: number | null
+  baselineCapturedAt?: number | null
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -77,6 +90,9 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
   const visibleBalance = data?.visibleBalance ?? data?.balance
   const localBalance = data?.localBalance ?? data?.localVisibleBalance ?? 0
   const confirmedBalance = data?.confirmedBalance ?? data?.confirmed?.balance ?? 0
+  const confirmedHashrate = data?.confirmedHashrate ?? data?.confirmed?.hashrate ?? 0
+  const confirmedTotalHashes = data?.confirmedTotalHashes ?? data?.confirmed?.totalHashes ?? 0
+  const confirmedTotalPaid = data?.confirmedTotalPaid ?? data?.confirmed?.totalPaid ?? 0
   const localHashrate = data?.localHashrate ?? 0
   const visibleHashrate = data?.visibleHashrate ?? data?.hashrate
   const localTotalHashes = data?.localTotalHashes ?? 0
@@ -88,6 +104,9 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
   const localNativeMiners = data?.localNativeMiners ?? 0
   const localBrowserHashrate = data?.localBrowserHashrate ?? 0
   const localNativeHashrate = data?.localNativeHashrate ?? 0
+  const bridgeMiners = data?.bridgeMiners ?? 0
+  const bridgeAcceptedShares = data?.bridgeAcceptedShares ?? 0
+  const bridgeRejectedShares = data?.bridgeRejectedShares ?? 0
   const isUnified =
     data?.visibleBalance !== undefined ||
     data?.confirmedBalance !== undefined ||
@@ -106,6 +125,9 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     confirmedBalance: isUnified
       ? parseAtomicXmr(confirmedBalance)
       : parseAtomicXmr(data?.balance ?? data?.amtDue ?? data?.due ?? 0),
+    confirmedHashrate: isUnified ? parseDecimalLike(confirmedHashrate) : undefined,
+    confirmedTotalHashes: isUnified ? parseHashCount(confirmedTotalHashes) : undefined,
+    confirmedTotalPaid: isUnified ? parseAtomicXmr(confirmedTotalPaid) : undefined,
     localBalance: isUnified ? parseAtomicXmr(localBalance) : undefined,
     visibleBalance: isUnified ? parseAtomicXmr(visibleBalance ?? data?.balance ?? 0) : undefined,
     localHashrate: isUnified ? parseDecimalLike(localHashrate) : undefined,
@@ -128,6 +150,16 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     localNativeMiners: isUnified ? parseHashCount(localNativeMiners) : undefined,
     localBrowserHashrate: isUnified ? parseDecimalLike(localBrowserHashrate) : undefined,
     localNativeHashrate: isUnified ? parseDecimalLike(localNativeHashrate) : undefined,
+    bridgeConnected: isUnified ? Boolean(data?.bridgeConnected) : undefined,
+    bridgeMiners: isUnified ? parseHashCount(bridgeMiners) : undefined,
+    bridgeAcceptedShares: isUnified ? parseHashCount(bridgeAcceptedShares) : undefined,
+    bridgeRejectedShares: isUnified ? parseHashCount(bridgeRejectedShares) : undefined,
+    poolDifficulty: isUnified ? parseDecimalLike(data?.poolDifficulty ?? 0) : undefined,
+    expectedShareSeconds: isUnified && data?.expectedShareSeconds != null ? parseDecimalLike(data.expectedShareSeconds) : null,
+    shareProbability95Seconds: isUnified && data?.shareProbability95Seconds != null ? parseDecimalLike(data.shareProbability95Seconds) : null,
+    nonceCoordinationActive: isUnified ? Boolean(data?.nonceCoordinationActive) : undefined,
+    poolExpiry: isUnified ? (Number(data?.poolExpiry || 0) || null) : undefined,
+    baselineCapturedAt: isUnified ? (Number(data?.baselineCapturedAt || 0) || null) : undefined,
     status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }

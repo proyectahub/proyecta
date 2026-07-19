@@ -20,9 +20,24 @@ CREATE TABLE IF NOT EXISTS projects (
 )
 `
 
+const PROJECT_MINING_BASELINES_SCHEMA = `
+CREATE TABLE IF NOT EXISTS project_mining_baselines (
+  project_id TEXT PRIMARY KEY,
+  wallet TEXT NOT NULL,
+  total_hashes REAL NOT NULL DEFAULT 0,
+  valid_shares INTEGER NOT NULL DEFAULT 0,
+  invalid_shares INTEGER NOT NULL DEFAULT 0,
+  amount_due_atomic REAL NOT NULL DEFAULT 0,
+  amount_paid_atomic REAL NOT NULL DEFAULT 0,
+  captured_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+)
+`
+
 export async function ensureProjectsSchema(db) {
   await db.exec(PROJECTS_SCHEMA.replace(/\s+/g, ' ').trim())
   await db.exec('CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at)')
+  await db.exec(PROJECT_MINING_BASELINES_SCHEMA.replace(/\s+/g, ' ').trim())
   return db
 }
 

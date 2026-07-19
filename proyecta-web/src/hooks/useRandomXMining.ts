@@ -10,6 +10,9 @@ export interface RandomXStats {
   elapsedSeconds: number
   jobHeight: number | null
   status: string
+  poolDifficulty: number
+  coordinatedMiners: number
+  coordinationActive: boolean
 }
 
 const WS_URL = resolveMiningWebSocketUrl()
@@ -30,8 +33,12 @@ export function useRandomXMining(
     elapsedSeconds: 0,
     jobHeight: null,
     status: 'Inactivo',
+    poolDifficulty: 0,
+    coordinatedMiners: 0,
+    coordinationActive: false,
   })
   const [error, setError] = useState<string | null>(null)
+  const [connectionAttempt, setConnectionAttempt] = useState(0)
 
   const wsRef = useRef<WebSocket | null>(null)
   const workersRef = useRef<Worker[]>([])
@@ -42,7 +49,10 @@ export function useRandomXMining(
   const sessionIdRef = useRef(Math.random().toString(36).slice(2))
   const lastTelemetryAtRef = useRef(0)
   const workersStartedRef = useRef(false)
-  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const noncePrefixRef = useRef(Math.floor(Math.random() * 16))
+  const acceptedSharesRef = useRef(0)
+  const rejectedSharesRef = useRef(0)
 
   const sendTelemetry = useCallback(
     (payload: {
@@ -93,9 +103,12 @@ export function useRandomXMining(
     perWorkerRef.current = Array.from({ length: threads }, () => ({ rate: 0, hashes: 0 }))
     hasPoolJobRef.current = false
     workersStartedRef.current = false
-    if (fallbackTimerRef.current) {
-      clearTimeout(fallbackTimerRef.current)
-      fallbackTimerRef.current = null
+    noncePrefixRef.current = Math.floor(Math.random() * 16)
+    acceptedSharesRef.current = 0
+    rejectedSharesRef.current = 0
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current)
+      reconnectTimerRef.current = null
     }
 
     const workers: Worker[] = []
@@ -122,8 +135,8 @@ export function useRandomXMining(
             totalHashes,
             hashRate: Math.round(totalRate * 10) / 10,
             elapsedSeconds,
-            acceptedShares: stats.acceptedShares,
-            rejectedShares: stats.rejectedShares,
+            acceptedShares: acceptedSharesRef.current,
+            rejectedShares: rejectedSharesRef.current,
             poolConnected: Boolean(wsRef.current && wsRef.current.readyState === WebSocket.OPEN),
           })
         }
@@ -152,34 +165,32 @@ export function useRandomXMining(
 
     workersRef.current = workers
 
-    const startWorkers = (mode: 'start' | 'benchmark') => {
+    const startWorkers = () => {
       if (workersStartedRef.current) return
       workersStartedRef.current = true
       for (const worker of workersRef.current) {
-        worker.postMessage({ type: mode })
+        worker.postMessage({ type: 'start' })
       }
-      setStats((current) => ({
-        ...current,
-        status: mode === 'benchmark' ? 'Prueba local RandomX activa' : current.status,
-      }))
     }
 
-    fallbackTimerRef.current = setTimeout(() => {
-      if (!hasPoolJobRef.current) {
-        startWorkers('benchmark')
-        setStats((current) => ({
-          ...current,
-          poolConnected: false,
-          status: 'Prueba local RandomX activa; esperando puente con el pool.',
-        }))
-      }
-    }, 5000)
+    const pauseWorkers = () => {
+      hasPoolJobRef.current = false
+      workersStartedRef.current = false
+      for (const worker of workersRef.current) worker.postMessage({ type: 'stop' })
+      perWorkerRef.current = perWorkerRef.current.map((workerStats) => ({ ...workerStats, rate: 0 }))
+    }
 
     const ws = new WebSocket(WS_URL)
     wsRef.current = ws
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'subscribe', wallet: walletAddress }))
+      ws.send(JSON.stringify({
+        type: 'subscribe',
+        wallet: walletAddress,
+        projectId,
+        sessionId: sessionIdRef.current,
+        workerCount: threads,
+      }))
       setStats((current) => ({
         ...current,
         status: 'Puente conectado, esperando job del pool...',
@@ -197,36 +208,61 @@ export function useRandomXMining(
 
       if (message.type === 'job') {
         hasPoolJobRef.current = true
-        if (fallbackTimerRef.current) {
-          clearTimeout(fallbackTimerRef.current)
-          fallbackTimerRef.current = null
+        for (let index = 0; index < workersRef.current.length; index += 1) {
+          const lanePrefix = ((noncePrefixRef.current & 0x0f) << 4) | (index & 0x0f)
+          const randomOffset = crypto.getRandomValues(new Uint32Array(1))[0] & 0x00ffffff
+          const nonceStart = ((lanePrefix << 24) | randomOffset) >>> 0
+          workersRef.current[index].postMessage({ type: 'job', job: message.job, nonceStart })
         }
-        startWorkers('start')
-        for (const worker of workersRef.current) {
-          worker.postMessage({ type: 'job', job: message.job })
-        }
+        startWorkers()
         setStats((current) => ({
           ...current,
           poolConnected: true,
           jobHeight: message.job?.height ?? current.jobHeight,
+          poolDifficulty: Number(message.difficulty || current.poolDifficulty || 0),
           status: 'Minando RandomX',
         }))
       }
 
+      if (message.type === 'coordination') {
+        if (Number.isInteger(message.noncePrefix)) {
+          noncePrefixRef.current = Number(message.noncePrefix) & 0x0f
+        }
+        acceptedSharesRef.current = Math.max(acceptedSharesRef.current, Number(message.bridgeAcceptedShares || 0))
+        rejectedSharesRef.current = Math.max(rejectedSharesRef.current, Number(message.bridgeRejectedShares || 0))
+        setStats((current) => ({
+          ...current,
+          acceptedShares: Math.max(current.acceptedShares, acceptedSharesRef.current),
+          rejectedShares: Math.max(current.rejectedShares, rejectedSharesRef.current),
+          poolDifficulty: Number(message.poolDifficulty || current.poolDifficulty || 0),
+          coordinatedMiners: Math.max(0, Number(message.coordinatedMiners || 0)),
+          coordinationActive: message.active === true,
+        }))
+      }
+
       if (message.type === 'status') {
-        setStats((current) => ({ ...current, poolConnected: !!message.connected }))
+        const connected = Boolean(message.connected)
+        if (!connected) pauseWorkers()
+        setStats((current) => ({
+          ...current,
+          hashRate: connected ? current.hashRate : 0,
+          poolConnected: connected,
+          status: connected ? current.status : 'Puente disponible; esperando conexión con SupportXMR.',
+        }))
       }
 
       if (message.type === 'share_result') {
         if (message.accepted) {
+          acceptedSharesRef.current = Math.max(acceptedSharesRef.current + 1, Number(message.accepted_total || 0))
           setStats((current) => ({
             ...current,
-            acceptedShares: message.accepted_total ?? current.acceptedShares + 1,
+            acceptedShares: Math.max(current.acceptedShares, acceptedSharesRef.current),
           }))
         } else {
+          rejectedSharesRef.current = Math.max(rejectedSharesRef.current + 1, Number(message.rejected_total || 0))
           setStats((current) => ({
             ...current,
-            rejectedShares: message.rejected_total ?? current.rejectedShares + 1,
+            rejectedShares: Math.max(current.rejectedShares, rejectedSharesRef.current),
           }))
           if (message.error) {
             setError(`Share rechazado: ${message.error}`)
@@ -240,32 +276,36 @@ export function useRandomXMining(
     }
 
     ws.onerror = () => {
-      if (!hasPoolJobRef.current) startWorkers('benchmark')
       setStats((current) => ({
         ...current,
         poolConnected: false,
-        status: 'Esperando reconexión del puente; la prueba local sigue activa.',
+        status: 'Error de conexión con el puente; esperando reconexión.',
       }))
     }
 
     ws.onclose = () => {
-      if (!isClosingRef.current && !hasPoolJobRef.current) startWorkers('benchmark')
       if (isClosingRef.current) {
         return
       }
+      pauseWorkers()
       setStats((current) => ({
         ...current,
+        hashRate: 0,
         poolConnected: false,
-        status: hasPoolJobRef.current
-          ? 'Puente cerrado: el navegador detuvo la coordinación con el pool.'
-          : 'Esperando reconexión del puente; la prueba local sigue activa.',
+        coordinatedMiners: 0,
+        coordinationActive: false,
+        status: 'Puente desconectado; reconectando en 3 segundos.',
       }))
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null
+        setConnectionAttempt((attempt) => attempt + 1)
+      }, 3000)
     }
 
     return () => {
-      if (fallbackTimerRef.current) {
-        clearTimeout(fallbackTimerRef.current)
-        fallbackTimerRef.current = null
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
       }
       workersStartedRef.current = false
       for (const worker of workersRef.current) {
@@ -282,13 +322,19 @@ export function useRandomXMining(
         ...current,
         hashRate: 0,
         poolConnected: false,
+        coordinatedMiners: 0,
+        coordinationActive: false,
         status: 'Detenido',
       }))
       setError(null)
     }
-  }, [enabled, walletAddress, cpuPercentage, projectId, sendTelemetry])
+  }, [enabled, walletAddress, cpuPercentage, projectId, sendTelemetry, connectionAttempt])
 
   const stop = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current)
+      reconnectTimerRef.current = null
+    }
     if (wsRef.current) {
       isClosingRef.current = true
       wsRef.current.close()
