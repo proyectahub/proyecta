@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useMining } from '../context/MiningContext'
 import { resolveMiningApiBase } from '../lib/api'
 import { ProjectMiningWidget } from './ProjectMiningWidget'
 import { MiningOptionsModal } from './MiningOptionsModal'
@@ -20,10 +21,19 @@ export function DonateToProject({
   projectTitle,
   onMiningOptionSelected,
 }: DonateToProjectProps) {
-  const [showMiningModal, setShowMiningModal] = useState(false)
-  const [selectedMiningOption, setSelectedMiningOption] = useState<'browser' | 'app' | null>(null)
-
   const walletAddress = moneroAddress || fundraisingAddress
+  const mining = useMining()
+  const activeWebMining = mining.isActiveForProject(projectId, walletAddress)
+  const [showMiningModal, setShowMiningModal] = useState(false)
+  const [selectedMiningOption, setSelectedMiningOption] = useState<'browser' | 'app' | null>(
+    activeWebMining ? 'browser' : null,
+  )
+
+  useEffect(() => {
+    if (!activeWebMining) return
+    setSelectedMiningOption('browser')
+    onMiningOptionSelected?.('browser')
+  }, [activeWebMining, onMiningOptionSelected])
 
   const handleStartMining = () => {
     setShowMiningModal(true)
@@ -61,9 +71,11 @@ export function DonateToProject({
   if (selectedMiningOption) {
     return (
       <div className="space-y-4">
-        <button onClick={() => setSelectedMiningOption(null)} className="nova-button-soft text-sm">
-          ← Cambiar opción de minería
-        </button>
+        {!activeWebMining ? (
+          <button onClick={() => setSelectedMiningOption(null)} className="nova-button-soft text-sm">
+            ← Cambiar opción de minería
+          </button>
+        ) : null}
         <ProjectMiningWidget
           projectId={projectId}
           projectMoneroAddress={walletAddress}

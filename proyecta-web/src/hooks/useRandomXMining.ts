@@ -23,6 +23,7 @@ export function useRandomXMining(
   enabled: boolean,
   cpuPercentage: number = 50,
   projectId?: string,
+  sessionId?: string,
 ) {
   const [stats, setStats] = useState<RandomXStats>({
     hashRate: 0,
@@ -46,13 +47,15 @@ export function useRandomXMining(
   const perWorkerRef = useRef<{ rate: number; hashes: number }[]>([])
   const hasPoolJobRef = useRef(false)
   const isClosingRef = useRef(false)
-  const sessionIdRef = useRef(Math.random().toString(36).slice(2))
+  const fallbackSessionIdRef = useRef(Math.random().toString(36).slice(2))
+  const engineSessionIdRef = useRef<string | null>(null)
   const lastTelemetryAtRef = useRef(0)
   const workersStartedRef = useRef(false)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noncePrefixRef = useRef(Math.floor(Math.random() * 16))
   const acceptedSharesRef = useRef(0)
   const rejectedSharesRef = useRef(0)
+  const miningSessionId = sessionId?.trim() || fallbackSessionIdRef.current
 
   const sendTelemetry = useCallback(
     (payload: {
@@ -75,13 +78,13 @@ export function useRandomXMining(
         body: JSON.stringify({
           walletAddress,
           projectId,
-          sessionId: sessionIdRef.current,
+          sessionId: miningSessionId,
           source: 'browser',
           ...payload,
         }),
       }).catch(() => undefined)
     },
-    [walletAddress, projectId],
+    [walletAddress, projectId, miningSessionId],
   )
 
   useEffect(() => {
@@ -92,20 +95,38 @@ export function useRandomXMining(
     const cores = navigator.hardwareConcurrency || 4
     const threads = Math.max(1, Math.min(6, Math.round(cores * (cpuPercentage / 100))))
 
+    const isNewMiningSession = engineSessionIdRef.current !== miningSessionId
+    engineSessionIdRef.current = miningSessionId
     setError(null)
     isClosingRef.current = false
-    setStats((current) => ({
-      ...current,
-      status: 'Conectando al puente de minería...',
-      poolConnected: false,
-    }))
+    setStats((current) => isNewMiningSession
+      ? {
+          hashRate: 0,
+          totalHashes: 0,
+          poolConnected: false,
+          acceptedShares: 0,
+          rejectedShares: 0,
+          elapsedSeconds: 0,
+          jobHeight: null,
+          status: 'Conectando al puente de minería...',
+          poolDifficulty: 0,
+          coordinatedMiners: 0,
+          coordinationActive: false,
+        }
+      : {
+          ...current,
+          status: 'Conectando al puente de minería...',
+          poolConnected: false,
+        })
     startTimeRef.current = Date.now()
     perWorkerRef.current = Array.from({ length: threads }, () => ({ rate: 0, hashes: 0 }))
     hasPoolJobRef.current = false
     workersStartedRef.current = false
     noncePrefixRef.current = Math.floor(Math.random() * 16)
-    acceptedSharesRef.current = 0
-    rejectedSharesRef.current = 0
+    if (isNewMiningSession) {
+      acceptedSharesRef.current = 0
+      rejectedSharesRef.current = 0
+    }
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = null
@@ -188,7 +209,7 @@ export function useRandomXMining(
         type: 'subscribe',
         wallet: walletAddress,
         projectId,
-        sessionId: sessionIdRef.current,
+        sessionId: miningSessionId,
         workerCount: threads,
       }))
       setStats((current) => ({

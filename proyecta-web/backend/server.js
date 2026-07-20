@@ -218,7 +218,7 @@ function createMiningCompatibilityRouter() {
   const router = express.Router()
 
   router.get("/health", (_req, res) => {
-    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-coordination-2026-07-19", hasWebSocketRoute: true })
+    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-persistence-2026-07-19", hasWebSocketRoute: true })
   })
 
   router.post("/submit", (req, res) => {
@@ -250,6 +250,7 @@ function createMiningCompatibilityRouter() {
         poolConnected,
         source: req.body?.source || "browser",
         miningIntent: req.body?.miningIntent === true,
+        active: req.body?.active !== false,
       })
     }
 

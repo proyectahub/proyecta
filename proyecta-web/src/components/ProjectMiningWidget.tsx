@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Square, Zap, AlertCircle, CheckCircle2, Download } from 'lucide-react'
 import { isValidProjectWalletAddress } from '../utils/projectWallet'
-import { useRandomXMining } from '../hooks/useRandomXMining'
+import { useMining } from '../context/MiningContext'
+import type { RandomXStats } from '../hooks/useRandomXMining'
 import { useSupportXMRStats } from '../hooks/useSupportXMRMining'
 import { MiningOptionsModal } from './MiningOptionsModal'
 
@@ -10,6 +11,20 @@ interface ProjectMiningWidgetProps {
   projectTitle: string
   projectId?: string
   initialMiningMode?: 'browser' | 'app' | null
+}
+
+const INACTIVE_MINING_STATS: RandomXStats = {
+  hashRate: 0,
+  totalHashes: 0,
+  poolConnected: false,
+  acceptedShares: 0,
+  rejectedShares: 0,
+  elapsedSeconds: 0,
+  jobHeight: null,
+  status: 'Inactivo',
+  poolDifficulty: 0,
+  coordinatedMiners: 0,
+  coordinationActive: false,
 }
 
 function hasVisibleCommunityState(poolStats: any) {
@@ -32,17 +47,19 @@ function formatDuration(value: number) {
 export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projectId, initialMiningMode = null }: ProjectMiningWidgetProps) {
   const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(initialMiningMode)
   const [showOptionsModal, setShowOptionsModal] = useState(!initialMiningMode)
-  const [miningEnabled, setMiningEnabled] = useState(false)
-  const [cpuPercentage, setCpuPercentage] = useState(50)
+  const [selectedCpuPercentage, setSelectedCpuPercentage] = useState(50)
 
   const isValidAddress = isValidProjectWalletAddress(projectMoneroAddress)
+  const mining = useMining()
+  const miningEnabled = mining.isActiveForProject(projectId, projectMoneroAddress)
+  const stats = miningEnabled ? mining.stats : INACTIVE_MINING_STATS
+  const miningError = miningEnabled ? mining.error : null
+  const poolUrl = mining.poolUrl
+  const cpuPercentage = miningEnabled ? mining.session?.cpuPercentage || selectedCpuPercentage : selectedCpuPercentage
 
-  const { stats, error: miningError, poolUrl } = useRandomXMining(
-    projectMoneroAddress,
-    miningEnabled && isValidAddress && miningMode === 'browser',
-    cpuPercentage,
-    projectId,
-  )
+  useEffect(() => {
+    if (miningEnabled) setMiningMode('browser')
+  }, [miningEnabled])
 
   const { poolStats } = useSupportXMRStats(projectMoneroAddress, projectId)
   const localActive = Boolean(poolStats?.isLocalActive)
@@ -72,8 +89,19 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   }
 
   const handleSelectOption = (option: 'browser' | 'app') => {
+    if (option !== 'browser' && miningEnabled) mining.stopMining()
     setMiningMode(option)
     setShowOptionsModal(false)
+  }
+
+  const handleStartMining = () => {
+    if (!isValidAddress) return
+    mining.startMining({
+      projectId: String(projectId || projectMoneroAddress),
+      projectTitle,
+      walletAddress: projectMoneroAddress,
+      cpuPercentage: selectedCpuPercentage,
+    })
   }
 
   if (!isValidAddress) {
@@ -201,7 +229,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                 </div>
 
                 <button
-                  onClick={() => setMiningEnabled(false)}
+                  onClick={mining.stopMining}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 py-3 font-bold text-white hover:bg-red-600"
                 >
                   <Square className="h-5 w-5" />
@@ -222,7 +250,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                     {[30, 50, 75, 100].map((pct) => (
                       <button
                         key={pct}
-                        onClick={() => setCpuPercentage(pct)}
+                        onClick={() => setSelectedCpuPercentage(pct)}
                         className={`flex-1 rounded-lg border py-2 font-bold transition ${
                           cpuPercentage === pct
                             ? 'border-blue-600 bg-blue-600 text-white'
@@ -236,7 +264,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                 </div>
 
                 <button
-                  onClick={() => setMiningEnabled(true)}
+                  onClick={handleStartMining}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700"
                 >
                   <Zap className="h-5 w-5" />
@@ -247,7 +275,11 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
 
             <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
               <p className="font-bold text-slate-700">
-                {stats.poolConnected ? 'Puente conectado' : miningEnabled ? 'Esperando reconexión del puente' : `Estado: ${stats.status}`}
+                {stats.poolConnected
+                  ? 'Puente conectado'
+                  : miningEnabled
+                    ? mining.isEngineOwner ? 'Esperando reconexión del puente' : 'Minería activa en otra pestaña'
+                    : `Estado: ${stats.status}`}
               </p>
               <p className="mt-1 font-mono">{poolUrl}</p>
             </div>

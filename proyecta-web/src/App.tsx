@@ -9,7 +9,9 @@ import {
 import { Toaster } from "react-hot-toast"
 
 import Navbar from "./components/layout/Navbar"
+import { PersistentMiningIndicator } from "./components/PersistentMiningIndicator"
 import { AuthProvider, useAuth } from "./context/AuthContext"
+import { MiningProvider } from "./context/MiningContext"
 import { TraditionalAuthProvider, useTraditionalAuth } from "./context/TraditionalAuthContext"
 const ArticleView = lazy(() => import("./pages/ArticleExperience"))
 const OpenReviewFeedExperience = lazy(() =>
@@ -205,9 +207,12 @@ function App() {
     <TraditionalAuthProvider>
       <AuthProvider>
         <Router>
-          <Suspense fallback={<RouteFallback />}>
-            <AppRoutes />
-          </Suspense>
+          <MiningProvider>
+            <Suspense fallback={<RouteFallback />}>
+              <AppRoutes />
+            </Suspense>
+            <PersistentMiningIndicator />
+          </MiningProvider>
         </Router>
       </AuthProvider>
     </TraditionalAuthProvider>
