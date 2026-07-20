@@ -37,6 +37,16 @@ export interface SupportXMRNormalizedStats {
   nonceCoordinationActive?: boolean
   poolExpiry?: number | null
   baselineCapturedAt?: number | null
+  poolDataConfirmed?: boolean
+  poolPendingBalance?: number
+  poolTotalPaid?: number
+  poolHashrate?: number
+  poolTotalHashes?: number
+  poolValidShares?: number
+  poolInvalidShares?: number
+  poolWorkers?: string[]
+  poolWorkerCount?: number
+  poolLastHash?: number
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -160,6 +170,18 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     nonceCoordinationActive: isUnified ? Boolean(data?.nonceCoordinationActive) : undefined,
     poolExpiry: isUnified ? (Number(data?.poolExpiry || 0) || null) : undefined,
     baselineCapturedAt: isUnified ? (Number(data?.baselineCapturedAt || 0) || null) : undefined,
+    poolDataConfirmed: isUnified ? Boolean(data?.poolDataConfirmed) : undefined,
+    poolPendingBalance: isUnified ? parseAtomicXmr(data?.poolPendingBalance ?? 0) : undefined,
+    poolTotalPaid: isUnified ? parseAtomicXmr(data?.poolTotalPaid ?? 0) : undefined,
+    poolHashrate: isUnified ? parseDecimalLike(data?.poolHashrate ?? 0) : undefined,
+    poolTotalHashes: isUnified ? parseHashCount(data?.poolTotalHashes ?? 0) : undefined,
+    poolValidShares: isUnified ? parseHashCount(data?.poolValidShares ?? 0) : undefined,
+    poolInvalidShares: isUnified ? parseHashCount(data?.poolInvalidShares ?? 0) : undefined,
+    poolWorkers: isUnified && Array.isArray(data?.poolWorkers)
+      ? data.poolWorkers.filter((worker: unknown): worker is string => typeof worker === 'string' && Boolean(worker.trim())).map((worker: string) => worker.trim())
+      : undefined,
+    poolWorkerCount: isUnified ? parseHashCount(data?.poolWorkerCount ?? 0) : undefined,
+    poolLastHash: isUnified ? parseHashCount(data?.poolLastHash ?? 0) : undefined,
     status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }

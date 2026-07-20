@@ -73,6 +73,7 @@ async function fetchConfirmedPoolStats(wallet) {
   try {
     const response = await fetch(`https://www.supportxmr.com/api/miner/${wallet}/stats`, {
       headers: { "User-Agent": "PROYECTA/1.0", "Cache-Control": "no-cache", "Accept": "application/json" },
+      signal: AbortSignal.timeout(8000),
     })
 
     if (!response.ok) {
@@ -80,7 +81,24 @@ async function fetchConfirmedPoolStats(wallet) {
     }
 
     const data = await response.json()
-    return normalizeSupportXMRStats(data)
+    let workers = []
+
+    try {
+      const workersResponse = await fetch(`https://www.supportxmr.com/api/miner/${wallet}/identifiers`, {
+        headers: { "User-Agent": "PROYECTA/1.0", "Cache-Control": "no-cache", "Accept": "application/json" },
+        signal: AbortSignal.timeout(8000),
+      })
+      if (workersResponse.ok) {
+        const identifiers = await workersResponse.json()
+        workers = Array.isArray(identifiers)
+          ? identifiers.filter((identifier) => typeof identifier === "string" && identifier.trim()).map((identifier) => identifier.trim())
+          : []
+      }
+    } catch {
+      // Worker names are supplementary; wallet totals remain authoritative.
+    }
+
+    return { ...normalizeSupportXMRStats(data), workers }
   } catch (error) {
     return {
       wallet,
@@ -153,19 +171,27 @@ async function fetchProjectConfirmedStats(projectId, wallet) {
   }
 }
 
-function mergeProjectConfirmedStats(localSummary, confirmedStats) {
-  if (!confirmedStats) return localSummary
+function mergeProjectConfirmedStats(localSummary, confirmedStats, poolStats) {
+  if (!confirmedStats && !poolStats) return localSummary
 
-  const confirmedBalance = Math.max(0, Number(confirmedStats.confirmedBalance || 0))
-  const confirmedHashrate = Math.max(0, Number(confirmedStats.confirmedHashrate || 0))
-  const confirmedTotalHashes = Math.max(0, Math.trunc(Number(confirmedStats.confirmedTotalHashes || 0)))
-  const confirmedTotalPaid = Math.max(0, Number(confirmedStats.confirmedTotalPaid || 0))
-  const confirmedValidShares = Math.max(0, Math.trunc(Number(confirmedStats.confirmedValidShares || 0)))
-  const confirmedInvalidShares = Math.max(0, Math.trunc(Number(confirmedStats.confirmedInvalidShares || 0)))
-  const isPoolConfirmed = Boolean(confirmedStats.isPoolConfirmed)
+  const confirmedBalance = Math.max(0, Number(confirmedStats?.confirmedBalance || 0))
+  const confirmedHashrate = Math.max(0, Number(confirmedStats?.confirmedHashrate || 0))
+  const confirmedTotalHashes = Math.max(0, Math.trunc(Number(confirmedStats?.confirmedTotalHashes || 0)))
+  const confirmedTotalPaid = Math.max(0, Number(confirmedStats?.confirmedTotalPaid || 0))
+  const confirmedValidShares = Math.max(0, Math.trunc(Number(confirmedStats?.confirmedValidShares || 0)))
+  const confirmedInvalidShares = Math.max(0, Math.trunc(Number(confirmedStats?.confirmedInvalidShares || 0)))
+  const isPoolConfirmed = Boolean(confirmedStats?.isPoolConfirmed)
+  const poolDataConfirmed = Boolean(poolStats && !poolStats.error)
+  const poolPendingBalance = Math.max(0, Number(poolStats?.balance || 0))
+  const poolTotalPaid = Math.max(0, Number(poolStats?.totalPaid || 0))
+  const poolHashrate = Math.max(0, Number(poolStats?.hashrate || 0))
+  const poolTotalHashes = Math.max(0, Math.trunc(Number(poolStats?.totalHashes || 0)))
+  const poolValidShares = Math.max(0, Math.trunc(Number(poolStats?.validShares || 0)))
+  const poolInvalidShares = Math.max(0, Math.trunc(Number(poolStats?.invalidShares || 0)))
+  const poolWorkers = Array.isArray(poolStats?.workers) ? poolStats.workers : []
   const status = localSummary.isLocalActive
     ? (isPoolConfirmed ? "SupportXMR confirmado + potencia comunitaria coordinada" : "Potencia comunitaria coordinada; esperando el primer share")
-    : confirmedStats.status || localSummary.status
+    : confirmedStats?.status || localSummary.status
 
   return {
     ...localSummary,
@@ -173,8 +199,8 @@ function mergeProjectConfirmedStats(localSummary, confirmedStats) {
     totalHashes: confirmedTotalHashes,
     balance: confirmedBalance,
     totalPaid: confirmedTotalPaid,
-    lastHash: Number(confirmedStats.lastHash || localSummary.lastHash),
-    minPayout: Number(confirmedStats.minPayout || localSummary.minPayout),
+    lastHash: Number(confirmedStats?.lastHash || poolStats?.lastHash || localSummary.lastHash),
+    minPayout: Number(confirmedStats?.minPayout || poolStats?.minPayout || localSummary.minPayout),
     confirmedBalance,
     confirmedHashrate,
     confirmedTotalHashes,
@@ -186,9 +212,23 @@ function mergeProjectConfirmedStats(localSummary, confirmedStats) {
     visibleTotalHashes: confirmedTotalHashes,
     isPoolConfirmed,
     externalMiningActive: isPoolConfirmed,
-    poolIdentifier: typeof confirmedStats.poolIdentifier === "string" ? confirmedStats.poolIdentifier : null,
-    poolExpiry: Number(confirmedStats.poolExpiry || 0) || null,
-    baselineCapturedAt: Number(confirmedStats.baselineCapturedAt || 0) || null,
+    poolIdentifier: typeof poolStats?.identifier === "string"
+      ? poolStats.identifier
+      : typeof confirmedStats?.poolIdentifier === "string"
+        ? confirmedStats.poolIdentifier
+        : null,
+    poolExpiry: Number(poolStats?.expiry || confirmedStats?.poolExpiry || 0) || null,
+    poolDataConfirmed,
+    poolPendingBalance,
+    poolTotalPaid,
+    poolHashrate,
+    poolTotalHashes,
+    poolValidShares,
+    poolInvalidShares,
+    poolWorkers,
+    poolWorkerCount: poolWorkers.length,
+    poolLastHash: Number(poolStats?.lastHash || confirmedStats?.lastHash || 0),
+    baselineCapturedAt: Number(confirmedStats?.baselineCapturedAt || 0) || null,
     status,
   }
 }
@@ -218,7 +258,7 @@ function createMiningCompatibilityRouter() {
   const router = express.Router()
 
   router.get("/health", (_req, res) => {
-    res.json({ ok: true, status: "healthy", service: "mining", build: "ws-mining-persistence-2026-07-19", hasWebSocketRoute: true })
+    res.json({ ok: true, status: "healthy", service: "mining", build: "supportxmr-widget-layout-2026-07-19", hasWebSocketRoute: true })
   })
 
   router.post("/submit", (req, res) => {
@@ -289,8 +329,11 @@ function createMiningCompatibilityRouter() {
     const wallet = req.params.wallet
     const projectId = req.params.projectId
     const localSummary = buildProjectMiningSummary(wallet, projectId)
-    const confirmedStats = await fetchProjectConfirmedStats(projectId, wallet)
-    const summary = mergeProjectConfirmedStats(localSummary, confirmedStats)
+    const [confirmedStats, poolStats] = await Promise.all([
+      fetchProjectConfirmedStats(projectId, wallet),
+      fetchConfirmedPoolStats(wallet),
+    ])
+    const summary = mergeProjectConfirmedStats(localSummary, confirmedStats, poolStats)
     const bridge = getMiningBridgeProjectSummary(wallet, projectId)
     const communityHashrate = Math.max(0, Number(summary.localBrowserHashrate || 0) + Number(summary.localNativeHashrate || 0))
     const expectedShareSeconds = bridge.poolDifficulty > 0 && communityHashrate > 0

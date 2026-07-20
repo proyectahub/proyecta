@@ -122,20 +122,26 @@ export function ProjectDetailsExperience() {
         hitos={project.hitos.map((hito) => ({ ...hito, completed: Boolean((hito as any).completed) }))}
       />
 
-      <MiningStatsWidget
-        wallet={project.fundraisingAddress}
-        fundingGoal={project.fundingGoal}
-        projectTitle={project.title}
-        projectId={project.id}
-        selectedMiningOption={selectedMiningOption}
-      />
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
+        <main className="space-y-8">
+          <div className="nova-card space-y-4 p-6">
+            <h2 className="text-2xl font-bold">Descripción</h2>
+            <div className="whitespace-pre-wrap leading-7 text-slate-700">{project.description}</div>
+          </div>
 
-      <div className="nova-card space-y-4 p-6">
-        <h2 className="text-2xl font-bold">Descripción</h2>
-        <div className="whitespace-pre-wrap leading-7 text-slate-700">{project.description}</div>
+          <ProjectComments projectId={project.id} projectAuthor={project.author} />
+        </main>
+
+        <aside className="order-last self-start lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
+          <MiningStatsWidget
+            wallet={project.fundraisingAddress}
+            fundingGoal={project.fundingGoal}
+            projectTitle={project.title}
+            projectId={project.id}
+            selectedMiningOption={selectedMiningOption}
+          />
+        </aside>
       </div>
-
-      <ProjectComments projectId={project.id} projectAuthor={project.author} />
 
       <ProjectSecurityInfo />
     </div>

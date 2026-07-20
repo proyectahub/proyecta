@@ -39,7 +39,24 @@ async function fetchPoolStats(wallet) {
   })
   if (response.status === 404) return normalizePoolStats()
   if (!response.ok) throw new Error(`SupportXMR respondió ${response.status}`)
-  return normalizePoolStats(await response.json())
+
+  const stats = normalizePoolStats(await response.json())
+  let workers = []
+  try {
+    const workersResponse = await fetch(`https://www.supportxmr.com/api/miner/${encodeURIComponent(wallet)}/identifiers`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (workersResponse.ok) {
+      const identifiers = await workersResponse.json()
+      workers = Array.isArray(identifiers)
+        ? identifiers.filter((identifier) => typeof identifier === 'string' && identifier.trim()).map((identifier) => identifier.trim())
+        : []
+    }
+  } catch {
+    // Worker names are optional and must not hide the wallet totals.
+  }
+
+  return { ...stats, workers }
 }
 
 async function getOrCreateBaseline(db, projectId, wallet, current) {
@@ -131,6 +148,16 @@ export async function onRequestGet({ env, params }) {
       externalMiningActive: isPoolConfirmed,
       poolIdentifier: current.identifier,
       poolExpiry: current.expiry,
+      poolDataConfirmed: true,
+      poolPendingBalance: current.amountDueAtomic / ATOMIC_UNITS_PER_XMR,
+      poolTotalPaid: current.amountPaidAtomic / ATOMIC_UNITS_PER_XMR,
+      poolHashrate: current.hashrate,
+      poolTotalHashes: current.totalHashes,
+      poolValidShares: current.validShares,
+      poolInvalidShares: current.invalidShares,
+      poolWorkers: Array.isArray(current.workers) ? current.workers : [],
+      poolWorkerCount: Array.isArray(current.workers) ? current.workers.length : 0,
+      poolLastHash: current.lastHash,
       baselineCapturedAt: Number(baseline.captured_at || 0),
       status: isPoolConfirmed ? 'SupportXMR confirmó actividad posterior al inicio del proyecto' : 'Esperando el primer share posterior a la línea base',
     }, { headers: { 'Cache-Control': 'no-store' } })
