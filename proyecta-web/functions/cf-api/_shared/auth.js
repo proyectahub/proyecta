@@ -1,5 +1,7 @@
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30
-const PBKDF2_ITERATIONS = 210000
+// Cloudflare/WebCrypto en este runtime no acepta iteraciones por encima de 100000.
+// Mantenerlo en un valor compatible evita que login/registro fallen en producción.
+const PBKDF2_ITERATIONS = 100000
 
 const AUTH_SCHEMA_STATEMENTS = [
   `

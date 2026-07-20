@@ -152,6 +152,15 @@ export async function listProjects(db) {
   return (Array.isArray(result?.results) ? result.results : []).map(mapProjectRow).filter(Boolean)
 }
 
+export async function listProjectsByAuthor(db, authorId) {
+  await ensureProjectsSchema(db)
+  const result = await db
+    .prepare('SELECT * FROM projects WHERE author = ? ORDER BY updated_at DESC')
+    .bind(authorId)
+    .all()
+  return (Array.isArray(result?.results) ? result.results : []).map(mapProjectRow).filter(Boolean)
+}
+
 export async function getProject(db, id) {
   await ensureProjectsSchema(db)
   const row = await db.prepare('SELECT * FROM projects WHERE id = ? LIMIT 1').bind(id).first()
@@ -209,4 +218,63 @@ export async function saveProject(db, input, owner) {
 
   const saved = await getProject(db, project.id)
   return json(saved, { status: 201 })
+}
+
+export async function updateProject(db, id, input, owner) {
+  await ensureProjectsSchema(db)
+  if (!owner?.id) {
+    return json({ error: 'No autorizado.' }, { status: 401 })
+  }
+
+  const current = await getProject(db, id)
+  if (!current) {
+    return json({ error: 'Proyecto no encontrado.' }, { status: 404 })
+  }
+
+  if (current.author !== owner.id) {
+    return json({ error: 'No tienes permiso para editar este proyecto.' }, { status: 403 })
+  }
+
+  const next = normalizeProjectPayload({
+    ...current,
+    ...input,
+    id: current.id,
+    author: current.author,
+    authorName: current.authorName,
+    createdAt: current.createdAt,
+    updatedAt: Date.now(),
+    fundraisingAddress: input.fundraisingAddress || input.fundraising_address || current.fundraisingAddress,
+  })
+
+  if (!next.title || !next.description || next.fundingGoal <= 0 || !/^[48][a-zA-Z0-9]{94}$/.test(next.fundraisingAddress)) {
+    return json({ error: 'Faltan datos del proyecto.' }, { status: 400 })
+  }
+
+  if (containsHtml(next.description)) {
+    return json({ error: 'La descripción debe contener solo texto plano.' }, { status: 400 })
+  }
+
+  await db.prepare(`
+    UPDATE projects
+    SET title = ?, description = ?, category = ?, funding_goal = ?, fundraising_address = ?, monero_address = ?,
+        author = ?, author_name = ?, raised = ?, status = ?, hitos_json = ?, cover_image = ?, updated_at = ?
+    WHERE id = ?
+  `).bind(
+    next.title,
+    next.description,
+    next.category,
+    next.fundingGoal,
+    next.fundraisingAddress,
+    next.moneroAddress,
+    next.author,
+    next.authorName,
+    next.raised,
+    next.status,
+    JSON.stringify(next.hitos),
+    next.coverImage,
+    next.updatedAt,
+    current.id,
+  ).run()
+
+  return json(await getProject(db, current.id))
 }

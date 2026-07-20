@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Wand2 } from 'lucide-react'
 import { RichTextEditor } from '../components/RichTextEditor'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
 import { PROJECTS_API_BASE } from '../lib/api'
@@ -20,8 +20,10 @@ const CATEGORIES: Record<string, string> = {
 
 export function CreateProjectExperience() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user: traditionalUser, initialized } = useTraditionalAuth()
   const { xmrPrice } = useMoneroPrice()
+  const editProjectId = searchParams.get('edit') || ''
 
   const [step, setStep] = useState('info')
   const [title, setTitle] = useState('')
@@ -33,6 +35,7 @@ export function CreateProjectExperience() {
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
   const [publishedProjectId, setPublishedProjectId] = useState('')
+  const [editingProjectId, setEditingProjectId] = useState('')
 
   const linkedWalletAddress = traditionalUser?.moneroWallet?.mainAddress || ''
   const walletMode = traditionalUser?.walletMode || 'external'
@@ -59,6 +62,46 @@ export function CreateProjectExperience() {
       setPersonalWalletAddress(linkedWalletAddress)
     }
   }, [linkedWalletAddress, personalWalletAddress])
+
+  useEffect(() => {
+    if (!editProjectId) {
+      setEditingProjectId('')
+      return
+    }
+
+    const controller = new AbortController()
+
+    async function loadProjectToEdit() {
+      try {
+        const response = await fetch(`${PROJECTS_API_BASE}/projects/${encodeURIComponent(editProjectId)}`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin',
+        })
+
+        if (!response.ok) {
+          throw new Error('No fue posible cargar el proyecto para editar.')
+        }
+
+        const project = await response.json()
+        setEditingProjectId(project.id || editProjectId)
+        setTitle(project.title || '')
+        setDescription(project.description || '')
+        setCoverImage(project.coverImage || null)
+        setCategory(project.category || 'biology')
+        setFundingGoal(String(project.fundingGoal || ''))
+        setPersonalWalletAddress(project.fundraisingAddress || project.moneroAddress || linkedWalletAddress || '')
+        setStep('info')
+      } catch {
+        if (!controller.signal.aborted) {
+          setEditingProjectId('')
+        }
+      }
+    }
+
+    void loadProjectToEdit()
+    return () => controller.abort()
+  }, [editProjectId, linkedWalletAddress])
 
   if (!initialized) {
     return (
@@ -440,15 +483,20 @@ export function CreateProjectExperience() {
       }
 
       try {
-        const response = await fetch(`${PROJECTS_API_BASE}/projects`, {
-          method: 'POST',
+        const response = await fetch(
+          editingProjectId
+            ? `${PROJECTS_API_BASE}/projects/${encodeURIComponent(editingProjectId)}`
+            : `${PROJECTS_API_BASE}/projects`,
+          {
+            method: editingProjectId ? 'PUT' : 'POST',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
           },
           credentials: 'same-origin',
           body: JSON.stringify(projectData),
-        })
+        },
+        )
 
         if (!response.ok) {
           let message = 'No se pudo publicar el proyecto en la base compartida.'
@@ -558,11 +606,15 @@ export function CreateProjectExperience() {
   if (step === 'success') {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="max-w-lg w-full text-center space-y-6">
+          <div className="max-w-lg w-full text-center space-y-6">
           <div className="text-7xl">🎉</div>
-          <h2 className="text-3xl font-bold text-emerald-900">¡Proyecto publicado!</h2>
+          <h2 className="text-3xl font-bold text-emerald-900">
+            {editingProjectId ? '¡Proyecto actualizado!' : '¡Proyecto publicado!'}
+          </h2>
           <p className="text-slate-600 text-lg">
-            Tu proyecto "{title}" ya está visible para la comunidad. Otras personas pueden aportar cómputo para apoyarlo.
+            {editingProjectId
+              ? `Tus cambios en "${title}" ya quedaron guardados.`
+              : `Tu proyecto "${title}" ya está visible para la comunidad. Otras personas pueden aportar cómputo para apoyarlo.`}
           </p>
           <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-4">
             <p className="text-sm font-bold text-emerald-900">

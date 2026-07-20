@@ -121,6 +121,17 @@ type UserArticle = {
   createdAt: string
 }
 
+type UserProject = {
+  id: string
+  title: string
+  category: string
+  status: string
+  fundingGoal: number
+  raised: number
+  createdAt: number
+  updatedAt: number
+}
+
 type DiscoveryArticle = {
   id: string
   title: string
@@ -252,10 +263,12 @@ export default function ProfileExperience() {
   const navigate = useNavigate()
   const { user: sessionUser, refreshUser } = useAuth()
   const profileId = routeProfileId ?? sessionUser?.id
+  const safeProfileId = profileId ?? ""
   const apiBaseUrl = API_BASE
   const [profile, setProfile] = useState<ProfileUser | null>(null)
   const [stats, setStats] = useState<UserStats>({ posts: 0, comments: 0, votes: 0 })
   const [articles, setArticles] = useState<UserArticle[]>([])
+  const [projects, setProjects] = useState<UserProject[]>([])
   const [productivity, setProductivity] = useState<Productivity | null>(null)
   const [bibliometrics, setBibliometrics] = useState<Bibliometrics | null>(null)
   const [reputation, setReputation] = useState<ReputationState | null>(null)
@@ -352,13 +365,13 @@ export default function ProfileExperience() {
     async function loadProfile() {
       setLoading(true)
       try {
-        const requestHeaders = token
+        const requestHeaders: HeadersInit = token
           ? {
               Authorization: `Bearer ${token}`,
             }
-          : undefined
+          : {}
 
-        const [profileResponse, postsResponse, activityResponse] = await Promise.all([
+        const [profileResponse, postsResponse, activityResponse, projectsResponse] = await Promise.all([
           fetch(`${apiBaseUrl}/api/users/${profileId}`, {
             signal: controller.signal,
             headers: requestHeaders,
@@ -371,6 +384,12 @@ export default function ProfileExperience() {
             signal: controller.signal,
             headers: requestHeaders,
           }),
+          isOwner
+            ? fetch(`${apiBaseUrl}/api/projects?authorId=${encodeURIComponent(safeProfileId)}`, {
+                signal: controller.signal,
+                headers: requestHeaders,
+              })
+            : Promise.resolve(null),
         ])
 
         const communityData: DiscoveryArticle[] = feedArticles.map((article, index) => ({
@@ -385,6 +404,7 @@ export default function ProfileExperience() {
         const profileData = await profileResponse.json()
         const postsData = postsResponse.ok ? await postsResponse.json() : []
         const activityData = activityResponse.ok ? await activityResponse.json() : {}
+        const projectsData = projectsResponse?.ok ? await projectsResponse.json() : []
 
         setProfile(profileData.user)
         setStats(profileData.stats ?? { posts: 0, comments: 0, votes: 0 })
@@ -395,6 +415,7 @@ export default function ProfileExperience() {
         setSocial(profileData.social ?? { followersCount: 0, followingCount: 0, isFollowing: false })
         setOrcidWorks(Array.isArray(profileData.orcidWorks) ? profileData.orcidWorks : [])
         setArticles(Array.isArray(postsData) ? postsData : [])
+        setProjects(Array.isArray(projectsData) ? projectsData : [])
         setActivityReviews(Array.isArray(activityData.reviews) ? activityData.reviews : [])
         setActivityVotes(Array.isArray(activityData.votes) ? activityData.votes : [])
         setActivityComments(Array.isArray(activityData.comments) ? activityData.comments : [])
@@ -1181,6 +1202,71 @@ export default function ProfileExperience() {
                   )}
                 </div>
               </div>
+
+              {isOwner ? (
+                <div className="nova-card p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                        Tus proyectos publicados
+                      </h2>
+                      <p className="mt-2 text-sm leading-7 text-slate-600">
+                        Revisa lo que ya publicaste y entra a editarlo después de recibir comentarios o revisiones.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/create-project')}
+                      className="inline-flex items-center gap-2 rounded-full border border-fuchsia-200 bg-fuchsia-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-fuchsia-700 transition hover:bg-fuchsia-100"
+                    >
+                      <SquarePen size={14} />
+                      Nuevo proyecto
+                    </button>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    {projects.length > 0 ? (
+                      projects.map((project) => (
+                        <article key={project.id} className="rounded-[24px] bg-slate-50/80 p-5 transition hover:bg-slate-100/80">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-fuchsia-600">
+                                {project.category}
+                              </p>
+                              <h3 className="mt-2 text-2xl font-extrabold text-slate-900">{project.title}</h3>
+                              <p className="mt-2 text-sm leading-7 text-slate-600">
+                                Estado: {project.status} · Meta: {Number(project.fundingGoal || 0).toFixed(2)} XMR · Recaudado: {Number(project.raised || 0).toFixed(2)} XMR
+                              </p>
+                              <p className="mt-1 text-xs text-slate-400">
+                                Actualizado {formatPublishedLabel(String(project.updatedAt || project.createdAt || Date.now()))}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Link
+                                to={`/projects/${project.id}`}
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-slate-600 transition hover:border-fuchsia-200 hover:text-fuchsia-600"
+                              >
+                                Ver
+                              </Link>
+                              <Link
+                                to={`/create-project?edit=${encodeURIComponent(project.id)}`}
+                                className="inline-flex items-center gap-2 rounded-full border border-fuchsia-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-fuchsia-700 transition hover:bg-fuchsia-50"
+                              >
+                                <SquarePen size={14} />
+                                Editar
+                              </Link>
+                            </div>
+                          </div>
+                        </article>
+                      ))
+                    ) : (
+                      <div className="rounded-[24px] bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
+                        Aún no tienes proyectos publicados. Cuando publiques uno, aparecerá aquí para editarlo después.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
               {profile.orcidId ? (
                 <div className="nova-card p-6">

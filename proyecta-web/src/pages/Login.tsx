@@ -1,7 +1,10 @@
 import React from "react"
+import { Eye, EyeOff } from "lucide-react"
 import { API_BASE } from "../lib/api"
 
 export default function Login() {
+  const [showPassword, setShowPassword] = React.useState(false)
+
   const handleOrcidLogin = () => {
     window.location.href = `${API_BASE}/api/oauth/orcid`
   }
@@ -46,11 +49,22 @@ export default function Login() {
 
         <div className="mb-6">
           <label className="text-sm text-slate-600">Contraseña</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            className="mt-1 w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-          />
+          <div className="relative mt-1">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              className="w-full rounded-lg border px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-pressed={showPassword}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 transition hover:text-slate-700"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         <button className="w-full rounded-lg bg-fuchsia-600 py-3 font-medium text-white transition hover:bg-fuchsia-700">

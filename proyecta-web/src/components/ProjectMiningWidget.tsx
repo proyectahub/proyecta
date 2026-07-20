@@ -118,7 +118,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   const communityLabel = supportXmrConfirmed && localActive
     ? 'Pool confirmado + telemetría local'
     : supportXmrConfirmed
-      ? 'Pool confirmado'
+      ? (Boolean(poolStats?.externalMiningDetected) ? 'Pool confirmado + minería externa inferida' : 'Pool confirmado')
       : hasAcceptedShare
         ? 'Share aceptado por Stratum; esperando actualización de SupportXMR'
       : localActive
@@ -191,7 +191,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.12em] text-cyan-700">Potencia comunitaria coordinada</p>
                       <p className="mt-1 text-2xl font-black">{communityHashrate.toFixed(2)} H/s</p>
-                      <p className="mt-1 text-xs text-cyan-800">{communityMiners} equipo(s) activos · {coordinatedMiners} navegador(es) coordinados por Railway</p>
+                      <p className="mt-1 text-xs text-cyan-800">{communityMiners} equipo(s) activos · {coordinatedMiners} navegador(es) coordinados por el puente de minería</p>
                     </div>
                     <div className="text-right text-xs leading-5 text-cyan-800">
                       <p>Dificultad: {poolDifficulty > 0 ? Math.round(poolDifficulty).toLocaleString('es-ES') : 'pendiente'}</p>

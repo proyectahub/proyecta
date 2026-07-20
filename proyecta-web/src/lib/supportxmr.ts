@@ -21,6 +21,7 @@ export interface SupportXMRNormalizedStats {
   confirmedValidShares?: number
   confirmedInvalidShares?: number
   externalMiningActive?: boolean
+  externalMiningDetected?: boolean
   poolIdentifier?: string | null
   localMiners?: number
   localBrowserMiners?: number

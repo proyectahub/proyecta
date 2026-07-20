@@ -20,6 +20,45 @@ $Pools = [ordered]@{
     "Nanopool"                              = "xmr-eu1.nanopool.org:14444"
 }
 
+$ConfigPath = Join-Path $Root "proyecta-miner.config.json"
+function Get-OrCreateMinerConfig {
+    $defaultConfig = [ordered]@{
+        portalUrl = if ($env:PROYECTA_PORTAL_URL) { $env:PROYECTA_PORTAL_URL.Trim() } else { "https://proyecta.pages.dev" }
+        deviceId  = ""
+    }
+
+    try {
+        if (Test-Path $ConfigPath) {
+            $raw = Get-Content $ConfigPath -Raw -ErrorAction Stop
+            if ($raw.Trim()) {
+                $loaded = $raw | ConvertFrom-Json -ErrorAction Stop
+                if ($loaded.portalUrl) { $defaultConfig.portalUrl = [string]$loaded.portalUrl }
+                if ($loaded.deviceId) { $defaultConfig.deviceId = [string]$loaded.deviceId }
+            }
+        }
+    } catch {
+        # Si la configuración local está corrupta, regeneramos una base limpia.
+    }
+
+    if (-not $defaultConfig.deviceId) {
+        $defaultConfig.deviceId = ([guid]::NewGuid().ToString())
+    }
+
+    try {
+        $defaultConfig | ConvertTo-Json -Depth 4 | Set-Content -Path $ConfigPath -Encoding UTF8
+    } catch {
+        # La minería sigue funcionando aunque no podamos guardar la configuración.
+    }
+
+    return [pscustomobject]$defaultConfig
+}
+
+$MinerConfig = Get-OrCreateMinerConfig
+$PortalUrl = $MinerConfig.portalUrl.TrimEnd("/")
+$DeviceId = $MinerConfig.deviceId
+$SessionId = ([guid]::NewGuid().ToString())
+$script:lastTelemetryAt = [datetime]::MinValue
+
 # ---------- Rutas (robusto: .ps1 y .exe) ----------
 if ($MyInvocation.MyCommand.Path) {
     $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -733,10 +772,41 @@ $timer.Add_Tick({
         $sum = Invoke-RestMethod -Uri "http://127.0.0.1:$HttpPort/2/summary" -TimeoutSec 2
         $hr = 0
         if ($sum.hashrate.total -and $sum.hashrate.total[0]) { $hr = [math]::Round($sum.hashrate.total[0],1) }
+        $totalHashes = 0
+        if ($sum.hashes.total) { $totalHashes = [math]::Max(0, [math]::Round([double]$sum.hashes.total, 0)) }
+        $acceptedShares = 0
+        if ($sum.results.shares_good) { $acceptedShares = [math]::Max(0, [int]$sum.results.shares_good) }
+        $rejectedShares = 0
+        if ($sum.results.shares_bad) { $rejectedShares = [math]::Max(0, [int]$sum.results.shares_bad) }
         $lblHash.Text = "$hr H/s"
         $lblShares.Text = "$($sum.results.shares_good)"
         if ($hr -gt 0) { $lblStatus.Text = "Minando RandomX a plena potencia." }
         else { $lblStatus.Text = "Inicializando dataset RandomX (2GB)... espera ~1 min." }
+
+        $now = Get-Date
+        if (($now - $script:lastTelemetryAt).TotalSeconds -ge 15) {
+            $script:lastTelemetryAt = $now
+            try {
+                $payload = @{
+                    walletAddress   = $txtWallet.Text.Trim()
+                    hashRate        = $hr
+                    totalHashes     = $totalHashes
+                    elapsedSeconds   = if ($sum.uptime) { [int]$sum.uptime } else { 0 }
+                    acceptedShares  = $acceptedShares
+                    rejectedShares  = $rejectedShares
+                    poolConnected   = $true
+                    active          = $true
+                    source          = "app"
+                    appName         = "PROYECTA Miner GUI"
+                    sessionId       = $SessionId
+                    deviceId        = $DeviceId
+                    miningIntent    = $true
+                }
+                Invoke-RestMethod -Method Post -Uri "$PortalUrl/api/mining/submit" -ContentType "application/json" -Body ($payload | ConvertTo-Json -Depth 4) -TimeoutSec 4 | Out-Null
+            } catch {
+                # La telemetría no debe interrumpir la minería.
+            }
+        }
     } catch {
         $lblStatus.Text = "Iniciando minero / cargando dataset..."
     }

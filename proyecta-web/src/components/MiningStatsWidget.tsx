@@ -22,6 +22,7 @@ interface MiningStats {
   localNativeMiners?: number
   localBrowserHashrate?: number
   localNativeHashrate?: number
+  externalMiningDetected?: boolean
   isLocalActive?: boolean
   isPoolConfirmed?: boolean
   miningIntent?: boolean
@@ -184,6 +185,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const localNativeMiners = Number(stats.localNativeMiners ?? 0)
   const localBrowserHashrate = Number(stats.localBrowserHashrate ?? 0)
   const localNativeHashrate = Number(stats.localNativeHashrate ?? 0)
+  const externalMiningDetected = Boolean(stats.externalMiningDetected)
   const communityHashrate = localBrowserHashrate + localNativeHashrate
   const localActive = Boolean(stats.isLocalActive || localMiners > 0)
   const miningSelected = selectedMiningOption !== null || Boolean(stats.browserMiningSelected || stats.miningIntent)
@@ -286,7 +288,14 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
           </div>
           <Cpu className="h-5 w-5 text-cyan-700" />
         </div>
-        <p className="mt-2 text-xs leading-5 text-slate-600">{localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app. No equivale a XMR.</p>
+        <p className="mt-2 text-xs leading-5 text-slate-600">
+          {localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app{externalMiningDetected ? ' / 1 externo inferido' : ''}. No equivale a XMR.
+        </p>
+        {externalMiningDetected && !localActive ? (
+          <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+            El pool muestra actividad, pero no hay telemetría local atribuible. Eso se clasifica como minería externa inferida.
+          </p>
+        ) : null}
         {stats.nonceCoordinationActive && communityHashrate > 0 ? (
           <p className="mt-2 border-t border-cyan-200 pt-2 text-xs leading-5 text-cyan-900">
             Nonces coordinados. Tiempo estadístico medio por share: {formatDuration(stats.expectedShareSeconds)}; 95% de probabilidad en {formatDuration(stats.shareProbability95Seconds)}.

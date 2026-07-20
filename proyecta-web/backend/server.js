@@ -291,6 +291,7 @@ function createMiningCompatibilityRouter() {
         source: req.body?.source || "browser",
         miningIntent: req.body?.miningIntent === true,
         active: req.body?.active !== false,
+        deviceId: typeof req.body?.deviceId === "string" ? req.body.deviceId : "",
       })
     }
 

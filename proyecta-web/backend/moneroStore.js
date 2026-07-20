@@ -255,7 +255,10 @@ function getMiningTelemetry(wallet) {
     active: true,
     miningIntent: intentSessions.length > 0,
     browserMiningSelected: intentSessions.some((session) => String(session.source || "").startsWith("browser")),
-    nativeMiningSelected: intentSessions.some((session) => String(session.source || "") === "app-intent" || String(session.source || "") === "native-intent"),
+    nativeMiningSelected: intentSessions.some((session) => {
+      const source = String(session.source || "")
+      return source === "app" || source === "app-intent" || source === "native" || source === "native-intent"
+    }),
     activeSessions: activeSessions.length,
     browserSessions: totals.sources.browser,
     nativeSessions: totals.sources.native,
@@ -292,6 +295,7 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
   const poolIdentifier = typeof confirmedStats?.identifier === "string" ? confirmedStats.identifier : null
   const poolExpiry = Number(confirmedStats?.expiry || 0) || null
   const isPoolConfirmed = isConfirmedPoolStats(confirmedStats)
+  const externalMiningDetected = isPoolConfirmed && !isLocalActive && (confirmedHashrate > 0 || confirmedTotalHashes > 0 || confirmedBalance > 0 || confirmedTotalPaid > 0)
   const localMiners = Math.max(0, Math.trunc(Number(telemetry?.activeSessions || (isLocalActive ? 1 : 0))))
   const localBrowserMiners = Math.max(0, Math.trunc(Number(telemetry?.browserSessions || 0)))
   const localNativeMiners = Math.max(0, Math.trunc(Number(telemetry?.nativeSessions || 0)))
@@ -333,6 +337,7 @@ function buildUnifiedMiningSummary(wallet, confirmedStats = null) {
     localNativeMiners,
     localBrowserHashrate,
     localNativeHashrate,
+    externalMiningDetected,
     visibleBalance,
     visibleHashrate,
     visibleTotalHashes,

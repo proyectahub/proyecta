@@ -18,14 +18,13 @@
 ## Configuración Actual
 
 ### API Backend
-- **URL estable**: https://nova-scientia-api.unhumanx.workers.dev
-- **Health check**: https://nova-scientia-api.unhumanx.workers.dev/api/health
-- **Estado**: ✅ Funcionando
+- **URL estable**: definida por `VITE_API_URL` o por el mismo origen del sitio en producción
+- **Estado**: ✅ Funcionando cuando el despliegue publica las rutas ` /api/*` correspondientes
 
 ### Archivo de Configuración Frontend
 - **Ubicación**: `.env.production`
-- **Valor VITE_API_URL**: `https://nova-scientia-api.unhumanx.workers.dev`
-- **Timestamp**: 31 May 2026
+- **Valor `VITE_API_URL`**: explícito para el origen público de la API, o vacío si las rutas ya viven en el mismo dominio
+- **Timestamp**: 20 Jul 2026
 
 ## Cambios Recientes (01 Jun 2026)
 

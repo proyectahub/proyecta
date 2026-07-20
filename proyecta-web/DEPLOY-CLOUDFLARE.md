@@ -83,19 +83,22 @@ Si prefieres hacerlo por interfaz:
 - Build output directory: `dist`
 - Framework preset: `Vite`
 
-## Variable de entorno del frontend
+## Variables de entorno del frontend
 
-En Cloudflare Pages define:
+En Cloudflare Pages define explícitamente las URLs públicas que use tu despliegue:
 
-- `VITE_API_URL`
+- `VITE_API_URL` para las rutas ` /api/*`
+- `VITE_PROJECTS_API_URL` para las rutas de ` /cf-api/*` si quieres sobrescribir el valor por defecto
+- `VITE_MINING_API_URL` y `VITE_MINING_WS_URL` solo si el servicio de minería vive en otro origen
 
 Ejemplo:
 
 ```env
-VITE_API_URL=https://tu-backend-público.ejemplo.com
+VITE_API_URL=https://tu-api-publica.ejemplo.com
+VITE_PROJECTS_API_URL=https://tu-dominio.ejemplo.com/cf-api
 ```
 
-Mientras no exista un backend público, puedes hacer pruebas visuales del frontend, pero las funciones con datos reales no responderan fuera de local.
+Si no defines `VITE_API_URL`, el frontend usa el mismo origen del sitio en producción. Eso evita que el build caiga en un backend viejo o desfasado.
 
 ## Fase 1.5: exponer temporalmente el backend sin migrarlo aún
 
