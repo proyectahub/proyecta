@@ -98,9 +98,6 @@ function normalizeTelemetry(wallet, telemetry = {}) {
   const rejectedShares = Math.max(0, Math.trunc(Number(telemetry.rejectedShares ?? 0) || 0))
   const poolConnected = Boolean(telemetry.poolConnected)
   const source = typeof telemetry.source === "string" ? telemetry.source : ""
-  const workerName = typeof telemetry.workerName === "string"
-    ? telemetry.workerName.trim().replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-{2,}/g, "-").replace(/^[-_.]+|[-_.]+$/g, "").slice(0, 32)
-    : ""
   const miningIntent = telemetry.miningIntent === true || source.endsWith("-intent")
   const active = telemetry.active !== false && (poolConnected || hashRate > 0 || totalHashes > 0)
   // Browser and app telemetry is self-reported. It must never be converted into XMR
@@ -118,7 +115,6 @@ function normalizeTelemetry(wallet, telemetry = {}) {
     poolConnected,
     active,
     miningIntent,
-    workerName,
     localVisibleBalance,
     lastSeenAt: new Date().toISOString(),
   }
@@ -189,11 +185,6 @@ function getMiningTelemetry(wallet) {
     return Number.isFinite(lastSeen) && lastSeen >= activeCutoff && session.active !== false
   })
   const intentSessions = recentSessions.filter((session) => session.miningIntent === true)
-  const collectWorkerNames = (sessions) => Array.from(new Set(
-    sessions
-      .map((session) => String(session.workerName || '').trim())
-      .filter(Boolean),
-  ))
 
   if (activeSessions.length === 0) {
     if (intentSessions.length > 0) {
@@ -217,13 +208,6 @@ function getMiningTelemetry(wallet) {
         nativeSessions: 0,
         browserHashrate: 0,
         nativeHashrate: 0,
-        workerName: collectWorkerNames(intentSessions)[0] || null,
-        workerNames: collectWorkerNames(intentSessions),
-        browserWorkerNames: collectWorkerNames(intentSessions.filter((session) => String(session.source || '').startsWith('browser'))),
-        nativeWorkerNames: collectWorkerNames(intentSessions.filter((session) => {
-          const source = String(session.source || '')
-          return source === 'app' || source === 'app-intent' || source === 'native' || source === 'native-intent'
-        })),
         lastSeenAt: intentSessions.map((session) => session.updatedAt || session.lastSeenAt).filter(Boolean).sort().at(-1) || new Date().toISOString(),
       }
     }
@@ -248,15 +232,6 @@ function getMiningTelemetry(wallet) {
       accumulator.rejectedShares += Math.max(0, Math.trunc(Number(session.rejectedShares || 0)))
       accumulator.elapsedSeconds = Math.max(accumulator.elapsedSeconds, Math.max(0, Math.trunc(Number(session.elapsedSeconds || 0))))
       accumulator.poolConnected = accumulator.poolConnected || Boolean(session.poolConnected)
-      if (session.workerName && !accumulator.workerNames.includes(session.workerName)) {
-        accumulator.workerNames.push(session.workerName)
-      }
-      if (session.workerName && source === "browser" && !accumulator.browserWorkerNames.includes(session.workerName)) {
-        accumulator.browserWorkerNames.push(session.workerName)
-      }
-      if (session.workerName && source === "native" && !accumulator.nativeWorkerNames.includes(session.workerName)) {
-        accumulator.nativeWorkerNames.push(session.workerName)
-      }
       accumulator.sources[source] += 1
       accumulator.sourceHashrate[source] += Number.isFinite(hashRate) ? hashRate : 0
       return accumulator
@@ -272,9 +247,6 @@ function getMiningTelemetry(wallet) {
       localVisibleBalance: 0,
       sources: { browser: 0, native: 0 },
       sourceHashrate: { browser: 0, native: 0 },
-      workerNames: [],
-      browserWorkerNames: [],
-      nativeWorkerNames: [],
     },
   )
 
@@ -292,10 +264,6 @@ function getMiningTelemetry(wallet) {
     nativeSessions: totals.sources.native,
     browserHashrate: totals.sourceHashrate.browser,
     nativeHashrate: totals.sourceHashrate.native,
-    workerName: totals.workerNames[0] || null,
-    workerNames: totals.workerNames,
-    browserWorkerNames: totals.browserWorkerNames,
-    nativeWorkerNames: totals.nativeWorkerNames,
     lastSeenAt: activeSessions
       .map((session) => session.updatedAt || session.lastSeenAt)
       .filter(Boolean)

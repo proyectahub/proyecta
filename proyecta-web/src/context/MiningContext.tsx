@@ -1,8 +1,7 @@
-﻿import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRandomXMining, type RandomXStats } from '../hooks/useRandomXMining'
 import { resolveMiningApiBase } from '../lib/api'
 import { isValidProjectWalletAddress } from '../utils/projectWallet'
-import { normalizeWorkerName, persistWorkerName, readStoredWorkerName } from '../utils/workerName'
 
 const STORAGE_KEY = 'proyecta:web-mining-session:v1'
 const MINER_LOCK_NAME = 'proyecta:web-miner:device'
@@ -20,7 +19,6 @@ export interface PersistentMiningSession {
   projectId: string
   projectTitle: string
   walletAddress: string
-  workerName: string
   cpuPercentage: number
   startedAt: number
   updatedAt: number
@@ -31,7 +29,6 @@ interface StartMiningInput {
   projectId: string
   projectTitle: string
   walletAddress: string
-  workerName?: string
   cpuPercentage: number
 }
 
@@ -90,7 +87,6 @@ function parseStoredSession(raw: string | null): PersistentMiningSession | null 
       projectId,
       projectTitle: String(value.projectTitle || 'Proyecto'),
       walletAddress,
-      workerName: normalizeWorkerName(value.workerName || readStoredWorkerName()),
       cpuPercentage: normalizeCpuPercentage(value.cpuPercentage),
       startedAt: asNonNegativeInteger(value.startedAt) || Date.now(),
       updatedAt: asNonNegativeInteger(value.updatedAt) || Date.now(),
@@ -129,14 +125,13 @@ export function MiningProvider({ children }: { children: ReactNode }) {
   const [isEngineOwner, setIsEngineOwner] = useState(false)
   const [stats, setStats] = useState<RandomXStats>(() => {
     const stored = readStoredSession()
-    return stored ? { ...emptyStats('SesiÃ³n de minerÃ­a guardada; reanudando.'), ...stored.progress } : emptyStats()
+    return stored ? { ...emptyStats('Sesión de minería guardada; reanudando.'), ...stored.progress } : emptyStats()
   })
 
   const { stats: engineStats, error, poolUrl } = useRandomXMining(
     session?.walletAddress || '',
     Boolean(session && isEngineOwner),
     session?.cpuPercentage || 50,
-    session?.workerName || '',
     session?.projectId,
     session?.id,
   )
@@ -167,7 +162,7 @@ export function MiningProvider({ children }: { children: ReactNode }) {
       previousEngineRef.current = { totalHashes: 0, elapsedSeconds: 0 }
       previousOwnerRef.current = false
       setStats({
-        ...emptyStats('SesiÃ³n de minerÃ­a guardada; reanudando.'),
+        ...emptyStats('Sesión de minería guardada; reanudando.'),
         ...session.progress,
       })
       return
@@ -185,7 +180,7 @@ export function MiningProvider({ children }: { children: ReactNode }) {
         rejectedShares: Math.max(current.rejectedShares, session.progress.rejectedShares),
         coordinatedMiners: 0,
         coordinationActive: false,
-        status: 'MinerÃ­a activa en otra pestaÃ±a de este navegador.',
+        status: 'Minería activa en otra pestaña de este navegador.',
       }))
       return
     }
@@ -322,13 +317,11 @@ export function MiningProvider({ children }: { children: ReactNode }) {
       projectId: input.projectId,
       projectTitle: input.projectTitle,
       walletAddress: input.walletAddress,
-      workerName: normalizeWorkerName(input.workerName || readStoredWorkerName()),
       cpuPercentage: normalizeCpuPercentage(input.cpuPercentage),
       startedAt: now,
       updatedAt: now,
       progress: { totalHashes: 0, elapsedSeconds: 0, acceptedShares: 0, rejectedShares: 0 },
     }
-    persistWorkerName(nextSession.workerName)
     writeStoredSession(nextSession)
     setSession(nextSession)
   }
@@ -398,4 +391,3 @@ export function useMining() {
   if (!context) throw new Error('useMining must be used within MiningProvider')
   return context
 }
-

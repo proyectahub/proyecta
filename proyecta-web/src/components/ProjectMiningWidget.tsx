@@ -5,7 +5,6 @@ import { useMining } from '../context/MiningContext'
 import type { RandomXStats } from '../hooks/useRandomXMining'
 import { useSupportXMRStats } from '../hooks/useSupportXMRMining'
 import { MiningOptionsModal } from './MiningOptionsModal'
-import { createRandomWorkerName, persistWorkerName, readStoredWorkerName, normalizeWorkerName } from '../utils/workerName'
 
 interface ProjectMiningWidgetProps {
   projectMoneroAddress: string
@@ -49,7 +48,6 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   const [miningMode, setMiningMode] = useState<'browser' | 'app' | null>(initialMiningMode)
   const [showOptionsModal, setShowOptionsModal] = useState(!initialMiningMode)
   const [selectedCpuPercentage, setSelectedCpuPercentage] = useState(50)
-  const [workerName, setWorkerName] = useState(() => readStoredWorkerName())
 
   const isValidAddress = isValidProjectWalletAddress(projectMoneroAddress)
   const mining = useMining()
@@ -58,7 +56,6 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   const miningError = miningEnabled ? mining.error : null
   const poolUrl = mining.poolUrl
   const cpuPercentage = miningEnabled ? mining.session?.cpuPercentage || selectedCpuPercentage : selectedCpuPercentage
-  const activeWorkerName = miningEnabled ? mining.session?.workerName || workerName : workerName
 
   useEffect(() => {
     if (miningEnabled) setMiningMode('browser')
@@ -104,13 +101,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
       projectTitle,
       walletAddress: projectMoneroAddress,
       cpuPercentage: selectedCpuPercentage,
-      workerName: activeWorkerName,
     })
-  }
-
-  const handleWorkerNameChange = (value: string) => {
-    const normalized = persistWorkerName(value)
-    setWorkerName(normalized)
   }
 
   if (!isValidAddress) {
@@ -272,27 +263,6 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="font-bold text-slate-700">Worker name</label>
-                  <div className="flex gap-2">
-                    <input
-                      value={workerName}
-                      onChange={(event) => handleWorkerNameChange(event.target.value)}
-                      className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono text-slate-800 outline-none transition focus:border-blue-500"
-                      placeholder="proyecta-xxxxxx"
-                      maxLength={32}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleWorkerNameChange(createRandomWorkerName())}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
-                    >
-                      Aleatorio
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-500">Se usara como rig-id en la app y como etiqueta local en la web.</p>
-                </div>
-
                 <button
                   onClick={handleStartMining}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700"
@@ -362,21 +332,21 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                 <p className="text-xs font-bold text-slate-600">Descarga el minero para tu sistema:</p>
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                   <a
-                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Mining_1.0.0_x64-setup.exe"
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner.exe"
                     className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700"
                   >
                     <Download className="h-4 w-4" />
                     Windows
                   </a>
                   <a
-                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA%20Mining_1.0.0_x64.dmg"
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner-macOS.command"
                     className="flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-3 text-sm font-bold text-white hover:bg-gray-800"
                   >
                     <Download className="h-4 w-4" />
                     macOS
                   </a>
                   <a
-                    href="https://github.com/proyectahub/proyecta/releases/latest/download/proyecta-mining_1.0.0_amd64.AppImage"
+                    href="https://github.com/proyectahub/proyecta/releases/latest/download/PROYECTA-Miner-Linux.sh"
                     className="flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-3 text-sm font-bold text-white hover:bg-orange-700"
                   >
                     <Download className="h-4 w-4" />
@@ -386,11 +356,12 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                 <div className="space-y-1 rounded border border-blue-200 bg-blue-50 p-3 text-xs text-slate-600">
                   <p className="font-bold">Cómo usar:</p>
                   <ol className="list-inside list-decimal space-y-0.5">
-                    <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Mining_1.0.0_x64-setup.exe</code></li>
+                    <li><strong>Windows:</strong> doble clic en <code className="font-mono">PROYECTA-Miner.exe</code></li>
                     <li>
-                      <strong>macOS:</strong> abre el .dmg y arrastra la app a Aplicaciones
+                      <strong>macOS:</strong> en Terminal: <code className="font-mono">chmod +x PROYECTA-Miner-macOS.command</code> y luego doble clic (o{' '}
+                      <code className="font-mono">./PROYECTA-Miner-macOS.command</code>)
                     </li>
-                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x proyecta-mining_1.0.0_amd64.AppImage && ./proyecta-mining_1.0.0_amd64.AppImage</code></li>
+                    <li><strong>Linux:</strong> <code className="font-mono">chmod +x PROYECTA-Miner-Linux.sh && ./PROYECTA-Miner-Linux.sh</code></li>
                   </ol>
                   <p className="pt-1 text-slate-500">Descarga el minero oficial automáticamente y empieza a minar. Sin instalar nada más.</p>
                 </div>
@@ -407,7 +378,6 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                   <strong>Dirección:</strong> <code className="break-all font-mono text-xs">{projectMoneroAddress}</code>
                 </p>
                 <p><strong>Pool:</strong> SupportXMR</p>
-                <p><strong>Worker:</strong> <code className="font-mono text-xs">{normalizeWorkerName(activeWorkerName)}</code></p>
               </div>
             </div>
 
