@@ -4,7 +4,7 @@ use std::process::{Child, Command};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
-use tauri::{State};
+use tauri::{AppHandle, State};
 
 #[derive(Serialize, Deserialize, Clone)]
 struct MiningConfig {
@@ -61,6 +61,7 @@ fn start_mining(
     wallet: String,
     threads: u32,
     worker_name: String,
+    app: AppHandle,
     config: State<Mutex<MinerState>>,
 ) -> Result<String, String> {
     let mut miner = config.lock().unwrap();
@@ -78,9 +79,12 @@ fn start_mining(
         cpu_percent: 100,
     };
 
-    let xmrig_path = if cfg!(windows) { "xmrig.exe" } else { "./xmrig" };
+    let xmrig_path = app
+        .path_resolver()
+        .resolve_resource("binaries/xmrig.exe")
+        .ok_or_else(|| "El motor de mineria no esta disponible en esta instalacion.".to_string())?;
 
-    let child = Command::new(xmrig_path)
+    let child = Command::new(&xmrig_path)
         .arg("-o")
         .arg(format!("{}:{}", mining_config.pool_url, mining_config.pool_port))
         .arg("-u")
@@ -100,7 +104,7 @@ fn start_mining(
         .arg("--http-port")
         .arg("3002")
         .spawn()
-        .map_err(|e| format!("No se pudo lanzar xmrig: {e}"))?;
+        .map_err(|_| "No se pudo iniciar el motor de mineria. Reinstala la aplicacion e intentalo de nuevo.".to_string())?;
 
     miner.process = Some(child);
     miner.config = Some(mining_config);

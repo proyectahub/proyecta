@@ -1,6 +1,20 @@
-﻿import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/tauri'
-import { Cpu, Play, Square, AlertCircle, TrendingUp } from 'lucide-react'
+import {
+  ArrowRight,
+  BadgeCheck,
+  BadgeInfo,
+  Cpu,
+  Gauge,
+  HeartHandshake,
+  Play,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Square,
+  Wifi,
+  Zap,
+} from 'lucide-react'
 import './App.css'
 import { createRandomWorkerName, persistWorkerName, readStoredWorkerName } from './lib/workerName'
 
@@ -13,10 +27,22 @@ interface MiningStats {
   pool_connected: boolean
 }
 
+const defaultWallet =
+  '42gfB3ayxZV2VNH8KAsUMU5fcXUqd83BGJneR37KqJaBQuzYJ8w5d3aV5DBkFH2oWo9YzJLcjhv2d5dR4V2C2xFrUGKiePh'
+
+function splitHashrate(value: string) {
+  const parts = value.trim().split(/\s+/)
+  return {
+    amount: parts[0] || '0',
+    unit: parts.slice(1).join(' ') || 'H/s',
+  }
+}
+
 export default function App() {
-  const [wallet, setWallet] = useState('42gfB3ayxZV2VNH8KAsUMU5fcXUqd83BGJneR37KqJaBQuzYJ8w5d3aV5DBkFH2oWo9YzJLcjhv2d5dR4V2C2xFrUGKiePh')
+  const [wallet, setWallet] = useState(defaultWallet)
   const [threads, setThreads] = useState(4)
   const [workerName, setWorkerName] = useState(() => readStoredWorkerName())
+  const [notice, setNotice] = useState<string | null>(null)
   const [miningStats, setMiningStats] = useState<MiningStats>({
     is_running: false,
     hashrate: '0 H/s',
@@ -25,173 +51,280 @@ export default function App() {
     shares_rejected: 0,
     pool_connected: false,
   })
-  const [systemInfo, setSystemInfo] = useState('')
+  const [systemInfo, setSystemInfo] = useState('Preparando la interfaz')
 
   useEffect(() => {
     const loadSystemInfo = async () => {
-      const info = await invoke<string>('get_system_info')
-      setSystemInfo(info)
+      try {
+        const info = await invoke<string>('get_system_info')
+        setSystemInfo(info)
+      } catch {
+        setSystemInfo('Sistema listo para minar')
+      }
     }
+
     loadSystemInfo()
 
     const interval = setInterval(async () => {
-      const stats = await invoke<MiningStats>('get_mining_status')
-      setMiningStats(stats)
+      try {
+        const stats = await invoke<MiningStats>('get_mining_status')
+        setMiningStats(stats)
+      } catch {
+        setNotice('No se pudo leer el estado del minero.')
+      }
     }, 1000)
 
     return () => clearInterval(interval)
   }, [])
-
-  const startMining = async () => {
-    try {
-      await invoke('start_mining', { wallet, threads, workerName })
-      setMiningStats((s) => ({ ...s, is_running: true }))
-    } catch (e) {
-      alert(`Error: ${e}`)
-    }
-  }
-
-  const stopMining = async () => {
-    try {
-      await invoke('stop_mining')
-      setMiningStats((s) => ({ ...s, is_running: false }))
-    } catch (e) {
-      alert(`Error: ${e}`)
-    }
-  }
 
   const updateWorkerName = (value: string) => {
     const next = persistWorkerName(value)
     setWorkerName(next)
   }
 
+  const startMining = async () => {
+    try {
+      setNotice(null)
+      await invoke('start_mining', { wallet, threads, workerName })
+      setMiningStats((state) => ({ ...state, is_running: true }))
+    } catch {
+      setNotice('No se pudo iniciar la minería. Verifica la instalación y vuelve a intentarlo.')
+    }
+  }
+
+  const stopMining = async () => {
+    try {
+      setNotice(null)
+      await invoke('stop_mining')
+      setMiningStats((state) => ({ ...state, is_running: false }))
+    } catch {
+      setNotice('No se pudo detener la minería. Vuelve a intentarlo en unos segundos.')
+    }
+  }
+
+  const hashrate = splitHashrate(miningStats.hashrate)
+  const workerLabel = workerName || 'Sin nombre'
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-8">
-      <div className="mx-auto max-w-2xl space-y-8">
-        <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <Cpu className="h-10 w-10 text-purple-400" />
-            <h1 className="text-4xl font-black text-white">PROYECTA Mining</h1>
-          </div>
-          <p className="text-slate-300">Minería RandomX nativa con xmrig optimizado</p>
-        </div>
+    <div className="app-shell">
+      <div className="app-glow app-glow-a" />
+      <div className="app-glow app-glow-b" />
 
-        <div className="space-y-6 rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 p-8 shadow-2xl">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg bg-black bg-opacity-30 p-4">
-              <p className="text-xs font-bold uppercase text-purple-200">Hashrate</p>
-              <p className="mt-2 text-3xl font-black text-white">{miningStats.hashrate}</p>
+      <main className="app-frame">
+        <header className="hero-card">
+          <div className="hero-copy">
+            <div className="brand-pill">
+              <Sparkles className="h-4 w-4" />
+              <span>PROYECTA Miner</span>
             </div>
-            <div className="rounded-lg bg-black bg-opacity-30 p-4">
-              <p className="text-xs font-bold uppercase text-purple-200">Hashes totales</p>
-              <p className="mt-2 text-3xl font-black text-white">{miningStats.total_hashes.toLocaleString()}</p>
-            </div>
-            <div className="rounded-lg bg-black bg-opacity-30 p-4">
-              <p className="text-xs font-bold uppercase text-purple-200">Shares validos</p>
-              <p className="mt-2 text-3xl font-black text-emerald-300">{miningStats.shares_accepted}</p>
-            </div>
-            <div className="rounded-lg bg-black bg-opacity-30 p-4">
-              <p className="text-xs font-bold uppercase text-purple-200">Estado</p>
-              <p className={`mt-2 text-lg font-bold ${miningStats.is_running ? 'text-emerald-300' : 'text-amber-300'}`}>
-                {miningStats.is_running ? '⛏️ Minando' : '⏸️ Detenido'}
-              </p>
+            <h1>Panel de minería</h1>
+            <p>Configura tu equipo, identifica el worker y administra la actividad del proyecto.</p>
+
+            <div className="hero-actions">
+              <div className={`status-pill ${miningStats.is_running ? 'status-on' : 'status-off'}`}>
+                {miningStats.is_running ? <BadgeCheck className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                <span>{miningStats.is_running ? 'Minería activa' : 'Lista para iniciar'}</span>
+              </div>
+              <div className="status-pill muted">
+                <Wifi className="h-4 w-4" />
+                <span>{miningStats.pool_connected ? 'Pool conectado' : 'Esperando pool'}</span>
+              </div>
             </div>
           </div>
 
-          <div className={`flex items-center gap-3 rounded-lg p-4 ${miningStats.pool_connected ? 'bg-emerald-500 bg-opacity-20 text-emerald-100' : 'bg-blue-500 bg-opacity-20 text-blue-100'}`}>
-            <AlertCircle className="h-5 w-5" />
-            <span className="font-bold">{miningStats.pool_connected ? '✅ Pool conectado' : '🔄 Esperando conexión'}</span>
-          </div>
-        </div>
-
-        <div className="space-y-6 rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-white">
-            <TrendingUp className="h-6 w-6" />
-            Configuración
-          </h2>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-300">Dirección Monero</label>
-            <input
-              type="text"
-              value={wallet}
-              onChange={(e) => setWallet(e.target.value)}
-              disabled={miningStats.is_running}
-              className="w-full rounded-lg bg-slate-700 px-4 py-2 font-mono text-xs text-white disabled:opacity-50"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-300">Hilos de minería</label>
-              <span className="font-bold text-white">{threads}</span>
+          <div className="hero-illustration" aria-hidden="true">
+            <div className="orb orb-one" />
+            <div className="orb orb-two" />
+            <div className="hero-mini-card">
+              <Cpu className="h-6 w-6" />
+              <div>
+                <p>Worker</p>
+                <strong>{workerLabel}</strong>
+              </div>
             </div>
-            <input
-              type="range"
-              min="1"
-              max="32"
-              step="1"
-              value={threads}
-              onChange={(e) => setThreads(Number(e.target.value))}
-              disabled={miningStats.is_running}
-              className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-700 disabled:opacity-50"
-            />
-            <p className="text-xs text-slate-400">{systemInfo}</p>
+            <div className="hero-mini-card hero-mini-card-bottom">
+              <HeartHandshake className="h-6 w-6" />
+              <div>
+                <p>Proyecto</p>
+                <strong>Financia ciencia</strong>
+              </div>
+            </div>
           </div>
+        </header>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-300">Worker name</label>
+        <section className="stats-grid">
+          <article className="stat-card stat-card-primary">
+            <div className="stat-label">
+              <Gauge className="h-4 w-4" />
+              <span>Hashrate</span>
+            </div>
+            <div className="stat-value">
+              <strong>{hashrate.amount}</strong>
+              <span>{hashrate.unit}</span>
+            </div>
+            <p>{miningStats.is_running ? 'Minando RandomX en este momento.' : 'La app está lista para comenzar.'}</p>
+          </article>
+
+          <article className="stat-card">
+            <div className="stat-label">
+              <Zap className="h-4 w-4" />
+              <span>Shares</span>
+            </div>
+            <div className="stat-value">
+              <strong>{miningStats.shares_accepted}</strong>
+              <span>aceptados</span>
+            </div>
+            <p>{miningStats.shares_rejected} rechazados</p>
+          </article>
+
+          <article className="stat-card">
+            <div className="stat-label">
+              <ArrowRight className="h-4 w-4" />
+              <span>Totales</span>
+            </div>
+            <div className="stat-value">
+              <strong>{miningStats.total_hashes.toLocaleString()}</strong>
+              <span>hashes</span>
+            </div>
+            <p>{systemInfo}</p>
+          </article>
+        </section>
+
+        <section className="panel-grid">
+          <div className="panel panel-accent">
+            <div className="panel-head">
+              <div>
+                <p className="panel-eyebrow">Identidad del worker</p>
+                <h2>Nombre visible en pool y en la app</h2>
+              </div>
               <button
                 type="button"
                 onClick={() => updateWorkerName(createRandomWorkerName())}
-                className="text-xs font-bold text-purple-300 hover:text-white"
+                className="inline-action"
               >
+                <RefreshCw className="h-4 w-4" />
                 Aleatorio
               </button>
             </div>
+
             <input
               type="text"
               value={workerName}
               onChange={(e) => updateWorkerName(e.target.value)}
               disabled={miningStats.is_running}
-              className="w-full rounded-lg bg-slate-700 px-4 py-2 font-mono text-xs text-white disabled:opacity-50"
+              className="input-field input-field-soft"
               maxLength={32}
             />
-            <p className="text-xs text-slate-400">Se envia a xmrig como rig-id y queda guardado en esta instalacion.</p>
+            <p className="helper-text">Se envía a xmrig como `rig-id` y queda guardado en esta instalación.</p>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="panel">
+            <div className="panel-head">
+              <div>
+                <p className="panel-eyebrow">Conexión</p>
+                <h2>Wallet y hilos</h2>
+              </div>
+              <div className={`mini-chip ${miningStats.pool_connected ? 'mini-chip-good' : 'mini-chip-warn'}`}>
+                {miningStats.pool_connected ? 'Pool listo' : 'Sin conexión'}
+              </div>
+            </div>
+
+            <label className="field">
+              <span>Dirección Monero</span>
+              <input
+                type="text"
+                value={wallet}
+                onChange={(e) => setWallet(e.target.value)}
+                disabled={miningStats.is_running}
+                className="input-field"
+              />
+            </label>
+
+            <label className="field">
+              <div className="field-row">
+                <span>Hilos de CPU</span>
+                <strong>{threads}</strong>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="32"
+                step="1"
+                value={threads}
+                onChange={(e) => setThreads(Number(e.target.value))}
+                disabled={miningStats.is_running}
+                className="slider"
+              />
+              <p className="helper-text">{systemInfo || 'Más hilos puede significar más calor y consumo.'}</p>
+            </label>
+
+            <div className="callout callout-soft">
+              <BadgeInfo className="h-5 w-5" />
+              <div>
+                <strong>Tip rápido</strong>
+                <p>Si quieres un nombre limpio para cada instalación, usa el botón aleatorio y se guardará por equipo.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="control-panel">
+          <div className="control-copy">
+            <p className="panel-eyebrow">Acción principal</p>
+            <h2>{miningStats.is_running ? 'Minería en ejecución' : 'Listo para arrancar'}</h2>
+            <p>
+              Los XMR van directo a la dirección del proyecto. La interfaz se mantiene simple, pero ya con las opciones nuevas activas.
+            </p>
+          </div>
+
+          <div className="control-actions">
             {!miningStats.is_running ? (
-              <button
-                onClick={startMining}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 font-bold text-white transition hover:bg-emerald-700"
-              >
+              <button onClick={startMining} className="primary-button primary-button-start">
                 <Play className="h-5 w-5" />
-                Comenzar minería
+                Iniciar minería
               </button>
             ) : (
-              <button
-                onClick={stopMining}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-3 font-bold text-white transition hover:bg-red-700"
-              >
+              <button onClick={stopMining} className="primary-button primary-button-stop">
                 <Square className="h-5 w-5" />
                 Detener minería
               </button>
             )}
           </div>
-        </div>
 
-        <div className="space-y-2 rounded-lg bg-slate-700 bg-opacity-50 p-4 text-sm text-slate-300">
-          <p className="font-bold">💡 Información:</p>
-          <ul className="list-inside list-disc space-y-1 text-xs">
-            <li>Minería RandomX real usando xmrig compilado nativamente</li>
-            <li>XMR se envía directamente a la dirección del proyecto</li>
-            <li>Sigue minando incluso si cierras esta ventana</li>
-            <li>Verifica en: <a href="https://supportxmr.com" target="_blank" rel="noopener" className="underline hover:text-white">supportxmr.com</a></li>
-          </ul>
-        </div>
-      </div>
+          <div className="footer-strip">
+            <div className="footer-chip">
+              <ShieldCheck className="h-4 w-4" />
+              <span>xmrig nativo</span>
+            </div>
+            <div className="footer-chip">
+              <Cpu className="h-4 w-4" />
+              <span>{threads} hilos configurados</span>
+            </div>
+            <div className="footer-chip">
+              <HeartHandshake className="h-4 w-4" />
+              <span>{workerLabel}</span>
+            </div>
+          </div>
+
+          <div className="notice-grid">
+            <div className="notice-box">
+              <p className="notice-title">Funcionamiento</p>
+              <p>La minería sigue en segundo plano aunque cierres esta ventana.</p>
+            </div>
+            <div className="notice-box notice-box-warn">
+              <p className="notice-title">Antivirus</p>
+              <p>Algunos antivirus marcan mineros por heurística. Si lo bloquea, agrégalo a excepciones.</p>
+            </div>
+          </div>
+
+          {notice ? (
+            <div className="notice-banner">
+              <BadgeInfo className="h-4 w-4" />
+              <span>{notice}</span>
+            </div>
+          ) : null}
+        </section>
+      </main>
     </div>
   )
 }
