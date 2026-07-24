@@ -22,6 +22,7 @@ export function useRandomXMining(
   walletAddress: string,
   enabled: boolean,
   cpuPercentage: number = 50,
+  workerName?: string,
   projectId?: string,
   sessionId?: string,
 ) {
@@ -84,7 +85,7 @@ export function useRandomXMining(
         }),
       }).catch(() => undefined)
     },
-    [walletAddress, projectId, miningSessionId],
+    [walletAddress, projectId, miningSessionId, workerName],
   )
 
   useEffect(() => {

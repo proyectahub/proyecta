@@ -277,6 +277,7 @@ function createMiningCompatibilityRouter() {
     const sessionId = typeof req.body?.sessionId === "string" ? req.body.sessionId : null
     const poolConnected = Boolean(req.body?.poolConnected)
     const projectId = typeof req.body?.projectId === "string" ? req.body.projectId.trim() : ""
+    const workerName = typeof req.body?.workerName === "string" ? req.body.workerName.trim() : ""
     const telemetryKey = buildProjectTelemetryKey(wallet, projectId)
 
     if (wallet) {
@@ -292,6 +293,7 @@ function createMiningCompatibilityRouter() {
         miningIntent: req.body?.miningIntent === true,
         active: req.body?.active !== false,
         deviceId: typeof req.body?.deviceId === "string" ? req.body.deviceId : "",
+        workerName,
       })
     }
 

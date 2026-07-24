@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/tauri'
 import { Cpu, Play, Square, AlertCircle, TrendingUp } from 'lucide-react'
 import './App.css'
+import { createRandomWorkerName, persistWorkerName, readStoredWorkerName } from './lib/workerName'
 
 interface MiningStats {
   is_running: boolean
@@ -15,6 +16,7 @@ interface MiningStats {
 export default function App() {
   const [wallet, setWallet] = useState('42gfB3ayxZV2VNH8KAsUMU5fcXUqd83BGJneR37KqJaBQuzYJ8w5d3aV5DBkFH2oWo9YzJLcjhv2d5dR4V2C2xFrUGKiePh')
   const [threads, setThreads] = useState(4)
+  const [workerName, setWorkerName] = useState(() => readStoredWorkerName())
   const [miningStats, setMiningStats] = useState<MiningStats>({
     is_running: false,
     hashrate: '0 H/s',
@@ -32,7 +34,6 @@ export default function App() {
     }
     loadSystemInfo()
 
-    // Poll mining status cada segundo
     const interval = setInterval(async () => {
       const stats = await invoke<MiningStats>('get_mining_status')
       setMiningStats(stats)
@@ -43,7 +44,7 @@ export default function App() {
 
   const startMining = async () => {
     try {
-      await invoke('start_mining', { wallet, threads })
+      await invoke('start_mining', { wallet, threads, workerName })
       setMiningStats((s) => ({ ...s, is_running: true }))
     } catch (e) {
       alert(`Error: ${e}`)
@@ -59,11 +60,15 @@ export default function App() {
     }
   }
 
+  const updateWorkerName = (value: string) => {
+    const next = persistWorkerName(value)
+    setWorkerName(next)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-8">
-      <div className="max-w-2xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
+      <div className="mx-auto max-w-2xl space-y-8">
+        <div className="space-y-2 text-center">
           <div className="flex items-center justify-center gap-3">
             <Cpu className="h-10 w-10 text-purple-400" />
             <h1 className="text-4xl font-black text-white">PROYECTA Mining</h1>
@@ -71,53 +76,40 @@ export default function App() {
           <p className="text-slate-300">Minería RandomX nativa con xmrig optimizado</p>
         </div>
 
-        {/* Status Card */}
-        <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-8 space-y-6 shadow-2xl">
-          {/* Stats */}
+        <div className="space-y-6 rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 p-8 shadow-2xl">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-black bg-opacity-30 rounded-lg p-4">
-              <p className="text-xs font-bold text-purple-200 uppercase">Hashrate</p>
-              <p className="text-3xl font-black text-white mt-2">{miningStats.hashrate}</p>
+            <div className="rounded-lg bg-black bg-opacity-30 p-4">
+              <p className="text-xs font-bold uppercase text-purple-200">Hashrate</p>
+              <p className="mt-2 text-3xl font-black text-white">{miningStats.hashrate}</p>
             </div>
-            <div className="bg-black bg-opacity-30 rounded-lg p-4">
-              <p className="text-xs font-bold text-purple-200 uppercase">Hashes totales</p>
-              <p className="text-3xl font-black text-white mt-2">
-                {miningStats.total_hashes.toLocaleString()}
-              </p>
+            <div className="rounded-lg bg-black bg-opacity-30 p-4">
+              <p className="text-xs font-bold uppercase text-purple-200">Hashes totales</p>
+              <p className="mt-2 text-3xl font-black text-white">{miningStats.total_hashes.toLocaleString()}</p>
             </div>
-            <div className="bg-black bg-opacity-30 rounded-lg p-4">
-              <p className="text-xs font-bold text-purple-200 uppercase">Shares válidos</p>
-              <p className="text-3xl font-black text-emerald-300 mt-2">{miningStats.shares_accepted}</p>
+            <div className="rounded-lg bg-black bg-opacity-30 p-4">
+              <p className="text-xs font-bold uppercase text-purple-200">Shares validos</p>
+              <p className="mt-2 text-3xl font-black text-emerald-300">{miningStats.shares_accepted}</p>
             </div>
-            <div className="bg-black bg-opacity-30 rounded-lg p-4">
-              <p className="text-xs font-bold text-purple-200 uppercase">Estado</p>
-              <p className={`text-lg font-bold mt-2 ${miningStats.is_running ? 'text-emerald-300' : 'text-amber-300'}`}>
+            <div className="rounded-lg bg-black bg-opacity-30 p-4">
+              <p className="text-xs font-bold uppercase text-purple-200">Estado</p>
+              <p className={`mt-2 text-lg font-bold ${miningStats.is_running ? 'text-emerald-300' : 'text-amber-300'}`}>
                 {miningStats.is_running ? '⛏️ Minando' : '⏸️ Detenido'}
               </p>
             </div>
           </div>
 
-          {/* Connection Status */}
-          <div className={`rounded-lg p-4 flex items-center gap-3 ${
-            miningStats.pool_connected
-              ? 'bg-emerald-500 bg-opacity-20 text-emerald-100'
-              : 'bg-blue-500 bg-opacity-20 text-blue-100'
-          }`}>
+          <div className={`flex items-center gap-3 rounded-lg p-4 ${miningStats.pool_connected ? 'bg-emerald-500 bg-opacity-20 text-emerald-100' : 'bg-blue-500 bg-opacity-20 text-blue-100'}`}>
             <AlertCircle className="h-5 w-5" />
-            <span className="font-bold">
-              {miningStats.pool_connected ? '✅ Pool conectado' : '🔄 Esperando conexión'}
-            </span>
+            <span className="font-bold">{miningStats.pool_connected ? '✅ Pool conectado' : '🔄 Esperando conexión'}</span>
           </div>
         </div>
 
-        {/* Config Card */}
-        <div className="bg-slate-800 rounded-xl p-6 space-y-6 border border-slate-700">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <div className="space-y-6 rounded-xl border border-slate-700 bg-slate-800 p-6">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-white">
             <TrendingUp className="h-6 w-6" />
             Configuración
           </h2>
 
-          {/* Wallet */}
           <div className="space-y-2">
             <label className="block text-sm font-bold text-slate-300">Dirección Monero</label>
             <input
@@ -125,15 +117,14 @@ export default function App() {
               value={wallet}
               onChange={(e) => setWallet(e.target.value)}
               disabled={miningStats.is_running}
-              className="w-full bg-slate-700 text-white rounded-lg px-4 py-2 text-xs font-mono disabled:opacity-50"
+              className="w-full rounded-lg bg-slate-700 px-4 py-2 font-mono text-xs text-white disabled:opacity-50"
             />
           </div>
 
-          {/* Threads */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-slate-300">Hilos de minería</label>
-              <span className="text-white font-bold">{threads}</span>
+              <span className="font-bold text-white">{threads}</span>
             </div>
             <input
               type="range"
@@ -143,17 +134,38 @@ export default function App() {
               value={threads}
               onChange={(e) => setThreads(Number(e.target.value))}
               disabled={miningStats.is_running}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
+              className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-700 disabled:opacity-50"
             />
             <p className="text-xs text-slate-400">{systemInfo}</p>
           </div>
 
-          {/* Buttons */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold text-slate-300">Worker name</label>
+              <button
+                type="button"
+                onClick={() => updateWorkerName(createRandomWorkerName())}
+                className="text-xs font-bold text-purple-300 hover:text-white"
+              >
+                Aleatorio
+              </button>
+            </div>
+            <input
+              type="text"
+              value={workerName}
+              onChange={(e) => updateWorkerName(e.target.value)}
+              disabled={miningStats.is_running}
+              className="w-full rounded-lg bg-slate-700 px-4 py-2 font-mono text-xs text-white disabled:opacity-50"
+              maxLength={32}
+            />
+            <p className="text-xs text-slate-400">Se envia a xmrig como rig-id y queda guardado en esta instalacion.</p>
+          </div>
+
           <div className="flex gap-3 pt-4">
             {!miningStats.is_running ? (
               <button
                 onClick={startMining}
-                className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 font-bold text-white transition hover:bg-emerald-700"
               >
                 <Play className="h-5 w-5" />
                 Comenzar minería
@@ -161,7 +173,7 @@ export default function App() {
             ) : (
               <button
                 onClick={stopMining}
-                className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-3 font-bold text-white transition hover:bg-red-700"
               >
                 <Square className="h-5 w-5" />
                 Detener minería
@@ -170,10 +182,9 @@ export default function App() {
           </div>
         </div>
 
-        {/* Info */}
-        <div className="bg-slate-700 bg-opacity-50 rounded-lg p-4 text-sm text-slate-300 space-y-2">
+        <div className="space-y-2 rounded-lg bg-slate-700 bg-opacity-50 p-4 text-sm text-slate-300">
           <p className="font-bold">💡 Información:</p>
-          <ul className="space-y-1 list-disc list-inside text-xs">
+          <ul className="list-inside list-disc space-y-1 text-xs">
             <li>Minería RandomX real usando xmrig compilado nativamente</li>
             <li>XMR se envía directamente a la dirección del proyecto</li>
             <li>Sigue minando incluso si cierras esta ventana</li>

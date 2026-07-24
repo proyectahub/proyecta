@@ -1,16 +1,17 @@
-#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
+﻿#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-use std::process::{Command, Child};
+use std::process::{Child, Command};
 use std::sync::Mutex;
-use tauri::{Manager, State};
+use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
+use tauri::{State};
 
 #[derive(Serialize, Deserialize, Clone)]
 struct MiningConfig {
     wallet: String,
     pool_url: String,
     pool_port: u16,
-    rigid: String,
+    worker_name: String,
     threads: u32,
     cpu_percent: u32,
 }
@@ -30,39 +31,54 @@ struct MinerState {
     config: Option<MiningConfig>,
 }
 
-// ── API Commands para la UI
+fn normalize_worker_name(input: &str) -> String {
+    let mut cleaned: String = input
+        .trim()
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() || ch == '.' || ch == '_' || ch == '-' { ch } else { '-' })
+        .collect();
+
+    while cleaned.contains("--") {
+        cleaned = cleaned.replace("--", "-");
+    }
+
+    cleaned = cleaned.trim_matches(|ch| ch == '-' || ch == '_' || ch == '.').to_string();
+    cleaned.truncate(32);
+
+    if cleaned.is_empty() {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|duration| duration.as_nanos())
+            .unwrap_or(0);
+        format!("proyecta-{nanos:x}")
+    } else {
+        cleaned
+    }
+}
 
 #[tauri::command]
 fn start_mining(
     wallet: String,
     threads: u32,
+    worker_name: String,
     config: State<Mutex<MinerState>>,
 ) -> Result<String, String> {
     let mut miner = config.lock().unwrap();
 
-    // Detener si ya está corriendo
     if let Some(mut child) = miner.process.take() {
         let _ = child.kill();
     }
 
-    // Configuración del minero
     let mining_config = MiningConfig {
         wallet: wallet.clone(),
         pool_url: "pool.supportxmr.com".to_string(),
         pool_port: 3333,
-        rigid: "PROYECTA".to_string(),
+        worker_name: normalize_worker_name(&worker_name),
         threads,
         cpu_percent: 100,
     };
 
-    // Lanzar xmrig con la config
-    // Nota: asumimos que xmrig está en el mismo directorio que la app,
-    // o disponible en PATH. En distribución, lo empaquetamos dentro.
-    let xmrig_path = if cfg!(windows) {
-        "xmrig.exe"
-    } else {
-        "./xmrig"
-    };
+    let xmrig_path = if cfg!(windows) { "xmrig.exe" } else { "./xmrig" };
 
     let child = Command::new(xmrig_path)
         .arg("-o")
@@ -70,7 +86,9 @@ fn start_mining(
         .arg("-u")
         .arg(wallet.clone())
         .arg("-p")
-        .arg("proyecta")
+        .arg(&mining_config.worker_name)
+        .arg("--rig-id")
+        .arg(&mining_config.worker_name)
         .arg("-r")
         .arg("10")
         .arg("--algo")
@@ -82,7 +100,7 @@ fn start_mining(
         .arg("--http-port")
         .arg("3002")
         .spawn()
-        .map_err(|e| format!("No se pudo lanzar xmrig: {}", e))?;
+        .map_err(|e| format!("No se pudo lanzar xmrig: {e}"))?;
 
     miner.process = Some(child);
     miner.config = Some(mining_config);
@@ -95,11 +113,10 @@ fn stop_mining(config: State<Mutex<MinerState>>) -> Result<String, String> {
     let mut miner = config.lock().unwrap();
 
     if let Some(mut child) = miner.process.take() {
-        child.kill().map_err(|e| format!("Error al detener: {}", e))?;
+        child.kill().map_err(|e| format!("Error al detener: {e}"))?;
     }
 
     miner.config = None;
-
     Ok("Minería detenida".to_string())
 }
 
@@ -109,7 +126,7 @@ fn get_mining_status(config: State<Mutex<MinerState>>) -> MiningStats {
 
     MiningStats {
         is_running: miner.process.is_some(),
-        hashrate: "0 H/s".to_string(), // En producción: leer de xmrig HTTP API
+        hashrate: "0 H/s".to_string(),
         total_hashes: 0,
         shares_accepted: 0,
         shares_rejected: 0,
@@ -119,10 +136,7 @@ fn get_mining_status(config: State<Mutex<MinerState>>) -> MiningStats {
 
 #[tauri::command]
 fn get_system_info() -> String {
-    format!(
-        "CPUs: {}",
-        num_cpus::get()
-    )
+    format!("CPUs: {}", std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1))
 }
 
 fn main() {

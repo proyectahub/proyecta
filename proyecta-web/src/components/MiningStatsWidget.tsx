@@ -22,6 +22,10 @@ interface MiningStats {
   localNativeMiners?: number
   localBrowserHashrate?: number
   localNativeHashrate?: number
+  workerName?: string | null
+  workerNames?: string[]
+  browserWorkerNames?: string[]
+  nativeWorkerNames?: string[]
   externalMiningDetected?: boolean
   isLocalActive?: boolean
   isPoolConfirmed?: boolean
@@ -52,6 +56,7 @@ interface MiningStatsWidgetProps {
   projectTitle: string
   projectId?: string
   selectedMiningOption?: 'browser' | 'app' | null
+  className?: string
 }
 
 function createEmptyProjectStats(): MiningStats {
@@ -93,7 +98,7 @@ function formatLastShare(lastHash: number) {
   return `Hace ${(seconds / 3600).toFixed(1)} h`
 }
 
-export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId, selectedMiningOption = null }: MiningStatsWidgetProps) {
+export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId, selectedMiningOption = null, className = '' }: MiningStatsWidgetProps) {
   const { xmrPrice } = useMoneroPrice()
   const [stats, setStats] = useState<MiningStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -185,6 +190,10 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const localNativeMiners = Number(stats.localNativeMiners ?? 0)
   const localBrowserHashrate = Number(stats.localBrowserHashrate ?? 0)
   const localNativeHashrate = Number(stats.localNativeHashrate ?? 0)
+  const workerName = typeof stats.workerName === 'string' ? stats.workerName : null
+  const workerNames = Array.isArray(stats.workerNames) ? stats.workerNames : []
+  const browserWorkerNames = Array.isArray(stats.browserWorkerNames) ? stats.browserWorkerNames : []
+  const nativeWorkerNames = Array.isArray(stats.nativeWorkerNames) ? stats.nativeWorkerNames : []
   const externalMiningDetected = Boolean(stats.externalMiningDetected)
   const communityHashrate = localBrowserHashrate + localNativeHashrate
   const localActive = Boolean(stats.isLocalActive || localMiners > 0)
@@ -192,7 +201,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const supportXmrUrl = `https://www.supportxmr.com/?addr=${encodeURIComponent(wallet)}`
 
   return (
-    <section className="nova-card space-y-4 border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-white to-blue-50 p-5 shadow-[0_22px_55px_-36px_rgba(88,28,135,0.55)]">
+    <section className={`nova-card h-full space-y-4 border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-white to-blue-50 p-5 shadow-[0_22px_55px_-36px_rgba(88,28,135,0.55)] ${className}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-purple-600">SupportXMR en vivo</p>
@@ -232,7 +241,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <p className="mt-3 border-t border-white/10 pt-3 text-xs text-slate-400">Último share: {formatLastShare(poolLastHash)}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5">
           <Activity className="h-4 w-4 text-orange-500" />
           <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-slate-500">Tu hashrate</p>

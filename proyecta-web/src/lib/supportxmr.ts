@@ -161,6 +161,16 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
     localNativeMiners: isUnified ? parseHashCount(localNativeMiners) : undefined,
     localBrowserHashrate: isUnified ? parseDecimalLike(localBrowserHashrate) : undefined,
     localNativeHashrate: isUnified ? parseDecimalLike(localNativeHashrate) : undefined,
+    workerName: isUnified && typeof data?.workerName === 'string' ? data.workerName.trim() : undefined,
+    workerNames: isUnified && Array.isArray(data?.workerNames)
+      ? data.workerNames.filter((worker: unknown): worker is string => typeof worker === 'string' && Boolean(worker.trim())).map((worker: string) => worker.trim())
+      : undefined,
+    browserWorkerNames: isUnified && Array.isArray(data?.browserWorkerNames)
+      ? data.browserWorkerNames.filter((worker: unknown): worker is string => typeof worker === 'string' && Boolean(worker.trim())).map((worker: string) => worker.trim())
+      : undefined,
+    nativeWorkerNames: isUnified && Array.isArray(data?.nativeWorkerNames)
+      ? data.nativeWorkerNames.filter((worker: unknown): worker is string => typeof worker === 'string' && Boolean(worker.trim())).map((worker: string) => worker.trim())
+      : undefined,
     bridgeConnected: isUnified ? Boolean(data?.bridgeConnected) : undefined,
     bridgeMiners: isUnified ? parseHashCount(bridgeMiners) : undefined,
     bridgeAcceptedShares: isUnified ? parseHashCount(bridgeAcceptedShares) : undefined,
