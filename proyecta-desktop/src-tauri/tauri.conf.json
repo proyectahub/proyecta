@@ -23,7 +23,12 @@
       "active": true,
       "icon": ["icons/icon.ico", "icons/icon.png"],
       "identifier": "com.proyecta.mining",
-      "resources": ["binaries/xmrig.exe"]
+      "resources": ["binaries/xmrig.exe", "binaries/WinRing0x64.sys"],
+      "windows": {
+        "nsis": {
+          "installMode": "both"
+        }
+      }
     }
   }
 }

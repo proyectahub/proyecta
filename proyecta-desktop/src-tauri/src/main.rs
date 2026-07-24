@@ -89,8 +89,12 @@ fn start_mining(
         .path_resolver()
         .resolve_resource("binaries/xmrig.exe")
         .ok_or_else(|| "El motor de mineria no esta disponible en esta instalacion.".to_string())?;
+    let xmrig_directory = xmrig_path
+        .parent()
+        .ok_or_else(|| "No se pudo preparar el motor de mineria.".to_string())?;
 
     let mut command = Command::new(&xmrig_path);
+    command.current_dir(xmrig_directory);
 
     // XMRig runs as a background process controlled by the desktop application.
     // Do not expose its diagnostic console to the participant.
