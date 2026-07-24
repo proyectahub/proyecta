@@ -6,12 +6,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 
-#[cfg(windows)]
-use std::os::windows::process::CommandExt;
-
-#[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x08000000;
-
 #[derive(Serialize, Deserialize, Clone)]
 struct MiningConfig {
     wallet: String,
@@ -95,11 +89,6 @@ fn start_mining(
 
     let mut command = Command::new(&xmrig_path);
     command.current_dir(xmrig_directory);
-
-    // XMRig runs as a background process controlled by the desktop application.
-    // Do not expose its diagnostic console to the participant.
-    #[cfg(windows)]
-    command.creation_flags(CREATE_NO_WINDOW);
 
     let child = command
         .arg("-o")
