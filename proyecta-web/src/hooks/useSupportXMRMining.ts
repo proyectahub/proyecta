@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { resolveMiningApiBase } from '../lib/api'
+import { PROJECTS_API_BASE, resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 
 const BACKEND_URL = resolveMiningApiBase()
@@ -16,7 +16,7 @@ export function useSupportXMRStats(walletAddress: string, projectId?: string) {
       setLoading(true)
       try {
         const statsPath = projectId
-          ? `${BACKEND_URL}/project-stats/${encodeURIComponent(projectId)}/${encodeURIComponent(walletAddress)}`
+          ? `${PROJECTS_API_BASE}/projects/${encodeURIComponent(projectId)}/mining-stats`
           : `${BACKEND_URL}/pool-stats/${encodeURIComponent(walletAddress)}`
         const backendResponse = await fetch(statsPath)
         if (backendResponse.ok) {

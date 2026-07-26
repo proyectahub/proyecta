@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Activity, Cpu, ExternalLink, Radio, RefreshCw, Target, WalletCards, Zap } from 'lucide-react'
-import { resolveMiningApiBase } from '../lib/api'
+import { PROJECTS_API_BASE, resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
 
@@ -105,7 +105,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
     try {
       const encodedWallet = encodeURIComponent(wallet)
       const urls = projectId
-        ? [`${resolveMiningApiBase()}/project-stats/${encodeURIComponent(projectId)}/${encodedWallet}`]
+        ? [`${PROJECTS_API_BASE}/projects/${encodeURIComponent(projectId)}/mining-stats`]
         : [
             `${resolveMiningApiBase()}/pool-stats/${encodedWallet}`,
             `https://www.supportxmr.com/api/miner/${encodedWallet}/stats`,
