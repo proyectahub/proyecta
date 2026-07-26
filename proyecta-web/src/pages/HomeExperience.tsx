@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   Cpu,
+  Dna,
   ExternalLink,
   FlaskConical,
+  Microscope,
   Network,
   Search,
-  ShieldCheck,
+  Sprout,
   WalletCards,
 } from 'lucide-react'
 
-import { ProyectaBrandLockup, ProyectaMark } from '../components/brand/ProyectaBrand'
+import { ProyectaMark } from '../components/brand/ProyectaBrand'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
 import { PROJECTS_API_BASE } from '../lib/api'
@@ -24,6 +26,7 @@ type Project = {
   category: string
   fundingGoal: number
   fundraisingAddress: string
+  author: string
   authorName?: string
   raised: number
   status: string
@@ -105,65 +108,72 @@ export default function HomeExperience() {
   }, [])
 
   const visibleProjects = useMemo(
-    () => [...projects].sort((left, right) => right.createdAt - left.createdAt).slice(0, 3),
+    () =>
+      [...projects]
+        .sort((left, right) => right.createdAt - left.createdAt)
+        .slice(0, 1),
     [projects],
   )
   const totalRaised = projects.reduce((sum, project) => sum + Number(project.raised || 0), 0)
-  const totalGoal = projects.reduce((sum, project) => sum + Number(project.fundingGoal || 0), 0)
   const isAuthenticated = initialized && Boolean(user)
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-[38px] border border-rose-100 bg-slate-950 text-white shadow-[0_36px_90px_-48px_rgba(92,20,78,0.75)]">
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(244,114,182,0.28),transparent_34%),radial-gradient(circle_at_88%_20%,rgba(14,165,233,0.2),transparent_30%),linear-gradient(135deg,#170f1b_0%,#481441_48%,#0f172a_100%)]" />
-        <div aria-hidden="true" className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.08]" />
-        <div className="relative grid min-h-[520px] gap-10 p-7 md:p-11 lg:grid-cols-[minmax(0,1.2fr)_420px] lg:items-end">
-          <div className="space-y-7">
-            <ProyectaBrandLockup compact markSize={52} tone="light" />
-            <div className="max-w-4xl space-y-5">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-rose-100 backdrop-blur">
-                <Cpu size={15} /> Crowdfunding científico con minería Monero
+      <section className="relative isolate overflow-hidden rounded-[38px] border border-fuchsia-100 bg-[#fffafc] shadow-[0_36px_90px_-48px_rgba(155,51,128,0.35)]">
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_3%_8%,rgba(244,114,182,0.26),transparent_22%),radial-gradient(circle_at_97%_6%,rgba(216,180,254,0.38),transparent_24%),radial-gradient(circle_at_14%_100%,rgba(196,181,253,0.3),transparent_26%),radial-gradient(circle_at_88%_96%,rgba(251,113,133,0.18),transparent_25%),linear-gradient(135deg,#fffafd_0%,#fff8fa_48%,#faf5ff_100%)]" />
+        <video
+          className="proyecta-hero-motion absolute inset-0 h-full w-full object-cover opacity-45 mix-blend-multiply"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster="/page-assets/banners/proyecta-hero-poster.jpg"
+          aria-hidden="true"
+        >
+          <source src="/page-assets/banners/proyecta-research-hero.mp4" type="video/mp4" />
+        </video>
+        <div aria-hidden="true" className="absolute inset-0 bg-white/40" />
+        <div aria-hidden="true" className="absolute -left-10 bottom-[-55px] h-48 w-56 rotate-[-18deg] rounded-[100%] border-[18px] border-fuchsia-200/35" />
+        <div aria-hidden="true" className="absolute -right-10 top-[-65px] h-48 w-56 rotate-[18deg] rounded-[100%] border-[18px] border-violet-200/35" />
+        <Microscope aria-hidden="true" className="absolute bottom-12 left-10 h-20 w-20 rotate-[-12deg] text-violet-300/65 md:left-16" strokeWidth={1.25} />
+        <Dna aria-hidden="true" className="absolute right-12 top-[42%] h-24 w-24 rotate-[14deg] text-fuchsia-300/65 md:right-20" strokeWidth={1.2} />
+        <FlaskConical aria-hidden="true" className="absolute left-[31%] top-10 h-12 w-12 text-violet-300/70" strokeWidth={1.3} />
+        <Sprout aria-hidden="true" className="absolute bottom-9 right-[18%] h-16 w-16 text-rose-300/70" strokeWidth={1.2} />
+
+        <div className="relative grid min-h-[550px] place-items-center px-6 py-14 text-center md:px-12">
+          <div className="max-w-4xl space-y-6">
+            <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-fuchsia-200/80 bg-white/45 shadow-[0_20px_50px_-30px_rgba(192,38,211,0.65)] backdrop-blur-sm">
+              <ProyectaMark size={122} />
+            </div>
+            <div>
+              <p className="nova-title pb-2 text-5xl font-black leading-none tracking-[-0.08em] text-slate-950 sm:text-6xl md:text-8xl">
+                PROYEC<span className="text-fuchsia-600">TA</span>
               </p>
-              <h1 className="nova-title text-4xl font-black leading-[1.02] tracking-tight md:text-6xl">
-                Muchas computadoras. Una investigación que puede avanzar.
-              </h1>
-              <p className="max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
-                PROYECTA convierte aportes voluntarios de CPU en minería RandomX para financiar proyectos científicos. Cada proyecto publica su wallet y recibe XMR directamente desde el pool.
+              <div className="mt-4 flex items-center justify-center gap-4 text-fuchsia-600">
+                <span className="h-px w-12 bg-fuchsia-300 sm:w-24" />
+                <p className="text-sm font-black uppercase tracking-[0.32em] sm:text-lg">Investigación</p>
+                <span className="h-px w-12 bg-fuchsia-300 sm:w-24" />
+              </div>
+              <p className="mt-5 text-sm font-black uppercase tracking-[0.22em] text-violet-700 sm:text-lg md:text-xl">
+                Financiamiento colectivo para la ciencia
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <p className="mx-auto max-w-2xl text-base font-medium tracking-[0.08em] text-slate-700 sm:text-lg">
+              Cómputo colectivo para investigaciones reales
+            </p>
+            <p className="mx-auto max-w-2xl text-sm leading-7 text-slate-600">
+              Cada aporte voluntario de CPU ayuda a financiar ciencia abierta mediante RandomX, con XMR enviado directamente a la wallet pública de cada investigador.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
               <Link to="/projects" className="nova-button-solid px-6 py-3">
                 Explorar proyectos <ArrowRight size={17} />
               </Link>
-              <Link to={isAuthenticated ? '/create-project' : '/login?intent=publish'} className="nova-button-soft border-white/20 bg-white/10 px-6 py-3 text-white hover:bg-white/20">
+              <Link to={isAuthenticated ? '/create-project' : '/login?intent=publish'} className="nova-button-soft border-fuchsia-200 bg-white/80 px-6 py-3 text-slate-800 hover:bg-white">
                 Publicar investigación
               </Link>
             </div>
           </div>
-
-          <aside className="rounded-[30px] border border-white/15 bg-white/10 p-6 backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-200">Estado público</p>
-                <p className="mt-2 text-2xl font-black">Red abierta</p>
-              </div>
-              <ProyectaMark size={54} />
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-slate-950/35 p-4">
-                <p className="text-3xl font-black">{projects.length}</p>
-                <p className="mt-1 text-xs text-slate-300">proyectos visibles</p>
-              </div>
-              <div className="rounded-2xl bg-slate-950/35 p-4">
-                <p className="text-3xl font-black">{totalGoal.toFixed(2)}</p>
-                <p className="mt-1 text-xs text-slate-300">XMR en metas</p>
-              </div>
-              <div className="col-span-2 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4">
-                <p className="flex items-center gap-2 text-sm font-bold text-emerald-100"><ShieldCheck size={17} /> Sin custodia</p>
-                <p className="mt-2 text-xs leading-6 text-emerald-50/75">Las claves privadas nunca entran al portal. Solo se registra la dirección pública elegida por el investigador.</p>
-              </div>
-            </div>
-          </aside>
         </div>
       </section>
 
@@ -197,7 +207,12 @@ export default function HomeExperience() {
                         <span>{progress.toFixed(0)}%</span>
                       </div>
                       <h3 className="nova-title mt-3 text-2xl font-extrabold text-slate-900">{project.title}</h3>
-                      <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">{project.description}</p>
+                      <p className="mt-3 text-sm text-slate-500">
+                        Autor:{' '}
+                        <Link to={`/profile/${project.author}`} className="font-bold text-fuchsia-700 hover:text-fuchsia-900 hover:underline">
+                          {project.authorName || 'Investigador/a'}
+                        </Link>
+                      </p>
                     </div>
                     <div>
                       <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-rose-500" style={{ width: `${progress}%` }} /></div>

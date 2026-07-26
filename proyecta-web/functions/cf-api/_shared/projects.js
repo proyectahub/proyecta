@@ -54,6 +54,53 @@ function containsHtml(value) {
   return /<\/?[a-z][^>]*>/i.test(value)
 }
 
+function restoreEscapedProjectHtml(value) {
+  const raw = asText(value)
+  if (!/&lt;\/?[a-z][\s\S]*?&gt;/i.test(raw)) return raw
+
+  return raw
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(?:39|x27);/gi, "'")
+    .replace(/&amp;/gi, '&')
+}
+
+const PROJECT_HTML_TAGS = new Set(['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'hr', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul'])
+
+function safeProjectUrl(value, protocols) {
+  try {
+    return protocols.includes(new URL(value).protocol) ? value : ''
+  } catch {
+    return ''
+  }
+}
+
+function sanitizeProjectHtml(value) {
+  const raw = asText(value)
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<\s*(script|style|iframe|object|embed|svg|math)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+
+  return raw.replace(/<\s*(\/?)\s*([a-z0-9]+)([^>]*)>/gi, (_match, closing, rawTag, rawAttributes) => {
+    const tag = String(rawTag).toLowerCase()
+    if (!PROJECT_HTML_TAGS.has(tag)) return ''
+    if (closing) return `</${tag}>`
+    if (tag === 'br' || tag === 'hr') return `<${tag}>`
+    const textAlign = /\bstyle\s*=\s*["'][^"']*\btext-align\s*:\s*(left|center|right|justify)\s*;?[^"']*["']/i.exec(rawAttributes)?.[1]
+    const alignAttribute = textAlign && ['h1', 'h2', 'h3', 'p'].includes(tag) ? ` style="text-align:${textAlign.toLowerCase()}"` : ''
+    if (tag === 'a') {
+      const href = safeProjectUrl(/\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(rawAttributes)?.[1] || '', ['https:', 'http:', 'mailto:'])
+      return href ? `<a href="${href.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">` : '<a>'
+    }
+    if (tag === 'img') {
+      const src = safeProjectUrl(/\bsrc\s*=\s*["']?([^"'\s>]+)/i.exec(rawAttributes)?.[1] || '', ['https:'])
+      const alt = String(/\balt\s*=\s*["']?([^"'>]*)/i.exec(rawAttributes)?.[1] || '').replace(/[<>"']/g, '')
+      return src ? `<img src="${src.replace(/"/g, '&quot;')}" alt="${alt}">` : ''
+    }
+    return `<${tag}${alignAttribute}>`
+  })
+}
+
 const LEGACY_ENCODING_REPLACEMENTS = new Map([
   ['\u00c3\u00a1', '\u00e1'], ['\u00c3\u00a9', '\u00e9'], ['\u00c3\u00ad', '\u00ed'],
   ['\u00c3\u00b3', '\u00f3'], ['\u00c3\u00ba', '\u00fa'], ['\u00c3\u0081', '\u00c1'],
@@ -127,10 +174,11 @@ export function normalizeProjectPayload(input = {}) {
 
 export function mapProjectRow(row) {
   if (!row) return null
+  const description = restoreEscapedProjectHtml(row.description)
   return {
     id: row.id,
     title: legacyPlainText(row.title),
-    description: legacyPlainText(row.description),
+    description: containsHtml(description) ? sanitizeProjectHtml(description) : legacyPlainText(description),
     category: row.category,
     fundingGoal: Number(row.funding_goal || 0),
     fundraisingAddress: row.fundraising_address,
@@ -189,9 +237,8 @@ export async function saveProject(db, input, owner) {
     return json({ error: 'Faltan datos del proyecto.' }, { status: 400 })
   }
 
-  if (containsHtml(project.description)) {
-    return json({ error: 'La descripción debe contener solo texto plano.' }, { status: 400 })
-  }
+  project.description = restoreEscapedProjectHtml(project.description)
+  project.description = containsHtml(project.description) ? sanitizeProjectHtml(project.description) : legacyPlainText(project.description)
 
   await db.prepare(`
     INSERT INTO projects (
@@ -250,9 +297,8 @@ export async function updateProject(db, id, input, owner) {
     return json({ error: 'Faltan datos del proyecto.' }, { status: 400 })
   }
 
-  if (containsHtml(next.description)) {
-    return json({ error: 'La descripción debe contener solo texto plano.' }, { status: 400 })
-  }
+  next.description = restoreEscapedProjectHtml(next.description)
+  next.description = containsHtml(next.description) ? sanitizeProjectHtml(next.description) : legacyPlainText(next.description)
 
   await db.prepare(`
     UPDATE projects

@@ -12,6 +12,7 @@ interface DonateToProjectProps {
   projectTitle: string
   projectRaised?: number
   onMiningOptionSelected?: (option: 'browser' | 'app') => void
+  layout?: 'side' | 'vertical'
 }
 
 export function DonateToProject({
@@ -20,6 +21,7 @@ export function DonateToProject({
   moneroAddress,
   projectTitle,
   onMiningOptionSelected,
+  layout = 'side',
 }: DonateToProjectProps) {
   const walletAddress = moneroAddress || fundraisingAddress
   const mining = useMining()
@@ -88,7 +90,7 @@ export function DonateToProject({
 
   return (
     <>
-      <div className="nova-card max-w-2xl space-y-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 p-8">
+      <div className="nova-card space-y-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 p-8">
         <div className="space-y-2">
           <h3 className="text-xl font-bold text-slate-900">⛏️ Aporta tu poder de cómputo</h3>
           <p className="text-slate-700">
@@ -97,7 +99,7 @@ export function DonateToProject({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className={`grid grid-cols-1 gap-4 ${layout === 'side' ? 'md:grid-cols-2' : ''}`}>
           <button
             onClick={handleStartMining}
             className="space-y-3 rounded-lg border-2 border-blue-300 bg-white p-6 text-left transition hover:border-blue-500 hover:bg-blue-50"

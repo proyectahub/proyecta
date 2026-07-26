@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Portada predeterminada de PROYECTA</title>
+  <desc id="desc">Emblema de libro de PROYECTA sobre una composición científica rosa y violeta</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff7fc"/><stop offset=".55" stop-color="#f7ecff"/><stop offset="1" stop-color="#feeef6"/></linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e040a8"/><stop offset=".55" stop-color="#c026d3"/><stop offset="1" stop-color="#7a1e6e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="170" cy="120" r="180" fill="#f5c2e6" opacity=".35"/><circle cx="1050" cy="520" r="230" fill="#dac1fa" opacity=".38"/>
+  <path d="M0 450C180 370 250 590 440 470S720 340 900 450s190 20 300-30" fill="none" stroke="#d38ce4" stroke-width="3" opacity=".35"/>
+  <g transform="translate(490 145)"><rect width="220" height="220" rx="66" fill="url(#mark)"/><path d="M110 70C88 49 58 47 43 62c-11 11-11 27-11 43v64c0 7 6 13 13 13h48c10 0 18 4 25 12M110 70c22-21 52-23 67-8 11 11 11 27 11 43v64c0 7-6 13-13 13h-48c-10 0-18 4-25 12M110 73v121" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <text x="600" y="445" text-anchor="middle" fill="#17213d" font-family="Arial, sans-serif" font-size="48" font-weight="800">PROYECTA</text>
+  <text x="600" y="490" text-anchor="middle" fill="#7d668f" font-family="Arial, sans-serif" font-size="24" letter-spacing="5">INVESTIGACIÓN COLECTIVA</text>
+</svg>

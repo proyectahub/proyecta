@@ -14,6 +14,7 @@ interface Project {
   fundingGoal: number
   fundraisingAddress: string
   author: string
+  authorName?: string
   hitos: Array<{ name: string; payout: number; completed: boolean }>
   createdAt: number
   status: string
@@ -196,15 +197,15 @@ export function ProjectsExperience() {
               <ProjectFundraisingCard
                 projectId={project.id}
                 projectTitle={project.title}
-                projectDescription={project.description}
+                authorId={project.author}
+                authorName={project.authorName}
                 fundraisingAddress={project.fundraisingAddress}
                 goal={project.fundingGoal}
                 raised={project.raised}
                 hitos={project.hitos}
+                showDonation={false}
+                onOpenProject={() => navigate(`/projects/${project.id}`)}
               />
-              <button onClick={() => navigate(`/projects/${project.id}`)} className="nova-button-soft w-full justify-center">
-                Ver detalles y comentarios
-              </button>
             </div>
           ))}
         </div>

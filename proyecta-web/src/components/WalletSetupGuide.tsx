@@ -63,11 +63,13 @@ export function WalletSetupGuide() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [editingSavedWallet, setEditingSavedWallet] = useState(false)
 
   useEffect(() => {
     setMainAddress(user?.moneroWallet?.mainAddress || '')
     setWalletMode(user?.walletMode || 'external')
     setWalletWebUrl(user?.walletWebUrl || DEFAULT_MONERO_WEB_URL)
+    setEditingSavedWallet(false)
   }, [user])
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export function WalletSetupGuide() {
   }, [])
 
   const linkedWallet = user?.moneroWallet
+  const walletIsLocked = Boolean(linkedWallet?.mainAddress) && !editingSavedWallet
   const shortAddress = useMemo(() => {
     if (!linkedWallet?.mainAddress) return ''
     return `${linkedWallet.mainAddress.slice(0, 18)}...${linkedWallet.mainAddress.slice(-10)}`
@@ -154,6 +157,7 @@ export function WalletSetupGuide() {
       })
       clearPendingMoneroDraft()
       setSaved(true)
+      setEditingSavedWallet(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible guardar la wallet.')
     } finally {
@@ -194,14 +198,21 @@ export function WalletSetupGuide() {
             </div>
             <button
               type="button"
-              onClick={() => setMainAddress(linkedWallet.mainAddress)}
+              onClick={() => {
+                setMainAddress(linkedWallet.mainAddress)
+                setWalletMode(user?.walletMode || 'external')
+                setWalletWebUrl(user?.walletWebUrl || DEFAULT_MONERO_WEB_URL)
+                setError(null)
+                setSaved(false)
+                setEditingSavedWallet(true)
+              }}
               className="nova-button-soft text-sm"
             >
-              Cargar vínculo actual
+              Editar wallet
             </button>
           </div>
           <p className="mt-3 text-sm leading-7 text-emerald-800">
-            Vinculada el {new Date(linkedWallet.linkedAt).toLocaleDateString()}. Esta es la dirección que se usa al crear proyectos y recibir fondos.
+            Vinculada el {new Date(linkedWallet.linkedAt).toLocaleDateString()}. Esta es tu wallet predeterminada para proyectos nuevos. Los proyectos ya publicados conservan la dirección que tenían vinculada.
           </p>
         </div>
       ) : null}
@@ -216,24 +227,26 @@ export function WalletSetupGuide() {
           <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() => setWalletMode('external')}
+              onClick={() => !walletIsLocked && setWalletMode('external')}
+              disabled={walletIsLocked}
               className={`rounded-[18px] border-2 p-4 text-left transition ${
                 walletMode === 'external'
                   ? 'border-fuchsia-500 bg-fuchsia-50'
                   : 'border-slate-200 bg-white hover:border-slate-300'
-              }`}
+              } ${walletIsLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <p className="text-sm font-black text-slate-900">Dirección externa</p>
               <p className="mt-2 text-xs leading-6 text-slate-600">Guardas solo tu dirección Monero personal para recibir fondos sin panel adicional.</p>
             </button>
             <button
               type="button"
-              onClick={() => setWalletMode('monero_web')}
+              onClick={() => !walletIsLocked && setWalletMode('monero_web')}
+              disabled={walletIsLocked}
               className={`rounded-[18px] border-2 p-4 text-left transition ${
                 walletMode === 'monero_web'
                   ? 'border-fuchsia-500 bg-fuchsia-50'
                   : 'border-slate-200 bg-white hover:border-slate-300'
-              }`}
+              } ${walletIsLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <p className="text-sm font-black text-slate-900">Monero Web</p>
               <p className="mt-2 text-xs leading-6 text-slate-600">Abre el panel aislado, sigue la guía paso a paso y pega aquí la dirección pública que quieras asociar al proyecto.</p>
@@ -247,11 +260,16 @@ export function WalletSetupGuide() {
               value={mainAddress}
               onChange={(e) => setMainAddress(e.target.value)}
               placeholder={walletMode === 'monero_web' ? 'Abre la guía visual para continuar' : '4AWcSZ...'}
-              className="nova-field font-mono text-sm"
+              className={`nova-field font-mono text-sm ${walletIsLocked ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
+              readOnly={walletIsLocked}
               autoComplete="off"
               spellCheck={false}
             />
-            <p className="text-xs text-slate-500">Dirección pública de 95 caracteres para recibir XMR.</p>
+            <p className="text-xs text-slate-500">
+              {walletIsLocked
+                ? 'Wallet predeterminada bloqueada para evitar cambios accidentales. Usa Editar wallet para actualizarla.'
+                : 'Dirección pública de 95 caracteres para recibir XMR.'}
+            </p>
           </div>
 
           {walletMode === 'monero_web' ? (
@@ -288,8 +306,8 @@ export function WalletSetupGuide() {
           ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button onClick={handleSaveWallet} disabled={loading} className="nova-button-solid w-full py-3 disabled:opacity-60">
-              {loading ? 'Guardando...' : 'Guardar wallet'}
+            <button onClick={handleSaveWallet} disabled={loading || walletIsLocked} className="nova-button-solid w-full py-3 disabled:opacity-60">
+              {loading ? 'Guardando...' : walletIsLocked ? 'Wallet configurada' : linkedWallet ? 'Actualizar wallet' : 'Guardar wallet'}
             </button>
             <button type="button" onClick={() => window.open(buildMoneroWebBridgeUrl(walletWebUrl), '_blank', 'noopener,noreferrer')} className="nova-button-soft w-full py-3">
               Abrir panel
@@ -297,6 +315,21 @@ export function WalletSetupGuide() {
             <button type="button" onClick={handleOpenVerify} className="nova-button-soft w-full py-3">
               Verificación
             </button>
+            {editingSavedWallet ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMainAddress(linkedWallet?.mainAddress || '')
+                  setWalletMode(user?.walletMode || 'external')
+                  setWalletWebUrl(user?.walletWebUrl || DEFAULT_MONERO_WEB_URL)
+                  setEditingSavedWallet(false)
+                  setError(null)
+                }}
+                className="nova-button-soft w-full py-3"
+              >
+                Cancelar edición
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -307,7 +340,7 @@ export function WalletSetupGuide() {
           </div>
           <ul className="space-y-3 text-sm leading-7 text-slate-700">
             <li>Se guarda en tu perfil como dirección personal del investigador.</li>
-            <li>Al crear un proyecto, esa dirección se usa como destino principal de recaudación.</li>
+            <li>Al crear un proyecto, esa dirección se propone automáticamente como destino principal de recaudación.</li>
             <li>Si eliges Monero Web, la dirección que copies puede volver al perfil mediante el puente aislado.</li>
           </ul>
           <div className="rounded-[18px] border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
@@ -318,7 +351,7 @@ export function WalletSetupGuide() {
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <ArrowRight className="h-4 w-4" />
-            En cualquier momento puedes cambiar la preferencia, abrir la guía visual o actualizar la dirección vinculada.
+            Puedes editar la wallet desde este perfil cuando sea necesario. El cambio se aplica a proyectos nuevos, sin alterar los proyectos ya publicados.
           </div>
         </div>
       </div>

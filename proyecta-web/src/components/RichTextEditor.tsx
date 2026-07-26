@@ -1,6 +1,17 @@
-import { useMemo, useRef } from 'react'
-import { Bold, Heading2, ImageIcon, Italic, Link2, List, Wand2 } from 'lucide-react'
-import { sanitizeRichHtml } from '../utils/sanitizeRichHtml'
+import { useEffect, useRef, type ReactNode } from 'react'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
+import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
+import Placeholder from '@tiptap/extension-placeholder'
+import TextAlign from '@tiptap/extension-text-align'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
+import {
+  AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, Code2, Heading1, Heading2, Heading3, Image as ImageIcon, Italic, Link2,
+  List, ListOrdered, Pilcrow, Quote, Redo2, RemoveFormatting, Strikethrough,
+  Table2, Underline as UnderlineIcon, Undo2,
+} from 'lucide-react'
 
 interface RichTextEditorProps {
   value: string
@@ -9,258 +20,91 @@ interface RichTextEditorProps {
   showTemplate?: boolean
 }
 
-const SECTION_TITLES = new Set([
-  'Título del proyecto',
-  'Resumen',
-  'Objetivo',
-  'Metodología',
-  'Impacto esperado',
-  'Presupuesto',
-])
+export const PROJECT_DESCRIPTION_TEMPLATE = `
+<h2><strong>Resumen</strong></h2><p><em>Recomendación: explica el problema científico, a quién afecta y por qué vale la pena atenderlo.</em></p>
+<h2><strong>Objetivo</strong></h2><p><em>Recomendación: describe con claridad qué resultado concreto buscas alcanzar con este proyecto.</em></p>
+<h2><strong>Metodología</strong></h2><p><em>Recomendación: resume cómo trabajarás, qué herramientas utilizarás y qué actividades se financiarán.</em></p>
+<h2><strong>Impacto esperado</strong></h2><p><em>Recomendación: cuenta qué cambiará si el proyecto avanza y quién se beneficiará de sus resultados.</em></p>
+<h2><strong>Uso de fondos</strong></h2><p><em>Recomendación: detalla cómo se usarán los fondos, con prioridades claras y razones verificables.</em></p>`
 
-function escapeHtml(input: string) {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+function ToolbarButton({ active, label, onClick, children }: { active?: boolean, label: string, onClick: () => void, children: ReactNode }) {
+  return <button type="button" title={label} aria-label={label} onClick={onClick} className={`rounded-xl p-2 transition ${active ? 'bg-fuchsia-100 text-fuchsia-700' : 'text-slate-600 hover:bg-white hover:text-slate-950'}`}>{children}</button>
 }
 
-function inlineFormat(input: string) {
-  return escapeHtml(input)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-}
+export function RichTextEditor({ value, onChange, placeholder = 'Escribe aquí...', showTemplate = true }: RichTextEditorProps) {
+  const lastValue = useRef(value)
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3] } }), Underline,
+      Link.configure({ openOnClick: false, autolink: true, defaultProtocol: 'https://' }),
+      Image.configure({ allowBase64: false }),
+      Placeholder.configure({ placeholder }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Table.configure({ resizable: true }), TableRow, TableHeader, TableCell,
+    ],
+    content: value,
+    editorProps: { attributes: { class: 'proyecta-rich-editor min-h-[360px] px-5 py-5 outline-none [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-slate-950 [&_p]:my-3 [&_em]:text-slate-400 [&_em]:font-normal' } },
+    onUpdate: ({ editor: nextEditor }) => {
+      const html = nextEditor.getHTML()
+      lastValue.current = html
+      onChange(html)
+    },
+  })
 
-function renderPreview(value: string) {
-  const lines = value.replace(/\r\n/g, '\n').split('\n')
-  const blocks: string[] = []
-  let paragraph: string[] = []
+  useEffect(() => {
+    if (!editor || value === lastValue.current) return
+    editor.commands.setContent(value || '<p></p>', { emitUpdate: false })
+    lastValue.current = value
+  }, [editor, value])
 
-  const flushParagraph = () => {
-    if (!paragraph.length) return
-    blocks.push(`<p>${inlineFormat(paragraph.join(' '))}</p>`)
-    paragraph = []
+  if (!editor) return null
+
+  const setLink = () => {
+    const previousUrl = editor.getAttributes('link').href as string | undefined
+    const url = window.prompt('Pega un enlace seguro (https://, http:// o mailto:)', previousUrl || '')
+    if (url === null) return
+    if (!url.trim()) editor.chain().focus().unsetLink().run()
+    else editor.chain().focus().setLink({ href: url.trim() }).run()
   }
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim()
-
-    if (!line) {
-      flushParagraph()
-      continue
-    }
-
-    if (line.startsWith('- ')) {
-      flushParagraph()
-      blocks.push(`<ul><li>${inlineFormat(line.slice(2))}</li></ul>`)
-      continue
-    }
-
-    if (SECTION_TITLES.has(line)) {
-      flushParagraph()
-      const level = line === 'Título del proyecto' ? 'h1' : 'h2'
-      blocks.push(`<${level}>${inlineFormat(line)}</${level}>`)
-      continue
-    }
-
-    if (/^#{1,3}\s+/.test(line)) {
-      flushParagraph()
-      const hashCount = line.match(/^#+/)?.[0].length ?? 1
-      const level = Math.min(hashCount + 1, 3)
-      const title = line.replace(/^#{1,3}\s+/, '')
-      blocks.push(`<h${level}>${inlineFormat(title)}</h${level}>`)
-      continue
-    }
-
-    paragraph.push(rawLine)
-  }
-
-  flushParagraph()
-  return blocks.join('')
-}
-
-export function RichTextEditor({
-  value,
-  onChange,
-  placeholder = 'Escribe tu descripción...',
-  showTemplate = true,
-}: RichTextEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const previewHtml = useMemo(() => renderPreview(value), [value])
-
-  const applySelection = (before: string, after = before) => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart ?? value.length
-    const end = textarea.selectionEnd ?? value.length
-    const selected = value.slice(start, end)
-    const nextValue = `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`
-    onChange(nextValue)
-
-    requestAnimationFrame(() => {
-      textarea.focus()
-      const selectionStart = start + before.length
-      const selectionEnd = selectionStart + selected.length
-      textarea.setSelectionRange(selectionStart, selectionEnd)
-    })
-  }
-
-  const insertLine = (line: string) => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart ?? value.length
-    const end = textarea.selectionEnd ?? value.length
-    const before = start > 0 && value[start - 1] !== '\n' ? '\n' : ''
-    const after = end < value.length && value[end] !== '\n' ? '\n' : ''
-    const nextValue = `${value.slice(0, start)}${before}${line}${after}${value.slice(end)}`
-    onChange(nextValue)
-
-    requestAnimationFrame(() => {
-      textarea.focus()
-      const caret = start + before.length + line.length
-      textarea.setSelectionRange(caret, caret)
-    })
-  }
-
-  const insertBlock = (block: string) => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart ?? value.length
-    const end = textarea.selectionEnd ?? value.length
-    const needsPrefixBreak = start > 0 && value[start - 1] !== '\n'
-    const needsSuffixBreak = end < value.length && value[end] !== '\n'
-    const prefixBreak = needsPrefixBreak ? '\n' : ''
-    const suffixBreak = needsSuffixBreak ? '\n' : ''
-    const nextValue = `${value.slice(0, start)}${prefixBreak}${block}${value.slice(start, end)}${suffixBreak}${value.slice(end)}`
-    onChange(nextValue)
-
-    requestAnimationFrame(() => {
-      textarea.focus()
-      const caret = start + prefixBreak.length + block.length
-      textarea.setSelectionRange(caret, caret)
-    })
-  }
-
-  const insertTemplate = () => {
-    onChange([
-      'Título del proyecto',
-      '',
-      'Resumen',
-      'Explica el problema científico y por qué importa.',
-      '',
-      'Objetivo',
-      'Describe qué quieres lograr con este proyecto.',
-      '',
-      'Metodología',
-      'Resume cómo vas a trabajar, qué herramientas usarás y qué parte se financiará.',
-      '',
-      'Impacto esperado',
-      'Cuenta qué cambia si el proyecto avanza.',
-      '',
-      'Presupuesto',
-      'Detalla cómo se usarán los fondos y por qué es necesario.',
-    ].join('\n'))
-    requestAnimationFrame(() => textareaRef.current?.focus())
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Tab') {
-      event.preventDefault()
-      const textarea = textareaRef.current
-      if (!textarea) return
-
-      const start = textarea.selectionStart ?? value.length
-      const end = textarea.selectionEnd ?? value.length
-      const insert = '  '
-      const nextValue = `${value.slice(0, start)}${insert}${value.slice(end)}`
-      onChange(nextValue)
-
-      requestAnimationFrame(() => {
-        textarea.focus()
-        textarea.setSelectionRange(start + insert.length, start + insert.length)
-      })
-      return
-    }
-
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'b') {
-      event.preventDefault()
-      applySelection('**')
-      return
-    }
-
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'i') {
-      event.preventDefault()
-      applySelection('*')
-    }
+  const addImage = () => {
+    const src = window.prompt('Pega la URL HTTPS de la imagen')
+    if (src?.trim()) editor.chain().focus().setImage({ src: src.trim(), alt: 'Imagen del proyecto' }).run()
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 rounded-t-[28px] border-b border-fuchsia-100 bg-white/80 px-4 py-3">
-        <button type="button" onClick={() => applySelection('**')} className="nova-button-soft px-3 py-2 text-xs font-bold" title="Negrita">
-          <Bold size={14} />
-          B
-        </button>
-        <button type="button" onClick={() => applySelection('*')} className="nova-button-soft px-3 py-2 text-xs italic" title="Cursiva">
-          <Italic size={14} />
-          I
-        </button>
-        <button type="button" onClick={() => insertLine('Título del proyecto')} className="nova-button-soft px-3 py-2 text-xs font-bold" title="Título del proyecto">
-          <Heading2 size={14} />
-          Título
-        </button>
-        <button type="button" onClick={() => insertBlock('- ')} className="nova-button-soft px-3 py-2 text-xs font-bold" title="Lista">
-          <List size={14} />
-          Lista
-        </button>
-        <button type="button" onClick={() => insertBlock('[texto](https://)')} className="nova-button-soft px-3 py-2 text-xs font-bold" title="Enlace">
-          <Link2 size={14} />
-          Enlace
-        </button>
-        <button type="button" onClick={() => insertBlock('![imagen](https://)')} className="nova-button-soft px-3 py-2 text-xs font-bold" title="Imagen">
-          <ImageIcon size={14} />
-          Imagen
-        </button>
-        {showTemplate ? (
-          <button type="button" onClick={insertTemplate} className="ml-auto inline-flex items-center gap-1 rounded-full bg-fuchsia-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-700">
-            <Wand2 className="h-4 w-4" />
-            Estructura
-          </button>
-        ) : null}
+    <div className="overflow-hidden bg-white">
+      <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-stone-50 px-3 py-2">
+        <ToolbarButton label="Negrita" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={17} /></ToolbarButton>
+        <ToolbarButton label="Cursiva" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={17} /></ToolbarButton>
+        <ToolbarButton label="Subrayado" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon size={17} /></ToolbarButton>
+        <ToolbarButton label="Tachado" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough size={17} /></ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-slate-200" />
+        <ToolbarButton label="Título principal" active={editor.isActive('heading', { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 size={18} /></ToolbarButton>
+        <ToolbarButton label="Título de sección" active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 size={18} /></ToolbarButton>
+        <ToolbarButton label="Subtítulo" active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 size={18} /></ToolbarButton>
+        <ToolbarButton label="Párrafo" active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}><Pilcrow size={17} /></ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-slate-200" />
+        <ToolbarButton label="Alinear a la izquierda" active={editor.isActive({ textAlign: 'left' })} onClick={() => editor.chain().focus().setTextAlign('left').run()}><AlignLeft size={17} /></ToolbarButton>
+        <ToolbarButton label="Centrar texto" active={editor.isActive({ textAlign: 'center' })} onClick={() => editor.chain().focus().setTextAlign('center').run()}><AlignCenter size={17} /></ToolbarButton>
+        <ToolbarButton label="Alinear a la derecha" active={editor.isActive({ textAlign: 'right' })} onClick={() => editor.chain().focus().setTextAlign('right').run()}><AlignRight size={17} /></ToolbarButton>
+        <ToolbarButton label="Justificar texto" active={editor.isActive({ textAlign: 'justify' })} onClick={() => editor.chain().focus().setTextAlign('justify').run()}><AlignJustify size={17} /></ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-slate-200" />
+        <ToolbarButton label="Lista con viñetas" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}><List size={18} /></ToolbarButton>
+        <ToolbarButton label="Lista numerada" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered size={18} /></ToolbarButton>
+        <ToolbarButton label="Cita" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote size={17} /></ToolbarButton>
+        <ToolbarButton label="Código" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code2 size={17} /></ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-slate-200" />
+        <ToolbarButton label="Enlace" active={editor.isActive('link')} onClick={setLink}><Link2 size={17} /></ToolbarButton>
+        <ToolbarButton label="Imagen por URL" onClick={addImage}><ImageIcon size={17} /></ToolbarButton>
+        <ToolbarButton label="Insertar tabla" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={17} /></ToolbarButton>
+        <ToolbarButton label="Quitar formato" onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}><RemoveFormatting size={17} /></ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-slate-200" />
+        <ToolbarButton label="Deshacer" onClick={() => editor.chain().focus().undo().run()}><Undo2 size={17} /></ToolbarButton>
+        <ToolbarButton label="Rehacer" onClick={() => editor.chain().focus().redo().run()}><Redo2 size={17} /></ToolbarButton>
+        {showTemplate ? <button type="button" onClick={() => editor.chain().focus().setContent(PROJECT_DESCRIPTION_TEMPLATE).run()} className="ml-auto rounded-full bg-fuchsia-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-700">Restablecer estructura</button> : null}
       </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-slate-200 bg-white/90 p-1 shadow-sm">
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            spellCheck
-            dir="ltr"
-            className="min-h-[420px] w-full resize-y rounded-[22px] border-0 bg-transparent px-5 py-5 text-left text-base leading-7 outline-none placeholder:text-slate-400 focus:ring-0"
-            style={{ whiteSpace: 'pre-wrap', tabSize: 4, direction: 'ltr', unicodeBidi: 'plaintext' }}
-          />
-        </div>
-
-        <div className="rounded-[24px] border border-fuchsia-200 bg-gradient-to-br from-white via-fuchsia-50/40 to-orange-50/35 p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Vista previa</p>
-            <p className="text-xs text-slate-400">Cómo se verá la descripción</p>
-          </div>
-          <div
-            className="prose prose-slate max-w-none prose-h1:mb-3 prose-h1:text-3xl prose-h1:font-black prose-h1:text-slate-900 prose-h2:mb-2 prose-h2:mt-5 prose-h2:text-xl prose-h2:font-black prose-h2:text-slate-900 prose-p:my-2 prose-p:leading-7 prose-strong:text-slate-900 prose-code:rounded prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-xs"
-            dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(previewHtml || `<p>${escapeHtml(placeholder)}</p>`) }}
-          />
-        </div>
-      </div>
+      <EditorContent editor={editor} />
+      <div className="border-t border-slate-100 bg-slate-50 px-5 py-2 text-xs text-slate-500">Contenido estructurado para lectura pública. Las imágenes deben usar una URL HTTPS.</div>
     </div>
   )
 }

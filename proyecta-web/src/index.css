@@ -12,6 +12,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .proyecta-hero-motion {
+    display: none;
+  }
+}
+
 /* TipTap Editor Styles */
 .ProseMirror {
   outline: none;

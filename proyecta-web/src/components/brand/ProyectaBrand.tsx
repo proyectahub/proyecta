@@ -62,8 +62,8 @@ export function ProyectaBrandLockup({
   className = "",
   markSize = 56,
   tone = "default",
-  subtitle = "Apoyo mutuo y comunitario para la ciencia",
-  tagline = "Sostengamos juntos la investigación: una red de apoyo mutuo, descentralizada y libre",
+  subtitle = "Investigación",
+  tagline = "Financiamiento colectivo para la ciencia",
   compact = false,
 }: ProyectaBrandLockupProps) {
   const isLight = tone === "light"

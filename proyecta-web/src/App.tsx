@@ -46,6 +46,9 @@ const MoneroEducationExperience = lazy(() =>
 const UserProfileExperience = lazy(() =>
   import("./pages/UserProfileExperience").then((module) => ({ default: module.UserProfileExperience })),
 )
+const ForumExperience = lazy(() =>
+  import("./pages/ForumExperience").then((module) => ({ default: module.ForumExperience })),
+)
 const WalletWebExperience = lazy(() =>
   import("./pages/WalletWebExperience").then((module) => ({ default: module.WalletWebExperience })),
 )
@@ -146,6 +149,7 @@ function AppRoutes() {
       <Route element={<LayoutWrapper />}>
         <Route path="/" element={<Home />} />
         <Route path="/projects" element={<ProjectsExperience />} />
+        <Route path="/foro" element={<ForumExperience />} />
         <Route path="/projects/:id" element={<ProjectDetailsExperience />} />
         <Route path="/create" element={<CreateProjectExperience />} />
         <Route path="/sobre-monero" element={<MoneroEducationExperience />} />

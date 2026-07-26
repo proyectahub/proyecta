@@ -1,13 +1,18 @@
 import { DonateToProject } from './DonateToProject'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
+import { Link } from 'react-router-dom'
 
 interface ProjectFundraisingCardProps {
   projectId: string
   projectTitle: string
-  projectDescription: string
+  authorId?: string
+  authorName?: string
+  showProjectIdentity?: boolean
+  onOpenProject?: () => void
   fundraisingAddress: string
   goal: number
   raised: number
+  showDonation?: boolean
   onMiningOptionSelected?: (option: 'browser' | 'app') => void
   hitos?: Array<{
     name: string
@@ -19,10 +24,14 @@ interface ProjectFundraisingCardProps {
 export function ProjectFundraisingCard({
   projectId,
   projectTitle,
-  projectDescription,
+  authorId,
+  authorName,
+  showProjectIdentity = true,
+  onOpenProject,
   fundraisingAddress,
   goal,
   raised,
+  showDonation = true,
   onMiningOptionSelected,
   hitos = [],
 }: ProjectFundraisingCardProps) {
@@ -32,16 +41,34 @@ export function ProjectFundraisingCard({
   const progress = safeGoal > 0 ? Math.min((safeRaised / safeGoal) * 100, 100) : 0
   const remaining = Math.max(safeGoal - safeRaised, 0)
   const safeHitos = Array.isArray(hitos) ? hitos : []
-
   return (
     <div className="space-y-6">
-      <div className="nova-card p-8 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          <div className="md:col-span-2 space-y-4">
-            <div>
-              <h2 className="nova-title text-2xl">{projectTitle}</h2>
-              <p className="text-slate-600 mt-2">{projectDescription}</p>
-            </div>
+      <div className={`grid grid-cols-1 items-start gap-6 ${showDonation ? 'lg:grid-cols-[minmax(0,1fr)_22rem]' : ''}`}>
+        <section
+          className={`nova-card space-y-4 bg-gradient-to-br from-blue-50 to-purple-50 p-8 ${onOpenProject ? 'cursor-pointer transition hover:-translate-y-0.5 hover:border-fuchsia-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500' : ''}`}
+          onClick={onOpenProject}
+          onKeyDown={(event) => {
+            if (onOpenProject && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault()
+              onOpenProject()
+            }
+          }}
+          role={onOpenProject ? 'link' : undefined}
+          tabIndex={onOpenProject ? 0 : undefined}
+        >
+            {showProjectIdentity ? (
+              <div>
+                <h2 className="nova-title text-2xl">{projectTitle}</h2>
+                {authorId ? (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Autor:{' '}
+                    <Link to={`/profile/${authorId}`} onClick={(event) => event.stopPropagation()} className="font-bold text-fuchsia-700 hover:text-fuchsia-900 hover:underline">
+                      {authorName || 'Investigador/a'}
+                    </Link>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="space-y-3">
               <div className="flex justify-between items-center">
@@ -90,7 +117,10 @@ export function ProjectFundraisingCard({
                   {fundraisingAddress}
                 </code>
                 <button
-                  onClick={() => navigator.clipboard.writeText(fundraisingAddress)}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    void navigator.clipboard.writeText(fundraisingAddress)
+                  }}
                   className="nova-button-soft text-xs px-4"
                 >
                   Copiar
@@ -100,9 +130,10 @@ export function ProjectFundraisingCard({
                 Monero no publica el saldo de una dirección. La actividad minera y los pagos se verifican mediante SupportXMR.
               </p>
             </div>
-          </div>
+        </section>
 
-          <div className="md:sticky md:top-6 h-fit">
+        {showDonation ? (
+          <aside className="h-fit lg:sticky lg:top-6">
             <DonateToProject
               projectId={projectId}
               fundraisingAddress={fundraisingAddress}
@@ -111,8 +142,8 @@ export function ProjectFundraisingCard({
               projectRaised={safeRaised}
               onMiningOptionSelected={onMiningOptionSelected}
             />
-          </div>
-        </div>
+          </aside>
+        ) : null}
       </div>
 
       {safeHitos.length > 0 && (

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Wand2 } from 'lucide-react'
-import { RichTextEditor } from '../components/RichTextEditor'
+import { PROJECT_DESCRIPTION_TEMPLATE, RichTextEditor } from '../components/RichTextEditor'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTraditionalAuth } from '../context/TraditionalAuthContext'
 import { isValidProjectWalletAddress, normalizeProjectWalletAddress } from '../utils/projectWallet'
 import { PROJECTS_API_BASE } from '../lib/api'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
+import { ProyectaMark } from '../components/brand/ProyectaBrand'
+import { sanitizeRichHtml } from '../utils/sanitizeRichHtml'
+
+const DEFAULT_PROJECT_COVER = '/page-assets/default-project-cover.svg'
 
 const CATEGORIES: Record<string, string> = {
   biology: 'Biología',
@@ -27,7 +30,7 @@ export function CreateProjectExperience() {
 
   const [step, setStep] = useState('info')
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const [description, setDescription] = useState(PROJECT_DESCRIPTION_TEMPLATE)
   const [coverImage, setCoverImage] = useState<string | null>(null)
   const [category, setCategory] = useState('biology')
   const [fundingGoal, setFundingGoal] = useState('')
@@ -120,28 +123,6 @@ export function CreateProjectExperience() {
   }
 
 
-  const applyProjectTemplate = () => {
-    const template = [
-      'Título del proyecto',
-      '',
-      'Resumen',
-      'Explica el problema científico y por qué importa.',
-      '',
-      'Objetivo',
-      'Describe qué quieres lograr con este proyecto.',
-      '',
-      'Metodología',
-      'Resume cómo vas a trabajar, qué herramientas usarás y qué parte se financiará.',
-      '',
-      'Impacto esperado',
-      'Cuenta qué cambia si el proyecto avanza.',
-      '',
-      'Presupuesto',
-      'Detalla cómo se usarán los fondos y por qué es necesario.',
-    ].join('\n')
-    setDescription(template)
-  }
-
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -155,7 +136,7 @@ export function CreateProjectExperience() {
 
   const canProceed = () => {
     if (step === 'info') {
-      return title.trim().length > 0 && description.replace(/<[^>]+>/g, '').trim().length > 20 && coverImage
+      return title.trim().length > 0 && description.replace(/<[^>]+>/g, '').trim().length > 20
     }
     if (step === 'funding') {
       if (parseFloat(fundingGoal) <= 0) {
@@ -212,7 +193,7 @@ export function CreateProjectExperience() {
             {/* Imagen de portada */}
             <div className="space-y-3">
               <label className="block text-sm font-bold text-slate-700">
-                Imagen de portada *
+                Imagen de portada (opcional)
               </label>
               <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
                 {coverImage ? (
@@ -231,9 +212,10 @@ export function CreateProjectExperience() {
                   </div>
                 ) : (
                   <div className="space-y-3 py-6">
-                    <p className="text-3xl"></p>
-                    <p className="font-bold text-slate-900">Sube una imagen de portada</p>
-                    <p className="text-xs text-slate-500">PNG o JPG (mx. 5MB)</p>
+                    <ProyectaMark size={56} className="mx-auto" />
+                    <p className="font-bold text-slate-900">Agrega una imagen para dar identidad al proyecto</p>
+                    <p className="mx-auto max-w-md text-xs leading-6 text-slate-500">Es recomendable, pero no obligatoria. Si no agregas una, se usará la portada predeterminada con el libro de PROYECTA.</p>
+                    <p className="text-xs text-slate-500">PNG o JPG (máx. 5 MB)</p>
                     <button
                       onClick={() => document.getElementById('cover-input')?.click()}
                       className="nova-button-solid text-sm mx-auto"
@@ -260,17 +242,9 @@ export function CreateProjectExperience() {
                     Descripción del proyecto *
                   </label>
                   <p className="text-xs text-slate-500">
-                    Usa títulos, negritas, cursivas, listas y párrafos. La escritura normal sigue funcionando.
+                    La estructura inicial mantiene un estándar claro: reemplaza cada recomendación tenue con información concreta de tu investigación. Puedes ampliar el contenido sin eliminar los apartados principales.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={applyProjectTemplate}
-                  className="nova-button-soft inline-flex items-center gap-2 text-xs"
-                >
-                  <Wand2 size={14} />
-                  Insertar estructura
-                </button>
               </div>
 
               <div className="overflow-hidden rounded-[28px] border border-fuchsia-200 bg-gradient-to-br from-white via-fuchsia-50/50 to-orange-50/40 shadow-[0_18px_45px_rgba(192,38,211,0.12)]">
@@ -278,7 +252,7 @@ export function CreateProjectExperience() {
                   value={description}
                   onChange={setDescription}
                   placeholder="Describe tu proyecto con una estructura profesional."
-                  showTemplate={false}
+                  showTemplate
                 />
               </div>
               <p className="text-xs text-slate-500">
@@ -475,7 +449,7 @@ export function CreateProjectExperience() {
       const projectData = {
         title,
         description,
-        coverImage,
+        coverImage: coverImage || DEFAULT_PROJECT_COVER,
         category,
         fundingGoal: parseFloat(fundingGoal),
         fundraisingAddress: projectMoneroAddress,
@@ -534,12 +508,10 @@ export function CreateProjectExperience() {
         <div className="max-w-4xl mx-auto">
           <div className="nova-card p-8 space-y-6">
             {/* Vista previa de portada */}
-            {coverImage && (
-              <div>
-                <p className="text-xs font-bold uppercase text-slate-500 mb-2">Imagen de portada</p>
-                <img src={coverImage} alt={title} className="w-full h-64 object-cover rounded-lg" />
-              </div>
-            )}
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500 mb-2">Imagen de portada</p>
+              <img src={coverImage || DEFAULT_PROJECT_COVER} alt={title || 'Portada predeterminada de PROYECTA'} className="w-full h-64 object-cover rounded-lg" />
+            </div>
 
             {/* Información */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -556,8 +528,8 @@ export function CreateProjectExperience() {
             {/* Descripción */}
             <div>
               <p className="text-xs font-bold uppercase text-slate-500 mb-2">Descripción</p>
-              <div className="text-slate-600 bg-white rounded-lg p-4 border border-slate-200 whitespace-pre-wrap leading-7">
-                <div className="whitespace-pre-wrap leading-7 text-slate-700">{description}</div>
+              <div className="prose prose-slate max-w-none rounded-lg border border-slate-200 bg-white p-5 leading-7 prose-headings:font-black prose-headings:text-slate-950 prose-a:text-fuchsia-700 prose-img:rounded-2xl prose-table:text-sm">
+                <div dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(description) }} />
               </div>
             </div>
             {/* Meta */}

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom"
 import {
   BookOpen,
-  BookOpenText,
+  MessagesSquare,
   LogOut,
   PlusSquare,
   Sparkles,
@@ -44,8 +44,10 @@ function Navbar() {
         ? "Lectura"
         : location.pathname === "/revisadas"
           ? "Feed revisado"
-          : location.pathname === "/por-revisar"
+        : location.pathname === "/por-revisar"
             ? "Por revisar"
+            : location.pathname === "/foro"
+              ? "Foro"
             : location.pathname.startsWith("/editor")
               ? "Editor"
               : location.pathname.startsWith("/profile")
@@ -89,11 +91,11 @@ function Navbar() {
             </Link>
 
             <Link
-              to="/projects"
+              to="/foro"
               className="nova-button-soft px-4 py-2.5 md:px-5 flex items-center gap-2"
             >
-              <BookOpenText size={18} />
-              <span className="hidden sm:inline text-sm font-semibold">Apoyar</span>
+              <MessagesSquare size={18} />
+              <span className="hidden sm:inline text-sm font-semibold">Foro</span>
             </Link>
 
             <Link
