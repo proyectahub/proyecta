@@ -1,8 +1,10 @@
 ﻿#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
+use std::io::{Read, Write};
+use std::net::{SocketAddr, TcpStream};
 use std::process::{Child, Command};
 use std::sync::Mutex;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
 
@@ -21,8 +23,8 @@ struct MiningStats {
     is_running: bool,
     hashrate: String,
     total_hashes: u64,
-    shares_accepted: u32,
-    shares_rejected: u32,
+    shares_accepted: u64,
+    shares_rejected: u64,
     pool_connected: bool,
 }
 
@@ -54,6 +56,61 @@ fn normalize_worker_name(input: &str) -> String {
     } else {
         cleaned
     }
+}
+
+fn format_hashrate(value: f64) -> String {
+    if value >= 1_000_000.0 {
+        format!("{:.2} MH/s", value / 1_000_000.0)
+    } else if value >= 1_000.0 {
+        format!("{:.1} kH/s", value / 1_000.0)
+    } else {
+        format!("{:.0} H/s", value)
+    }
+}
+
+fn read_xmrig_stats() -> Option<MiningStats> {
+    let address: SocketAddr = "127.0.0.1:3002".parse().ok()?;
+    let mut stream = TcpStream::connect_timeout(&address, Duration::from_millis(250)).ok()?;
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(500)));
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(500)));
+    stream
+        .write_all(b"GET /2/summary HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n")
+        .ok()?;
+
+    let mut response = String::new();
+    stream.read_to_string(&mut response).ok()?;
+    let body = response.split_once("\r\n\r\n")?.1;
+    let summary: serde_json::Value = serde_json::from_str(body).ok()?;
+
+    let hashrate = summary
+        .pointer("/hashrate/total/0")
+        .and_then(serde_json::Value::as_f64)
+        .unwrap_or(0.0);
+    let accepted = summary
+        .pointer("/results/shares_good")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0);
+    let total_shares = summary
+        .pointer("/results/shares_total")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(accepted);
+    let total_hashes = summary
+        .pointer("/results/hashes_total")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0);
+    let pool_connected = summary
+        .pointer("/connection/pool")
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|pool| !pool.is_empty());
+
+    Some(MiningStats {
+        is_running: true,
+        hashrate: format_hashrate(hashrate),
+        total_hashes,
+        shares_accepted: accepted,
+        shares_rejected: total_shares.saturating_sub(accepted),
+        pool_connected,
+    })
 }
 
 #[tauri::command]
@@ -90,11 +147,14 @@ fn start_mining(
     let mut command = Command::new(&xmrig_path);
     command.current_dir(xmrig_directory);
 
+    // SupportXMR groups worker statistics by the suffix of the login name.
+    let pool_user = format!("{}.{}", mining_config.wallet, mining_config.worker_name);
+
     let child = command
         .arg("-o")
         .arg(format!("{}:{}", mining_config.pool_url, mining_config.pool_port))
         .arg("-u")
-        .arg(wallet.clone())
+        .arg(pool_user)
         .arg("-p")
         .arg(&mining_config.worker_name)
         .arg("--rig-id")
@@ -132,10 +192,28 @@ fn stop_mining(config: State<Mutex<MinerState>>) -> Result<String, String> {
 
 #[tauri::command]
 fn get_mining_status(config: State<Mutex<MinerState>>) -> MiningStats {
-    let miner = config.lock().unwrap();
+    let mut miner = config.lock().unwrap();
+
+    let is_running = match miner.process.as_mut() {
+        Some(child) => match child.try_wait() {
+            Ok(None) => true,
+            Ok(Some(_)) | Err(_) => {
+                miner.process = None;
+                miner.config = None;
+                false
+            }
+        },
+        None => false,
+    };
+
+    if is_running {
+        if let Some(stats) = read_xmrig_stats() {
+            return stats;
+        }
+    }
 
     MiningStats {
-        is_running: miner.process.is_some(),
+        is_running,
         hashrate: "0 H/s".to_string(),
         total_hashes: 0,
         shares_accepted: 0,

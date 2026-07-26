@@ -352,6 +352,12 @@
   background: rgba(255, 249, 252, 0.95);
 }
 
+.active-destination {
+  overflow-wrap: anywhere;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+}
+
 .mini-chip {
   padding: 8px 12px;
   font-size: 0.82rem;

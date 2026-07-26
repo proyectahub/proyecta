@@ -215,7 +215,7 @@ export default function App() {
               className="input-field input-field-soft"
               maxLength={32}
             />
-            <p className="helper-text">Se envía a xmrig como `rig-id` y queda guardado en esta instalación.</p>
+            <p className="helper-text">Se envía al pool como parte de la identidad de minería y queda guardado en esta instalación.</p>
           </div>
 
           <div className="panel">
@@ -238,6 +238,9 @@ export default function App() {
                 disabled={miningStats.is_running}
                 className="input-field"
               />
+              <p className="helper-text active-destination">
+                Identidad enviada al pool: {wallet}.{workerLabel}
+              </p>
             </label>
 
             <label className="field">
