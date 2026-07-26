@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import './App.css'
 import { createRandomWorkerName, persistWorkerName, readStoredWorkerName } from './lib/workerName'
+import { persistWallet, readStoredWallet } from './lib/wallet'
 
 interface MiningStats {
   is_running: boolean
@@ -27,9 +28,6 @@ interface MiningStats {
   pool_connected: boolean
 }
 
-const defaultWallet =
-  '42gfB3ayxZV2VNH8KAsUMU5fcXUqd83BGJneR37KqJaBQuzYJ8w5d3aV5DBkFH2oWo9YzJLcjhv2d5dR4V2C2xFrUGKiePh'
-
 function splitHashrate(value: string) {
   const parts = value.trim().split(/\s+/)
   return {
@@ -39,7 +37,7 @@ function splitHashrate(value: string) {
 }
 
 export default function App() {
-  const [wallet, setWallet] = useState(defaultWallet)
+  const [wallet, setWallet] = useState(() => readStoredWallet())
   const [threads, setThreads] = useState(4)
   const [workerName, setWorkerName] = useState(() => readStoredWorkerName())
   const [notice, setNotice] = useState<string | null>(null)
@@ -82,10 +80,21 @@ export default function App() {
     setWorkerName(next)
   }
 
+  const updateWallet = (value: string) => {
+    setWallet(value)
+    persistWallet(value)
+  }
+
   const startMining = async () => {
+    const activeWallet = persistWallet(wallet)
+    if (!activeWallet) {
+      setNotice('Ingresa una dirección Monero antes de iniciar la minería.')
+      return
+    }
+
     try {
       setNotice(null)
-      await invoke('start_mining', { wallet, threads, workerName })
+      await invoke('start_mining', { wallet: activeWallet, threads, workerName })
       setMiningStats((state) => ({ ...state, is_running: true }))
     } catch {
       setNotice('No se pudo iniciar la minería. Verifica la instalación y vuelve a intentarlo.')
@@ -234,9 +243,11 @@ export default function App() {
               <input
                 type="text"
                 value={wallet}
-                onChange={(e) => setWallet(e.target.value)}
+                onChange={(e) => updateWallet(e.target.value)}
                 disabled={miningStats.is_running}
                 className="input-field"
+                placeholder="Pega aquí la dirección Monero del proyecto"
+                spellCheck={false}
               />
               <p className="helper-text active-destination">
                 Identidad enviada al pool: {wallet}.{workerLabel}

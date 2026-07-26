@@ -123,12 +123,17 @@ fn start_mining(
 ) -> Result<String, String> {
     let mut miner = config.lock().unwrap();
 
+    let wallet = wallet.trim().to_string();
+    if wallet.is_empty() {
+        return Err("Ingresa una direccion Monero antes de iniciar la mineria.".to_string());
+    }
+
     if let Some(mut child) = miner.process.take() {
         let _ = child.kill();
     }
 
     let mining_config = MiningConfig {
-        wallet: wallet.clone(),
+        wallet,
         pool_url: "pool.supportxmr.com".to_string(),
         pool_port: 3333,
         worker_name: normalize_worker_name(&worker_name),
