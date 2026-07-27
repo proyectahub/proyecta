@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { API_BASE, resolveMiningWebSocketUrl } from '../lib/api'
+import { resolveMiningApiBase, resolveMiningWebSocketUrl } from '../lib/api'
 
 export interface RandomXStats {
   hashRate: number
@@ -72,7 +72,7 @@ export function useRandomXMining(
       }
 
       lastTelemetryAtRef.current = now
-      void fetch(`${API_BASE}/api/mining/submit`, {
+      void fetch(`${resolveMiningApiBase()}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

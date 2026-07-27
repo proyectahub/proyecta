@@ -3,6 +3,7 @@ import { Activity, Cpu, ExternalLink, Radio, RefreshCw, Target, WalletCards, Zap
 import { PROJECTS_API_BASE, resolveMiningApiBase } from '../lib/api'
 import { normalizeSupportXMRStats } from '../lib/supportxmr'
 import { useMoneroPrice } from '../hooks/useMoneroPrice'
+import { useMining } from '../context/MiningContext'
 
 interface MiningStats {
   hashrate: number
@@ -102,6 +103,7 @@ function formatLastShare(lastHash: number) {
 
 export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId, selectedMiningOption = null }: MiningStatsWidgetProps) {
   const { xmrPrice } = useMoneroPrice()
+  const webMining = useMining()
   const [stats, setStats] = useState<MiningStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -198,7 +200,13 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const localBrowserHashrate = Number(stats.localBrowserHashrate ?? 0)
   const localNativeHashrate = Number(stats.localNativeHashrate ?? 0)
   const externalMiningDetected = Boolean(stats.externalMiningDetected)
-  const communityHashrate = localBrowserHashrate + localNativeHashrate + appHashrate
+  const webMiningActive = webMining.isActiveForProject(projectId, wallet)
+  const webHashrate = webMiningActive ? Number(webMining.stats.hashRate ?? 0) : localBrowserHashrate
+  const webTotalHashes = webMiningActive ? Number(webMining.stats.totalHashes ?? 0) : Number(stats.localTotalHashes ?? 0)
+  const webAcceptedShares = webMiningActive ? Number(webMining.stats.acceptedShares ?? 0) : 0
+  const webRejectedShares = webMiningActive ? Number(webMining.stats.rejectedShares ?? 0) : 0
+  const contributionHashrate = webHashrate + appHashrate
+  const communityHashrate = webHashrate + localNativeHashrate + appHashrate
   const localActive = Boolean(stats.isLocalActive || localMiners > 0)
   const miningSelected = selectedMiningOption !== null || Boolean(stats.browserMiningSelected || stats.miningIntent)
   const supportXmrUrl = `https://www.supportxmr.com/?addr=${encodeURIComponent(wallet)}`
@@ -292,14 +300,24 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <p className="mt-3 text-[11px] leading-5 text-slate-500">Este diferencial conserva la línea base del proyecto. El panel superior siempre muestra los totales completos del pool.</p>
       </div>
 
-      <div className={`rounded-2xl border p-4 ${appWorkerCount > 0 || localActive || miningSelected ? 'border-cyan-200 bg-cyan-50' : 'border-slate-200 bg-slate-50'}`}>
+      <div className={`rounded-2xl border p-4 ${appWorkerCount > 0 || webMiningActive || localActive || miningSelected ? 'border-cyan-200 bg-cyan-50' : 'border-slate-200 bg-slate-50'}`}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-600">Aporte de la app confirmado por el pool</p>
-            <p className="mt-1 text-xl font-black text-slate-950">{formatHashrate(appHashrate)}</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-600">Total actual: web + app</p>
+            <p className="mt-1 text-xl font-black text-slate-950">{formatHashrate(contributionHashrate)}</p>
           </div>
           <Cpu className="h-5 w-5 text-cyan-700" />
         </div>
+        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50/80 p-3">
+          <p className="text-[11px] font-black uppercase tracking-[0.1em] text-blue-800">Mineria web</p>
+          <p className="mt-1 text-lg font-black text-slate-950">{formatHashrate(webHashrate)}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-600">
+            {webMiningActive
+              ? `${formatHashes(webTotalHashes)} hashes locales | ${formatHashes(webAcceptedShares)} / ${formatHashes(webRejectedShares)} shares del puente.`
+              : 'Sin sesion web activa en este navegador.'}
+          </p>
+        </div>
+        <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-cyan-800">Mineria con app confirmada por el pool</p>
         <p className="mt-2 text-xs leading-5 text-slate-600">
           {appWorkerCount} worker(s) de app: {appWorkers.length ? appWorkers.join(', ') : 'sin worker detectado'}.
         </p>
@@ -308,6 +326,9 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
             {formatHashes(appTotalHashes)} hashes · {formatHashes(appValidShares)} / {formatHashes(appInvalidShares)} shares · último share {formatLastShare(appLastHash)}. Ya están incluidos en el total del wallet.
           </p>
         ) : null}
+        <p className="mt-3 text-xs leading-5 text-slate-600">
+          La app ya esta incluida en los totales del wallet. La sesion web se acredita cuando SupportXMR acepta el share.
+        </p>
         {externalMiningDetected && !localActive ? (
           <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
             El pool muestra actividad, pero no hay telemetría local atribuible. Eso se clasifica como minería externa inferida.
