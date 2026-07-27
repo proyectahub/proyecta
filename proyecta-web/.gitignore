@@ -6,6 +6,5 @@ _worker.bundle
 .DS_Store
 *.log
 .env.production
-.env.production.local
 backend/.env.production
 backend/monero-addresses.json
