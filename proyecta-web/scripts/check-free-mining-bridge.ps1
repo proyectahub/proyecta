@@ -32,5 +32,5 @@ if ($tunnelUrl) {
   BackendLocal = if ($localHealthy) { 'OK' } else { 'FALLA' }
   Tunnel = if ($tunnelUrl) { $tunnelUrl } else { 'NO DETECTADO' }
   PuentePublico = if ($publicHealthy) { 'OK' } else { 'FALLA' }
-  Resultado = if ($taskRunning -and $localHealthy -and $publicHealthy) { 'LISTO: el puente acepta conexiones web.' } else { 'REPARACION: ejecuta schtasks /Run /TN "PROYECTA Free Mining Bridge".' }
+  Resultado = if ($localHealthy -and $publicHealthy) { 'LISTO: el puente acepta conexiones web.' } else { 'SIN PUENTE PUBLICO: configura un Cloudflare Tunnel nombrado con un dominio propio o un VPS gratuito antes de activar mineria web.' }
 } | Format-List
