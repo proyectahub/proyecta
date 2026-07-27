@@ -1,4 +1,5 @@
 const DEFAULT_API_BASE = import.meta.env.DEV ? "http://localhost:3000" : ""
+const DEFAULT_MINING_BRIDGE_URL = "https://proyecta-mining-bridge.proyectacontacto.workers.dev"
 
 export const API_BASE = import.meta.env.VITE_API_URL ?? DEFAULT_API_BASE
 export const PROJECTS_API_BASE = import.meta.env.VITE_PROJECTS_API_URL ?? "/cf-api"
@@ -53,7 +54,10 @@ export function resolveMiningApiBase() {
     return "http://localhost:3000/api/mining"
   }
 
-  const configuredUrl = import.meta.env.VITE_MINING_API_URL || API_BASE || "/api"
+  const configuredMiningUrl = import.meta.env.VITE_MINING_API_URL
+  const configuredUrl = import.meta.env.PROD && (!configuredMiningUrl || configuredMiningUrl.includes("railway.app"))
+    ? DEFAULT_MINING_BRIDGE_URL
+    : configuredMiningUrl || API_BASE || "/api"
   try {
     return normalizeMiningApiUrl(configuredUrl)
   } catch {
@@ -63,6 +67,10 @@ export function resolveMiningApiBase() {
 
 export function resolveMiningWebSocketUrl() {
   const configuredUrl = import.meta.env.VITE_MINING_WS_URL
+
+  if (import.meta.env.PROD && (!configuredUrl || configuredUrl.includes("railway.app"))) {
+    return "wss://proyecta-mining-bridge.proyectacontacto.workers.dev/ws/mining"
+  }
 
   if (configuredUrl) {
     try {
