@@ -5,6 +5,7 @@ import { useMining } from '../context/MiningContext'
 import type { RandomXStats } from '../hooks/useRandomXMining'
 import { useSupportXMRStats } from '../hooks/useSupportXMRMining'
 import { MiningOptionsModal } from './MiningOptionsModal'
+import { resolveMiningWebSocketUrl } from '../lib/api'
 
 interface ProjectMiningWidgetProps {
   projectMoneroAddress: string
@@ -55,6 +56,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
   const stats = miningEnabled ? mining.stats : INACTIVE_MINING_STATS
   const miningError = miningEnabled ? mining.error : null
   const poolUrl = mining.poolUrl
+  const bridgeUrl = resolveMiningWebSocketUrl()
   const cpuPercentage = miningEnabled ? mining.session?.cpuPercentage || selectedCpuPercentage : selectedCpuPercentage
 
   useEffect(() => {
@@ -282,6 +284,7 @@ export function ProjectMiningWidget({ projectMoneroAddress, projectTitle, projec
                     : `Estado: ${stats.status}`}
               </p>
               <p className="mt-1 font-mono">{poolUrl}</p>
+              <p className="mt-1 break-all font-mono text-[10px] text-slate-500">Puente web: {bridgeUrl}</p>
             </div>
 
             {hasVisibleCommunityState(poolStats) ? (
