@@ -1,0 +1,11 @@
+name = "proyecta-mining-bridge"
+main = "src/index.js"
+compatibility_date = "2026-07-27"
+
+[[durable_objects.bindings]]
+name = "MINING_BRIDGE"
+class_name = "MiningBridge"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MiningBridge"]

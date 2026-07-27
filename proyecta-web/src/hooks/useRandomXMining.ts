@@ -201,7 +201,11 @@ export function useRandomXMining(
       perWorkerRef.current = perWorkerRef.current.map((workerStats) => ({ ...workerStats, rate: 0 }))
     }
 
-    const ws = new WebSocket(WS_URL)
+    const bridgeUrl = new URL(WS_URL)
+    bridgeUrl.searchParams.set('wallet', walletAddress)
+    if (projectId) bridgeUrl.searchParams.set('projectId', projectId)
+    bridgeUrl.searchParams.set('sessionId', miningSessionId)
+    const ws = new WebSocket(bridgeUrl)
     wsRef.current = ws
 
     ws.onopen = () => {
