@@ -33,6 +33,40 @@ function normalizePoolStats(data = {}) {
   }
 }
 
+function normalizeWorkerStats(identifier, data = {}) {
+  return {
+    identifier,
+    hashrate: asNonNegativeNumber(data.hash ?? data.hashrate),
+    totalHashes: asNonNegativeNumber(data.totalHash ?? data.totalHashes),
+    validShares: Math.trunc(asNonNegativeNumber(data.validShares)),
+    invalidShares: Math.trunc(asNonNegativeNumber(data.invalidShares)),
+    lastHash: asNonNegativeNumber(data.lts ?? data.lastHash),
+  }
+}
+
+async function fetchAppWorkerStats(wallet, workers) {
+  const appWorkers = workers.filter((worker) => /^proyecta-[a-z0-9_-]+$/i.test(worker))
+  const details = await Promise.all(appWorkers.map(async (worker) => {
+    try {
+      const response = await fetch(`https://www.supportxmr.com/api/miner/${encodeURIComponent(wallet)}/stats/${encodeURIComponent(worker)}`, {
+        headers: { Accept: 'application/json' },
+      })
+      return response.ok ? normalizeWorkerStats(worker, await response.json()) : null
+    } catch {
+      return null
+    }
+  }))
+
+  return details.filter(Boolean).reduce((total, worker) => ({
+    workers: [...total.workers, worker],
+    hashrate: total.hashrate + worker.hashrate,
+    totalHashes: total.totalHashes + worker.totalHashes,
+    validShares: total.validShares + worker.validShares,
+    invalidShares: total.invalidShares + worker.invalidShares,
+    lastHash: Math.max(total.lastHash, worker.lastHash),
+  }), { workers: [], hashrate: 0, totalHashes: 0, validShares: 0, invalidShares: 0, lastHash: 0 })
+}
+
 async function fetchPoolStats(wallet) {
   const response = await fetch(`https://www.supportxmr.com/api/miner/${encodeURIComponent(wallet)}/stats`, {
     headers: { Accept: 'application/json' },
@@ -56,7 +90,8 @@ async function fetchPoolStats(wallet) {
     // Worker names are optional and must not hide the wallet totals.
   }
 
-  return { ...stats, workers }
+  const app = await fetchAppWorkerStats(wallet, workers)
+  return { ...stats, workers, app }
 }
 
 async function getOrCreateBaseline(db, projectId, wallet, current) {
@@ -158,6 +193,13 @@ export async function onRequestGet({ env, params }) {
       poolWorkers: Array.isArray(current.workers) ? current.workers : [],
       poolWorkerCount: Array.isArray(current.workers) ? current.workers.length : 0,
       poolLastHash: current.lastHash,
+      appWorkers: current.app.workers.map((worker) => worker.identifier),
+      appWorkerCount: current.app.workers.length,
+      appHashrate: current.app.hashrate,
+      appTotalHashes: current.app.totalHashes,
+      appValidShares: current.app.validShares,
+      appInvalidShares: current.app.invalidShares,
+      appLastHash: current.app.lastHash,
       baselineCapturedAt: Number(baseline.captured_at || 0),
       status: isPoolConfirmed ? 'SupportXMR confirmó actividad posterior al inicio del proyecto' : 'Esperando el primer share posterior a la línea base',
     }, { headers: { 'Cache-Control': 'no-store' } })

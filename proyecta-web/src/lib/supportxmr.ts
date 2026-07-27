@@ -48,6 +48,13 @@ export interface SupportXMRNormalizedStats {
   poolWorkers?: string[]
   poolWorkerCount?: number
   poolLastHash?: number
+  appWorkers?: string[]
+  appWorkerCount?: number
+  appHashrate?: number
+  appTotalHashes?: number
+  appValidShares?: number
+  appInvalidShares?: number
+  appLastHash?: number
 }
 
 function parseDecimalLike(value: unknown): number {
@@ -183,6 +190,15 @@ export function normalizeSupportXMRStats(data: any): SupportXMRNormalizedStats {
       : undefined,
     poolWorkerCount: isUnified ? parseHashCount(data?.poolWorkerCount ?? 0) : undefined,
     poolLastHash: isUnified ? parseHashCount(data?.poolLastHash ?? 0) : undefined,
+    appWorkers: isUnified && Array.isArray(data?.appWorkers)
+      ? data.appWorkers.filter((worker: unknown): worker is string => typeof worker === 'string' && Boolean(worker.trim())).map((worker: string) => worker.trim())
+      : undefined,
+    appWorkerCount: isUnified ? parseHashCount(data?.appWorkerCount ?? 0) : undefined,
+    appHashrate: isUnified ? parseDecimalLike(data?.appHashrate ?? 0) : undefined,
+    appTotalHashes: isUnified ? parseHashCount(data?.appTotalHashes ?? 0) : undefined,
+    appValidShares: isUnified ? parseHashCount(data?.appValidShares ?? 0) : undefined,
+    appInvalidShares: isUnified ? parseHashCount(data?.appInvalidShares ?? 0) : undefined,
+    appLastHash: isUnified ? parseHashCount(data?.appLastHash ?? 0) : undefined,
     status: isUnified ? (typeof data?.status === 'string' ? data.status : undefined) : undefined,
   }
 }

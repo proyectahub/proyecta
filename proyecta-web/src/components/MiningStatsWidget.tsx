@@ -44,6 +44,13 @@ interface MiningStats {
   poolWorkers?: string[]
   poolWorkerCount?: number
   poolLastHash?: number
+  appWorkers?: string[]
+  appWorkerCount?: number
+  appHashrate?: number
+  appTotalHashes?: number
+  appValidShares?: number
+  appInvalidShares?: number
+  appLastHash?: number
 }
 
 interface MiningStatsWidgetProps {
@@ -176,17 +183,22 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
   const poolWorkers = Array.isArray(stats.poolWorkers) ? stats.poolWorkers : []
   const poolWorkerCount = Number(stats.poolWorkerCount ?? poolWorkers.length)
   const poolLastHash = Number(stats.poolLastHash ?? stats.lastHash ?? 0)
+  const appWorkers = Array.isArray(stats.appWorkers) ? stats.appWorkers : []
+  const appWorkerCount = Number(stats.appWorkerCount ?? appWorkers.length)
+  const appHashrate = Number(stats.appHashrate ?? 0)
+  const appTotalHashes = Number(stats.appTotalHashes ?? 0)
+  const appValidShares = Number(stats.appValidShares ?? 0)
+  const appInvalidShares = Number(stats.appInvalidShares ?? 0)
+  const appLastHash = Number(stats.appLastHash ?? 0)
   const walletObservedTotal = poolPending + poolPaid
   const progressPercent = fundingGoal > 0 ? Math.min((walletObservedTotal / fundingGoal) * 100, 100) : 0
   const remaining = Math.max(fundingGoal - walletObservedTotal, 0)
   const usdValue = xmrPrice === null ? null : walletObservedTotal * xmrPrice
   const localMiners = Number(stats.localMiners ?? 0)
-  const localBrowserMiners = Number(stats.localBrowserMiners ?? 0)
-  const localNativeMiners = Number(stats.localNativeMiners ?? 0)
   const localBrowserHashrate = Number(stats.localBrowserHashrate ?? 0)
   const localNativeHashrate = Number(stats.localNativeHashrate ?? 0)
   const externalMiningDetected = Boolean(stats.externalMiningDetected)
-  const communityHashrate = localBrowserHashrate + localNativeHashrate
+  const communityHashrate = localBrowserHashrate + localNativeHashrate + appHashrate
   const localActive = Boolean(stats.isLocalActive || localMiners > 0)
   const miningSelected = selectedMiningOption !== null || Boolean(stats.browserMiningSelected || stats.miningIntent)
   const supportXmrUrl = `https://www.supportxmr.com/?addr=${encodeURIComponent(wallet)}`
@@ -280,17 +292,22 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
         <p className="mt-3 text-[11px] leading-5 text-slate-500">Este diferencial conserva la línea base del proyecto. El panel superior siempre muestra los totales completos del pool.</p>
       </div>
 
-      <div className={`rounded-2xl border p-4 ${localActive || miningSelected ? 'border-cyan-200 bg-cyan-50' : 'border-slate-200 bg-slate-50'}`}>
+      <div className={`rounded-2xl border p-4 ${appWorkerCount > 0 || localActive || miningSelected ? 'border-cyan-200 bg-cyan-50' : 'border-slate-200 bg-slate-50'}`}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-600">Telemetría local sin acreditar</p>
-            <p className="mt-1 text-xl font-black text-slate-950">{formatHashrate(communityHashrate)}</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-600">Aporte de la app confirmado por el pool</p>
+            <p className="mt-1 text-xl font-black text-slate-950">{formatHashrate(appHashrate)}</p>
           </div>
           <Cpu className="h-5 w-5 text-cyan-700" />
         </div>
         <p className="mt-2 text-xs leading-5 text-slate-600">
-          {localMiners} equipo(s): {localBrowserMiners} web / {localNativeMiners} app{externalMiningDetected ? ' / 1 externo inferido' : ''}. No equivale a XMR.
+          {appWorkerCount} worker(s) de app: {appWorkers.length ? appWorkers.join(', ') : 'sin worker detectado'}.
         </p>
+        {appWorkerCount > 0 ? (
+          <p className="mt-2 rounded-xl border border-cyan-200 bg-white/80 px-3 py-2 text-xs font-semibold text-cyan-950">
+            {formatHashes(appTotalHashes)} hashes · {formatHashes(appValidShares)} / {formatHashes(appInvalidShares)} shares · último share {formatLastShare(appLastHash)}. Ya están incluidos en el total del wallet.
+          </p>
+        ) : null}
         {externalMiningDetected && !localActive ? (
           <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
             El pool muestra actividad, pero no hay telemetría local atribuible. Eso se clasifica como minería externa inferida.
