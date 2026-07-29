@@ -317,7 +317,9 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
               : 'Sin sesion web activa en este navegador.'}
           </p>
         </div>
-        <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-cyan-800">Mineria con app confirmada por el pool</p>
+        <div className="mt-3 rounded-xl border border-cyan-200 bg-cyan-100/70 p-3">
+          <p className="text-[11px] font-black uppercase tracking-[0.1em] text-cyan-900">Mineria mediante app o equipo local</p>
+          <p className="mt-1 text-lg font-black text-slate-950">{formatHashrate(appHashrate)}</p>
         <p className="mt-2 text-xs leading-5 text-slate-600">
           {appWorkerCount} worker(s) de app: {appWorkers.length ? appWorkers.join(', ') : 'sin worker detectado'}.
         </p>
@@ -326,6 +328,7 @@ export function MiningStatsWidget({ wallet, fundingGoal, projectTitle, projectId
             {formatHashes(appTotalHashes)} hashes · {formatHashes(appValidShares)} / {formatHashes(appInvalidShares)} shares · último share {formatLastShare(appLastHash)}. Ya están incluidos en el total del wallet.
           </p>
         ) : null}
+        </div>
         <p className="mt-3 text-xs leading-5 text-slate-600">
           La app ya esta incluida en los totales del wallet. La sesion web se acredita cuando SupportXMR acepta el share.
         </p>
