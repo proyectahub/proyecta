@@ -17,6 +17,7 @@ export interface RandomXStats {
 
 const WS_URL = resolveMiningWebSocketUrl()
 const TELEMETRY_INTERVAL_MS = 10000
+const MAX_BROWSER_RANDOMX_WORKERS = 2
 
 export function useRandomXMining(
   walletAddress: string,
@@ -52,6 +53,9 @@ export function useRandomXMining(
   const lastTelemetryAtRef = useRef(0)
   const workersStartedRef = useRef(false)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectDelayRef = useRef(3000)
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null)
   const noncePrefixRef = useRef(Math.floor(Math.random() * 16))
   const acceptedSharesRef = useRef(0)
   const rejectedSharesRef = useRef(0)
@@ -93,7 +97,12 @@ export function useRandomXMining(
     }
 
     const cores = navigator.hardwareConcurrency || 4
-    const threads = Math.max(1, Math.min(6, Math.round(cores * (cpuPercentage / 100))))
+    const targetThreads = Math.max(1, Math.round(cores * (cpuPercentage / 100)))
+    const reportedDeviceMemory = Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 0)
+    // Each RandomX worker builds its own large cache, so an aggressive worker count
+    // can exhaust browser memory before any hashing starts.
+    const maxWorkersByMemory = reportedDeviceMemory >= 8 ? MAX_BROWSER_RANDOMX_WORKERS : 1
+    const threads = Math.max(1, Math.min(targetThreads, maxWorkersByMemory))
 
     const isNewMiningSession = engineSessionIdRef.current !== miningSessionId
     engineSessionIdRef.current = miningSessionId
@@ -181,6 +190,15 @@ export function useRandomXMining(
           setError(message.error)
         }
       }
+      worker.onerror = (event) => {
+        const detail = event instanceof ErrorEvent
+          ? event.message
+          : 'No fue posible iniciar el worker de RandomX.'
+        setError(`Worker de RandomX detenido: ${detail}`)
+      }
+      worker.onmessageerror = () => {
+        setError('Worker de RandomX devolvió un mensaje inválido.')
+      }
       workers.push(worker)
     }
 
@@ -192,13 +210,6 @@ export function useRandomXMining(
       for (const worker of workersRef.current) {
         worker.postMessage({ type: 'start' })
       }
-    }
-
-    const pauseWorkers = () => {
-      hasPoolJobRef.current = false
-      workersStartedRef.current = false
-      for (const worker of workersRef.current) worker.postMessage({ type: 'stop' })
-      perWorkerRef.current = perWorkerRef.current.map((workerStats) => ({ ...workerStats, rate: 0 }))
     }
 
     const bridgeUrl = new URL(WS_URL)
@@ -267,10 +278,8 @@ export function useRandomXMining(
 
       if (message.type === 'status') {
         const connected = Boolean(message.connected)
-        if (!connected) pauseWorkers()
         setStats((current) => ({
           ...current,
-          hashRate: connected ? current.hashRate : 0,
           poolConnected: connected,
           status: connected ? current.status : 'Puente disponible; esperando conexión con SupportXMR.',
         }))
@@ -312,19 +321,17 @@ export function useRandomXMining(
       if (isClosingRef.current) {
         return
       }
-      pauseWorkers()
       setStats((current) => ({
         ...current,
-        hashRate: 0,
         poolConnected: false,
-        coordinatedMiners: 0,
-        coordinationActive: false,
-        status: 'Puente desconectado; reconectando en 3 segundos.',
+        status: 'Puente desconectado; reconectando sin detener los workers.',
       }))
+      const delay = reconnectDelayRef.current
+      reconnectDelayRef.current = Math.min(delay * 2, 30000)
       reconnectTimerRef.current = setTimeout(() => {
         reconnectTimerRef.current = null
         setConnectionAttempt((attempt) => attempt + 1)
-      }, 3000)
+      }, delay)
     }
 
     return () => {
@@ -354,6 +361,43 @@ export function useRandomXMining(
       setError(null)
     }
   }, [enabled, walletAddress, cpuPercentage, projectId, sendTelemetry, connectionAttempt])
+
+  useEffect(() => {
+    if (!enabled || !walletAddress) return
+
+    let cancelled = false
+
+    const requestWakeLock = async () => {
+      if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return
+      try {
+        await wakeLockRef.current?.release?.().catch(() => undefined)
+        wakeLockRef.current = await navigator.wakeLock.request('screen')
+      } catch {
+        if (!cancelled) wakeLockRef.current = null
+      }
+    }
+
+    const releaseWakeLock = () => {
+      wakeLockRef.current?.release?.().catch(() => undefined)
+      wakeLockRef.current = null
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void requestWakeLock()
+      } else {
+        releaseWakeLock()
+      }
+    }
+
+    void requestWakeLock()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      releaseWakeLock()
+    }
+  }, [enabled, walletAddress])
 
   const stop = useCallback(() => {
     if (reconnectTimerRef.current) {
